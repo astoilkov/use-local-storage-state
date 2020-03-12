@@ -1,6 +1,6 @@
 # `use-local-storage-state`
 
-> Like `useState()` but for local storage.
+> Like `useState()` but for local storage
 
 ## Install
 
