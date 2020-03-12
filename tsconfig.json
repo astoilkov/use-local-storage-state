@@ -4,6 +4,8 @@
         "target": "ES2019",
         "module": "commonjs",
 
+        "declaration": true,
+
         /**
          * Allows modules which were exported using `module.exports` or `export = ` to be imported using
          * `import module from 'module'`.
