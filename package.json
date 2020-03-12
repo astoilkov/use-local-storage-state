@@ -1,6 +1,6 @@
 {
     "name": "use-local-storage-state",
-    "version": "0.2.2",
+    "version": "0.3.0",
     "description": "React hook for using local storage the same way you use setState()",
     "license": "MIT",
     "author": {
