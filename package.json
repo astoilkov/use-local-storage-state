@@ -25,7 +25,7 @@
     "sideEffects": false,
     "scripts": {
         "build": "tsc",
-        "release": "np",
+        "release": "yarn run build && np",
         "prettier": "prettier --write --config .prettierrc.toml '{**/*.ts,**/*.tsx}'"
     },
     "files": [
