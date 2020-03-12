@@ -1,0 +1,26 @@
+{
+    "compilerOptions": {
+        "outDir": "dist",
+        "target": "ES2019",
+        "module": "commonjs",
+
+        /**
+         * Allows modules which were exported using `module.exports` or `export = ` to be imported using
+         * `import module from 'module'`.
+         */
+        "esModuleInterop": true,
+        "allowSyntheticDefaultImports": true,
+
+        /**
+         * Remove all comments except copy-right header comments beginning with /*!.
+         */
+        "removeComments": true,
+
+        "strict": true,
+        "noUnusedLocals": true,
+        "noUnusedParameters": true,
+        "allowUnreachableCode": false,
+        "noFallthroughCasesInSwitch": true,
+        "forceConsistentCasingInFileNames": true
+    }
+}
