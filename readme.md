@@ -10,7 +10,7 @@ $ npm install use-local-storage-state
 
 ## Why?
 
-Why this module should even exists? There are more than a few libraries to achieve almost the same thing. I created this module in frustration with the big number of non-optimal solutions. Below are the things that this module does right. All things mentioned are things that some other library don't do. Put all together there isn't a single library that solves all these cases:
+Why this module should even exists? There are more than a few libraries to achieve almost the same thing. I created this module in frustration with the big number of non-optimal solutions. Below are the things that this module does right. All bullets are things that some other library isn't doing. Put all together there isn't a single library that solves all these cases:
 
 - Written in TypeScript. `useLocalStorageState()` returns absolutely the same type as React `useState()`.
 - Uses `JSON.parse()` and `JSON.stringify()` to support non string values.
