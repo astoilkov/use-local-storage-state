@@ -2,6 +2,10 @@
 
 > Like `useState()` but for local storage
 
+![](https://img.shields.io/bundlephobia/min/use-local-storage-state)
+![](https://img.shields.io/david/astoilkov/use-local-storage-state)
+![](https://img.shields.io/npm/l/use-local-storage-state)
+
 ## Install
 
 ```shell
