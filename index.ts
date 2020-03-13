@@ -2,7 +2,7 @@ import { useState, useLayoutEffect, Dispatch, SetStateAction } from 'react'
 
 export default function useLocalStorageState<T>(
     key: string,
-    defaultValue: T,
+    defaultValue?: T,
 ): [T, Dispatch<SetStateAction<T>>] {
     const globalKey = `use-local-storage-state.${key}`
     const [value, setValue] = useState<T>(() => {
