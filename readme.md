@@ -10,7 +10,7 @@ $ npm install use-local-storage-state
 
 ## Why?
 
-Why this module should even exists. There are more than a few libraries to achieve almost the same thing. I created in frustration in the big number of non-optimal current solutions. Here are the things that this module does right. All things mentioned are things that some other library doesn't do. Put all together there isn't a library that solves all cases:
+Why this module should even exists? There are more than a few libraries to achieve almost the same thing. I created this module in frustration with the big number of non-optimal solutions. Below are the things that this module does right. All things mentioned are things that some other library don't do. Put all together there isn't a single library that solves all these cases:
 
 - Written in TypeScript. `useLocalStorageState()` returns absolutely the same type as React `useState()`.
 - Uses `JSON.parse()` and `JSON.stringify()` to support non string values.
@@ -26,22 +26,26 @@ const [todos, setTodos] = useLocalStorageState('todos', [
 ])
 ```
 
+Complete todo list example:
 ```typescript
+import React, { useState } from 'react'
 import useLocalStorageState from 'use-local-storage-state'
 
-function Todos() {
+export default function Todos() {
     const [query, setQuery] = useState('')
-    const [todos, setTodos] = useLocalStorageState('todos', [])
-    
+    const [todos, setTodos] = useLocalStorageState('todos', ['buy milk'])
+
     function onClick() {
         setTodos([...todos, query])
     }
-    
+
     return (
         <>
-            <input value={query} onChange={e => setQuery(e.value}} />
-            {todos.map(todo => <div>{todo}</div>)}
+            <input value={query} onChange={e => setQuery(e.target.value)} />
+            <button onClick={onClick}>Create</button>
+            {todos.map(todo => (<div>{todo}</div>))}
         </>
     )
 }
+
 ```
