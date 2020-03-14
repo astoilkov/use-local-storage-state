@@ -25,6 +25,8 @@ Why this module even exists? There are more than a few libraries to achieve almo
 ## Usage
 
 ```typescript
+import useLocalStorageState from 'use-local-storage-state'
+
 const [todos, setTodos] = useLocalStorageState('todos', [
     'buy milk',
     'do 50 push-ups'
