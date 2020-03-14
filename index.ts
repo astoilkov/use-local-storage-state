@@ -39,3 +39,22 @@ export default function useLocalStorageState<T>(
 
     return [value, updateValue]
 }
+
+export function createLocalStorageStateHook<T>(name: string, defaultValue?: T) {
+    const updates: ((newValue: T | ((value: T) => T)) => void)[] = []
+    return function useLocalStorageStateHook(): [T, Dispatch<SetStateAction<T>>] {
+        const [value, setValue] = useLocalStorageState<T>(name, defaultValue)
+        const updateValue = useCallback((newValue: T | ((value: T) => T)) => {
+            for (const update of updates) {
+                update(newValue)
+            }
+        }, [])
+
+        useLayoutEffect(() => {
+            updates.push(setValue)
+            return () => void updates.splice(updates.indexOf(setValue), 1)
+        }, [setValue])
+
+        return [value, updateValue]
+    }
+}
