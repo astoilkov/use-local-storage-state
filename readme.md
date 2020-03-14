@@ -20,6 +20,7 @@ Why this module even exists? There are more than a few libraries to achieve almo
 - Uses `JSON.parse()` and `JSON.stringify()` to support non string values.
 - Subscribes to the Window [`storage`](https://developer.mozilla.org/en-US/docs/Web/API/Window/storage_event) event which tracks changes across browser tabs and iframe's.
 - Used in a production application which is based on [Caret - Markdown Editor for Mac / Windows](https://caret.io/) and is in private beta.
+- Supports creating a global hook that can be used in multiple places. See the last example in the Usage section.
 
 ## Usage
 
@@ -52,4 +53,25 @@ export default function Todos() {
     )
 }
 
+```
+
+Using the same data from the storage in multiple places:
+```typescript
+import { createLocalStorageStateHook } from 'use-local-storage-state'
+
+// store.ts
+export const useTodos = createLocalStorageStateHook('todos', [
+    'buy milk',
+    'do 50 push-ups'
+])
+
+// Todos.ts
+function Todos() {
+    const [todos, setTodos] = useTodos()
+}
+
+// Popup.ts
+function Popup() {
+    const [todos, setTodos] = useTodos()
+}
 ```
