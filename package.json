@@ -31,7 +31,8 @@
         "prettier": "prettier --write --config .prettierrc.toml '{**/*.ts,**/*.tsx}'"
     },
     "files": [
-        "dist/index.js"
+        "dist/index.js",
+        "dist/index.d.ts"
     ],
     "peerDependencies": {
         "react": ">=16.8.0"
