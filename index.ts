@@ -1,12 +1,11 @@
-import { useState, useLayoutEffect, useMemo, useCallback, Dispatch, SetStateAction } from 'react'
+import { useState, useLayoutEffect, useCallback, Dispatch, SetStateAction } from 'react'
 
 export default function useLocalStorageState<T>(
     key: string,
     defaultValue?: T,
 ): [T, Dispatch<SetStateAction<T>>] {
-    const globalKey = useMemo(() => `use-local-storage-state.${key}`, [key])
     const [value, setValue] = useState<T>(() => {
-        const storageValue = localStorage.getItem(globalKey)
+        const storageValue = localStorage.getItem(key)
         return storageValue === null ? defaultValue : JSON.parse(storageValue)
     })
     const updateValue = useCallback(
@@ -15,11 +14,11 @@ export default function useLocalStorageState<T>(
                 const isCallable = (value: any): value is (value: T) => T =>
                     typeof value === 'function'
                 const result = isCallable(newValue) ? newValue(value) : newValue
-                localStorage.setItem(globalKey, JSON.stringify(result))
+                localStorage.setItem(key, JSON.stringify(result))
                 return result
             })
         },
-        [globalKey],
+        [key],
     )
 
     /**
@@ -27,7 +26,7 @@ export default function useLocalStorageState<T>(
      */
     useLayoutEffect(() => {
         const onStorage = (e: StorageEvent) => {
-            if (e.storageArea === localStorage && e.key === globalKey) {
+            if (e.storageArea === localStorage && e.key === key) {
                 setValue(e.newValue === null ? defaultValue : JSON.parse(e.newValue))
             }
         }
