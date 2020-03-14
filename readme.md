@@ -77,3 +77,43 @@ function Popup() {
     const [todos, setTodos] = useTodos()
 }
 ```
+
+## API
+
+### useLocalStorageState(key, defaultValue?)
+
+Returns the same value that React `useState()` returns.\
+Look at **Usage** section for an example.
+
+#### key
+
+Type: `string`
+
+The key that will be used when calling `localStorage.setItem(key)`and `localStorage.getItem(key)`.\
+⚠️ Be careful with conflicts as you can access a property which is already `localStorage` that was created from another place in the codebase or in an old version of the application.
+
+#### defaultValue
+
+Type: `any`
+Default: `undefined`
+
+The initial value of the data. The same as `useState(defaultValue)` property.
+
+### createLocalStorageStateHook(key, defaultValue?)
+
+Returns a hook to be used in multiple places.\
+Look at **Usage** section for an example.
+
+#### key
+
+Type: `string`
+
+The key that will be used when calling `localStorage.setItem(key)`and `localStorage.getItem(key)`.\
+⚠️ Be careful with conflicts as you can access a property which is already `localStorage` that was created from another place in the codebase or in an old version of the application.
+
+#### defaultValue
+
+Type: `any`
+Default: `undefined`
+
+The initial value of the data. The same as `useState(defaultValue)` property.
