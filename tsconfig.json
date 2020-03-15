@@ -26,5 +26,5 @@
         "forceConsistentCasingInFileNames": true
     },
 
-    "exclude": ["test.ts"]
+    "include": ["index.ts"]
 }
