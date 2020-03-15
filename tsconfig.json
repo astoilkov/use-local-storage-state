@@ -24,5 +24,7 @@
         "allowUnreachableCode": false,
         "noFallthroughCasesInSwitch": true,
         "forceConsistentCasingInFileNames": true
-    }
+    },
+
+    "exclude": ["test.ts"]
 }
