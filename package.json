@@ -25,8 +25,8 @@
     "main": "dist",
     "sideEffects": false,
     "scripts": {
-        "test": "jest",
         "build": "tsc",
+        "test": "yarn run build && jest",
         "release": "yarn run build && np",
         "prettier": "prettier --write --config .prettierrc.toml '{**/*.ts,**/*.tsx}'"
     },
