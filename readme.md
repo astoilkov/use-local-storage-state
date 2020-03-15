@@ -1,6 +1,6 @@
 # `use-local-storage-state`
 
-> React hook with the same API as useState() but persisting the data in local storage
+> React hook with the same API as useState() while persisting the data in local storage
 
 ![](https://img.shields.io/travis/com/astoilkov/use-local-storage-state)
 ![](https://img.shields.io/codeclimate/coverage/astoilkov/use-local-storage-state)
