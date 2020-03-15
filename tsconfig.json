@@ -4,8 +4,6 @@
         "target": "ES2019",
         "module": "commonjs",
 
-        "sourceMap": true,
-
         "declaration": true,
 
         /**
