@@ -17,7 +17,7 @@ before_script:
     - ./cc-test-reporter before-build --debug
 
 script:
-    - nyc --reporter=lcov yarn run test
+    - nyc --reporter=lcov yarn test
 
 after_script:
     - ./cc-test-reporter after-build --debug --exit-code $TRAVIS_TEST_RESULT
