@@ -26,7 +26,7 @@
     "sideEffects": false,
     "scripts": {
         "build": "tsc",
-        "test": "jest --coverage --coverageReports=text,text-lvoc",
+        "test": "jest --coverage",
         "release": "yarn run build && np",
         "prettier": "prettier --write --config .prettierrc.toml '{**/*.ts}'"
     },
