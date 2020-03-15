@@ -5,19 +5,20 @@ node_js:
     - '10'
 
 # everything below is Code Climate setup based on
-# https://docs.codeclimate.com/docs/travis-ci-test-coverage#section-travis-ci-single-test-suite-non-parallel-builds
+# https://github.com/codeclimate/test-reporter/blob/master/examples/javascript_examples.md
 
 env:
     global:
         - CC_TEST_REPORTER_ID=cf4776fed825e915f4c0fb98737a5920c854ad5d5554ddb8d347e955b60f4b6f
 
 before_script:
+    - yarn global add nyc
     - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
     - chmod +x ./cc-test-reporter
     - ./cc-test-reporter before-build
 
 script:
-    - bundle exec rspec
+    - nyc --reporter=lcov yarn run test
 
 after_script:
     - ./cc-test-reporter after-build --exit-code $TRAVIS_TEST_RESULT
