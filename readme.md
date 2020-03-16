@@ -58,7 +58,7 @@ export default function Todos() {
 
 ```
 
-Using the same data from the storage in multiple places:
+Using the same hook in multiple places:
 ```typescript
 import { createLocalStorageStateHook } from 'use-local-storage-state'
 
