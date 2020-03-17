@@ -21,7 +21,7 @@ Why this module even exists? There are more than a few libraries to achieve almo
 - Uses `JSON.parse()` and `JSON.stringify()` to support non string values.
 - Subscribes to the Window [`storage`](https://developer.mozilla.org/en-US/docs/Web/API/Window/storage_event) event which tracks changes across browser tabs and iframe's.
 - Supports creating a global hook that can be used in multiple places. See the last example in the **Usage** section.
-- Well tested. 100% coverage and used in a production application which is based on [Caret](https://caret.io/) and is in private beta.
+- Well tested. 100% coverage. Used in a production application which is based on [Caret](https://caret.io/) and is in private beta.
 
 ## Usage
 
