@@ -23,6 +23,7 @@
         "local storage"
     ],
     "main": "dist",
+    "types": "dist",
     "sideEffects": false,
     "scripts": {
         "build": "tsc",
