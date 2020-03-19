@@ -1,6 +1,6 @@
 {
     "name": "use-local-storage-state",
-    "version": "1.1.1",
+    "version": "1.1.2",
     "description": "React hook for local storage state done right",
     "license": "MIT",
     "repository": "astoilkov/use-local-storage-state",
