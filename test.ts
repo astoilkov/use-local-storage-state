@@ -65,6 +65,9 @@ describe('useLocalStorageState()', () => {
             useLocalStorageState('todos', ['first', 'second']),
         )
 
+        /**
+         * #WET 2020-03-19T8:55:25+02:00
+         */
         act(() => {
             window.dispatchEvent(
                 new StorageEvent('storage', {
@@ -149,6 +152,9 @@ describe('createLocalStorageStateHook()', () => {
         const { result: resultA } = renderHook(() => useTodos())
         const { result: resultB } = renderHook(() => useTodos())
 
+        /**
+         * #WET 2020-03-19T8:55:25+02:00
+         */
         act(() => {
             window.dispatchEvent(
                 new StorageEvent('storage', {
