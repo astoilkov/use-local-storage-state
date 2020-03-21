@@ -25,7 +25,7 @@ export default function useLocalStorageState<T>(
      * Checks for changes across tabs and iframe's.
      */
     useLayoutEffect(() => {
-        const onStorage = (e: StorageEvent) => {
+        const onStorage = (e: StorageEvent): void => {
             if (e.storageArea === localStorage && e.key === key) {
                 setValue(e.newValue === null ? defaultValue : JSON.parse(e.newValue))
             }
@@ -33,13 +33,16 @@ export default function useLocalStorageState<T>(
 
         window.addEventListener('storage', onStorage)
 
-        return () => window.removeEventListener('storage', onStorage)
+        return (): void => window.removeEventListener('storage', onStorage)
     })
 
     return [value, updateValue]
 }
 
-export function createLocalStorageStateHook<T>(name: string, defaultValue?: T) {
+export function createLocalStorageStateHook<T>(
+    name: string,
+    defaultValue?: T,
+): () => [T, Dispatch<SetStateAction<T>>] {
     const updates: ((newValue: T | ((value: T) => T)) => void)[] = []
     return function useLocalStorageStateHook(): [T, Dispatch<SetStateAction<T>>] {
         const [value, setValue] = useLocalStorageState<T>(name, defaultValue)
