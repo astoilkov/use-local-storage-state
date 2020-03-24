@@ -1,5 +1,7 @@
 import { useState, useLayoutEffect, useCallback, Dispatch, SetStateAction } from 'react'
 
+const initializedStorageKeys = new Set<string>()
+
 export default function useLocalStorageState<T>(
     key: string,
     defaultValue?: T,
@@ -21,6 +23,21 @@ export default function useLocalStorageState<T>(
         [key],
     )
 
+    useLayoutEffect(() => {
+        if (initializedStorageKeys.has(key)) {
+            throw new Error(
+                `Multiple instances of useLocalStorageState() initialized with the same key. ` +
+                    `Use createLocalStorageStateHook() instead. ` +
+                    `Look at the example here: ` +
+                    `https://github.com/astoilkov/use-local-storage-state#create-local-storage-state-hook-example`,
+            )
+        } else {
+            initializedStorageKeys.add(key)
+        }
+
+        return () => void initializedStorageKeys.delete(key)
+    }, [])
+
     /**
      * Checks for changes across tabs and iframe's.
      */
@@ -40,16 +57,20 @@ export default function useLocalStorageState<T>(
 }
 
 export function createLocalStorageStateHook<T>(
-    name: string,
+    key: string,
     defaultValue?: T,
 ): () => [T, Dispatch<SetStateAction<T>>] {
     const updates: ((newValue: T | ((value: T) => T)) => void)[] = []
     return function useLocalStorageStateHook(): [T, Dispatch<SetStateAction<T>>] {
-        const [value, setValue] = useLocalStorageState<T>(name, defaultValue)
+        const [value, setValue] = useLocalStorageState<T>(key, defaultValue)
         const updateValue = useCallback((newValue: T | ((value: T) => T)) => {
             for (const update of updates) {
                 update(newValue)
             }
+        }, [])
+
+        useLayoutEffect(() => {
+            initializedStorageKeys.delete(key)
         }, [])
 
         useLayoutEffect(() => {

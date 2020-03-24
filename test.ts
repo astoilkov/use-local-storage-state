@@ -58,12 +58,7 @@ describe('useLocalStorageState()', () => {
     })
 
     it('storage event updates state', () => {
-        const { result: resultA } = renderHook(() =>
-            useLocalStorageState('todos', ['first', 'second']),
-        )
-        const { result: resultB } = renderHook(() =>
-            useLocalStorageState('todos', ['first', 'second']),
-        )
+        const { result } = renderHook(() => useLocalStorageState('todos', ['first', 'second']))
 
         /**
          * #WET 2020-03-19T8:55:25+02:00
@@ -79,11 +74,8 @@ describe('useLocalStorageState()', () => {
             )
         })
 
-        const [todosA] = resultA.current
+        const [todosA] = result.current
         expect(todosA).toEqual(['third', 'forth'])
-
-        const [todosB] = resultB.current
-        expect(todosB).toEqual(['third', 'forth'])
     })
 
     it('storage event updates state to default value', () => {
@@ -143,6 +135,29 @@ describe('useLocalStorageState()', () => {
 
         const [todos] = result.current
         expect(todos).toEqual(['third', 'forth'])
+    })
+
+    it('throws an error on two instances with the same key', () => {
+        const consoleError = console.error
+        console.error = () => {}
+
+        expect(() => {
+            renderHook(() => {
+                useLocalStorageState('todos', ['first', 'second'])
+                useLocalStorageState('todos', ['second', 'third'])
+            })
+        }).toThrow()
+
+        console.error = consoleError
+    })
+
+    it('does not throw an error on two instances with different keys', () => {
+        expect(() => {
+            renderHook(() => {
+                useLocalStorageState('todosA', ['first', 'second'])
+                useLocalStorageState('todosB', ['second', 'third'])
+            })
+        }).not.toThrow()
     })
 })
 
