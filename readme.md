@@ -59,6 +59,7 @@ export default function Todos() {
 ```
 
 <div id="create-local-storage-state-hook-example"></div>
+
 Using the same hook in multiple places:
 ```typescript
 import { createLocalStorageStateHook } from 'use-local-storage-state'
