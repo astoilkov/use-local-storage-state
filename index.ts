@@ -1,4 +1,6 @@
-import { useState, useLayoutEffect, useCallback, Dispatch, SetStateAction } from 'react'
+import { useState, useEffect, useCallback, Dispatch, SetStateAction } from 'react'
+
+const hasLocalStorage = typeof localStorage !== 'undefined'
 
 const initializedStorageKeys = new Set<string>()
 
@@ -7,23 +9,25 @@ export default function useLocalStorageState<T>(
     defaultValue?: T,
 ): [T, Dispatch<SetStateAction<T>>] {
     const [value, setValue] = useState<T>(() => {
-        const storageValue = localStorage.getItem(key)
+        const storageValue = hasLocalStorage ? localStorage.getItem(key) : null
         return storageValue === null ? defaultValue : JSON.parse(storageValue)
     })
     const updateValue = useCallback(
         (newValue: T | ((value: T) => T)) => {
-            setValue(value => {
+            setValue((value) => {
                 const isCallable = (value: any): value is (value: T) => T =>
                     typeof value === 'function'
                 const result = isCallable(newValue) ? newValue(value) : newValue
-                localStorage.setItem(key, JSON.stringify(result))
+                if (hasLocalStorage) {
+                    localStorage.setItem(key, JSON.stringify(result))
+                }
                 return result
             })
         },
         [key],
     )
 
-    useLayoutEffect(() => {
+    useEffect(() => {
         if (initializedStorageKeys.has(key)) {
             throw new Error(
                 `Multiple instances of useLocalStorageState() initialized with the same key. ` +
@@ -41,7 +45,7 @@ export default function useLocalStorageState<T>(
     /**
      * Checks for changes across tabs and iframe's.
      */
-    useLayoutEffect(() => {
+    useEffect(() => {
         const onStorage = (e: StorageEvent): void => {
             if (e.storageArea === localStorage && e.key === key) {
                 setValue(e.newValue === null ? defaultValue : JSON.parse(e.newValue))
@@ -69,11 +73,11 @@ export function createLocalStorageStateHook<T>(
             }
         }, [])
 
-        useLayoutEffect(() => {
+        useEffect(() => {
             initializedStorageKeys.delete(key)
         }, [])
 
-        useLayoutEffect(() => {
+        useEffect(() => {
             updates.push(setValue)
             return () => void updates.splice(updates.indexOf(setValue), 1)
         }, [setValue])
