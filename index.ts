@@ -30,6 +30,8 @@ const storage = {
  */
 const initializedStorageKeys = new Set<string>()
 
+type SetStateParameter<T> = T | undefined | ((value: T | undefined) => T | undefined)
+
 export default function useLocalStorageState<T = undefined>(
     key: string,
 ): [T | undefined, Dispatch<SetStateAction<T | undefined>>]
@@ -43,7 +45,7 @@ export default function useLocalStorageState<T = undefined>(
 ): [T | undefined, Dispatch<SetStateAction<T | undefined>>] {
     const [value, setValue] = useState<T | undefined>(() => storage.get(key, defaultValue))
     const updateValue = useCallback(
-        (newValue: T | undefined | ((value: T | undefined) => T | undefined)) => {
+        (newValue: SetStateParameter<T>) => {
             setValue((value) => {
                 const isCallable = (
                     value: unknown,
@@ -100,22 +102,17 @@ export function createLocalStorageStateHook<T>(
     key: string,
     defaultValue?: T,
 ): () => [T | undefined, Dispatch<SetStateAction<T | undefined>>] {
-    const updates: ((
-        newValue: T | undefined | ((value: T | undefined) => T | undefined),
-    ) => void)[] = []
+    const updates: ((newValue: SetStateParameter<T>) => void)[] = []
     return function useLocalStorageStateHook(): [
         T | undefined,
         Dispatch<SetStateAction<T | undefined>>,
     ] {
         const [value, setValue] = useLocalStorageState<T | undefined>(key, defaultValue)
-        const updateValue = useCallback(
-            (newValue: T | undefined | ((value: T | undefined) => T | undefined)) => {
-                for (const update of updates) {
-                    update(newValue)
-                }
-            },
-            [],
-        )
+        const updateValue = useCallback((newValue: SetStateParameter<T>) => {
+            for (const update of updates) {
+                update(newValue)
+            }
+        }, [])
 
         useEffect(() => {
             initializedStorageKeys.delete(key)
