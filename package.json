@@ -29,7 +29,7 @@
         "build": "tsc",
         "test": "yarn run build && jest --coverage --coverageReporters=text",
         "release": "yarn run build && np",
-        "prettier": "prettier --write --config .prettierrc.toml '{**/*.ts}'"
+        "prettier": "prettier --write --config .prettierrc.yaml *.ts"
     },
     "engines": {
         "node": ">=10"
