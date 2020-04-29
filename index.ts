@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, Dispatch, SetStateAction } from 'react'
 
 /**
- * Abstraction for localStorage that has an in-memory fallback when localStorage throws an error.
+ * Abstraction for localStorage that uses an in-memory fallback when localStorage throws an error.
  * Reasons for throwing an error:
  * - maximum quota is exceeded
  * - under Mobile Safari (since iOS 5) when the user enters private mode `localStorage.setItem()`
