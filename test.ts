@@ -159,6 +159,57 @@ describe('useLocalStorageState()', () => {
             })
         }).not.toThrow()
     })
+
+    it('does not throw an error when setting value to undefined', () => {
+        const useUndefined = createLocalStorageStateHook('undefined')
+
+        const { result: resultA } = renderHook(() => useUndefined())
+
+        act(() => {
+            const setValue = resultA.current[1]
+            setValue(undefined)
+        })
+
+        const { result: resultB } = renderHook(() => useUndefined())
+
+        const [value] = resultB.current
+        expect(value).toBe(undefined)
+    })
+
+    it('handles errors thrown by localStorage', () => {
+        const setItem = Storage.prototype.setItem
+        Storage.prototype.setItem = () => {
+            throw new Error()
+        }
+
+        const { result } = renderHook(() => useLocalStorageState('set-item-will-throw', ''))
+        act(() => {
+            const setValue = result.current[1]
+            setValue('will-throw')
+        })
+        expect(result.current[0]).toBe('will-throw')
+
+        Storage.prototype.setItem = setItem
+    })
+
+    it('can retrieve data from in memory storage', () => {
+        const setItem = Storage.prototype.setItem
+        Storage.prototype.setItem = () => {
+            throw new Error()
+        }
+
+        const useTodos = createLocalStorageStateHook('todos', ['first'])
+        const { result: resultA } = renderHook(() => useTodos())
+        act(() => {
+            const setValue = resultA.current[1]
+            setValue(['first', 'second'])
+        })
+        const { result: resultB } = renderHook(() => useTodos())
+        const [value] = resultB.current
+        expect(value).toEqual(['first', 'second'])
+
+        Storage.prototype.setItem = setItem
+    })
 })
 
 describe('createLocalStorageStateHook()', () => {
