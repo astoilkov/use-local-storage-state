@@ -1,5 +1,14 @@
 import { useState, useEffect, useCallback, Dispatch, SetStateAction } from 'react'
 
+/**
+ * Abstraction for localStorage that has an in-memory fallback when localStorage throws an error.
+ * An error can happen because:
+ * - maximum quota is exceeded
+ * - under Mobile Safari (since iOS 5) when the user enters private mode `localStorage.setItem()`
+ *   will throw
+ * - trying to access localStorage object when cookies are disabled in Safari throws
+ *   "SecurityError: The operation is insecure."
+ */
 const data: Record<string, unknown> = {}
 const storage = {
     get<T>(key: string, defaultValue: T): T {
