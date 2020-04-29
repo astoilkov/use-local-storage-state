@@ -38,7 +38,7 @@ describe('useLocalStorageState()', () => {
         act(() => {
             const setTodos = result.current[1]
 
-            setTodos(value => [...value, 'third', 'forth'])
+            setTodos((value) => [...value, 'third', 'forth'])
         })
 
         const [todos] = result.current
