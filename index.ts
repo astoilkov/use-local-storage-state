@@ -72,6 +72,9 @@ export default function useLocalStorageState<T = undefined>(
         [key],
     )
 
+    /**
+     * Detects incorrect usage of the library and throws an error with a suggestion how to fix it.
+     */
     useEffect(() => {
         if (initializedStorageKeys.has(key)) {
             throw new Error(
