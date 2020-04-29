@@ -33,7 +33,7 @@ const storage = {
 }
 
 /**
- * Used to track usages of `useLocalStorageState()` with identical `key` values. If we find
+ * Used to track usages of `useLocalStorageState()` with identical `key` values. If we encounter
  * duplicates we throw an error to the user telling them to use `createLocalStorageStateHook`
  * instead.
  */
