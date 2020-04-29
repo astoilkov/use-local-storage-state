@@ -92,7 +92,8 @@ Look at **Usage** section for an example.
 
 Type: `string`
 
-The key that will be used when calling `localStorage.setItem(key)`and `localStorage.getItem(key)`.\
+The key used when calling `localStorage.setItem(key)`and `localStorage.getItem(key)`.
+
 ⚠️ Be careful with name conflicts as it is possible to access a property which is already in `localStorage` that was created from another place in the codebase or in an old version of the application.
 
 #### defaultValue
@@ -111,7 +112,8 @@ Look at **Usage** section for an example.
 
 Type: `string`
 
-The key that will be used when calling `localStorage.setItem(key)`and `localStorage.getItem(key)`.\
+The key used when calling `localStorage.setItem(key)`and `localStorage.getItem(key)`.
+
 ⚠️ Be careful with name conflicts as it is possible to access a property which is already in `localStorage` that was created from another place in the codebase or in an old version of the application.
 
 #### defaultValue
