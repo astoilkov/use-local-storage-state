@@ -45,6 +45,15 @@ describe('useLocalStorageState()', () => {
         expect(todos).toEqual(['first', 'second', 'third', 'forth'])
     })
 
+    it('accepts a callback as a default value', () => {
+        const { result } = renderHook(() =>
+            useLocalStorageState('todos', () => ['first', 'second']),
+        )
+
+        const [todos] = result.current
+        expect(todos).toEqual(['first', 'second'])
+    })
+
     it('updating writes into localStorage', () => {
         const { result } = renderHook(() => useLocalStorageState('todos', ['first', 'second']))
 

@@ -46,13 +46,18 @@ export default function useLocalStorageState<T = undefined>(
 ): [T | undefined, Dispatch<SetStateAction<T | undefined>>]
 export default function useLocalStorageState<T>(
     key: string,
-    defaultValue: T,
+    defaultValue: T | (() => T),
 ): [T, Dispatch<SetStateAction<T>>]
 export default function useLocalStorageState<T = undefined>(
     key: string,
-    defaultValue?: T,
+    defaultValue?: T | (() => T),
 ): [T | undefined, Dispatch<SetStateAction<T | undefined>>] {
-    const [value, setValue] = useState<T | undefined>(() => storage.get(key, defaultValue))
+    const [value, setValue] = useState(() => {
+        const isCallable = (value: unknown): value is () => T => typeof value === 'function'
+        return isCallable(defaultValue)
+            ? storage.get(key, defaultValue())
+            : storage.get(key, defaultValue)
+    })
     const updateValue = useCallback(
         (newValue: SetStateParameter<T>) => {
             setValue((value) => {
@@ -105,11 +110,11 @@ export function createLocalStorageStateHook<T = undefined>(
 ): () => [T | undefined, Dispatch<SetStateAction<T | undefined>>]
 export function createLocalStorageStateHook<T>(
     key: string,
-    defaultValue: T,
+    defaultValue: T | (() => T),
 ): () => [T, Dispatch<SetStateAction<T>>]
 export function createLocalStorageStateHook<T>(
     key: string,
-    defaultValue?: T,
+    defaultValue?: T | (() => T),
 ): () => [T | undefined, Dispatch<SetStateAction<T | undefined>>] {
     const updates: ((newValue: SetStateParameter<T>) => void)[] = []
     return function useLocalStorageStateHook(): [
