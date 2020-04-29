@@ -22,6 +22,12 @@ const storage = {
         }
     },
 }
+
+/**
+ * Used to track usages of `useLocalStorageState()` with identical `key` values. If we find
+ * duplicates we throw an error to the user telling them to use `createLocalStorageStateHook`
+ * instead.
+ */
 const initializedStorageKeys = new Set<string>()
 
 export default function useLocalStorageState<T = undefined>(
