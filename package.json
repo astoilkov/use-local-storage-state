@@ -47,6 +47,7 @@
         "@types/react": "^16.9.23",
         "jest": "^25.1.0",
         "np": "^5.2.1",
+        "prettier": "^2.0.5",
         "react": "^16.13.0",
         "react-test-renderer": "^16.13.0",
         "ts-jest": "^25.2.1",
