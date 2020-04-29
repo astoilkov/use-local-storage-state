@@ -83,7 +83,7 @@ export default function useLocalStorageState<T = undefined>(
     }, [])
 
     /**
-     * Checks for changes across tabs and iframe's.
+     * Syncs changes across tabs and iframe's.
      */
     useEffect(() => {
         const onStorage = (e: StorageEvent): void => {
