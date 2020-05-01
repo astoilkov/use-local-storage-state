@@ -103,7 +103,7 @@ export default function useLocalStorageState<T = undefined>(
         window.addEventListener('storage', onStorage)
 
         return (): void => window.removeEventListener('storage', onStorage)
-    })
+    }, [])
 
     return [value, updateValue]
 }
