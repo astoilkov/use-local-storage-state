@@ -1,6 +1,6 @@
 # `use-local-storage-state`
 
-> React hook that persist data in local storage while having the same API as `useState()`
+> React hook that persist data in local storage
 
 [![Build Status](https://travis-ci.org/astoilkov/use-local-storage-state.svg?branch=master)](https://travis-ci.org/astoilkov/use-local-storage-state)
 [![Test Coverage](https://api.codeclimate.com/v1/badges/38dfdf48f7f326ccfa8e/test_coverage)](https://codeclimate.com/github/astoilkov/use-local-storage-state/test_coverage)
@@ -15,13 +15,13 @@ $ npm install use-local-storage-state
 
 ## Why?
 
-Why this module even exists? There are more than a few libraries to achieve almost the same thing. I created this module in frustration with the big number of non-optimal solutions. Below are the things that this module does right. All bullets are things that some other library isn't doing. Put all together there isn't a single library that solves all these problems:
+Why this module even exists? There are more than a few libraries to achieve almost the same thing. I created this module in frustration with the big number of non-optimal solutions.
 
-- Written in TypeScript. `useLocalStorageState()` returns absolutely the same type as React `useState()`.
 - Uses `JSON.parse()` and `JSON.stringify()` to support non string values.
+- SSR. Supports server-side rendering.
+- Well tested. 100% coverage.
+- Handles edge cases. [Example](#is-persistent-example)
 - Subscribes to the Window [`storage`](https://developer.mozilla.org/en-US/docs/Web/API/Window/storage_event) event which tracks changes across browser tabs and iframe's.
-- Supports creating a global hook that can be used in multiple places. See the last example in the **Usage** section.
-- Well tested. 100% coverage. Used in a production application which is based on [Caret](https://caret.io/) and is in private beta.
 
 ## Usage
 
@@ -34,7 +34,8 @@ const [todos, setTodos] = useLocalStorageState('todos', [
 ])
 ```
 
-Complete todo list example:
+### Todo list
+
 ```typescript
 import React, { useState } from 'react'
 import useLocalStorageState from 'use-local-storage-state'
@@ -60,7 +61,8 @@ export default function Todos() {
 
 <div id="create-local-storage-state-hook-example"></div>
 
-Using the same hook in multiple places:
+### Using the same hook in multiple places
+
 ```typescript
 import { createLocalStorageStateHook } from 'use-local-storage-state'
 
@@ -81,12 +83,34 @@ function Popup() {
 }
 ```
 
+<div id="is-persistent-example"></div>
+
+### Handling edge cases with `isPersistent`
+
+There are a few cases when `localStorage` [isn't available](https://github.com/astoilkov/use-local-storage-state/blob/7db8872397eae8b9d2421f068283286847f326ac/index.ts#L3-L11). The `isPersistent` property tells you if the data is persisted in local storage or in-memory. Useful when you want to notify the user that their data won't be persisted.
+
+```typescript
+import React, { useState } from 'react'
+import useLocalStorageState from 'use-local-storage-state'
+
+export default function Todos() {
+    const [todos, setTodos, isPersistent] = useLocalStorageState('todos', ['buy milk'])
+
+    return (
+        <>
+            {todos.map(todo => (<div>{todo}</div>))}
+            {!isPersistent && <span>Changes aren't currently persisted.</span>}
+        </>
+    )
+}
+
+```
+
 ## API
 
 ### useLocalStorageState(key, defaultValue?)
 
-Returns the same value that React `useState()` returns.\
-Look at **Usage** section for an example.
+Returns `[value, setValue, isPersistent]`. The first two are the same as `useState()`. The third(`isPersistent`) determines if the data is persisted in `localStorage` or in-memory – [example](#is-persistent-example). 
 
 #### key
 
@@ -105,8 +129,7 @@ The initial value of the data. The same as `useState(defaultValue)` property.
 
 ### createLocalStorageStateHook(key, defaultValue?)
 
-Returns a hook to be used in multiple places.\
-Look at **Usage** section for an example.
+Returns a hook to be used in multiple places. [Example](#create-local-storage-state-hook-example)
 
 #### key
 
