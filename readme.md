@@ -13,8 +13,9 @@
 $ npm install use-local-storage-state
 ```
 
-## Why?
+## Why
 
+There are similar hooks. These are the reasons why this one is better:
 - Uses `JSON.parse()` and `JSON.stringify()` to support non string values.
 - SSR. Supports server-side rendering.
 - Well tested. 100% coverage.
