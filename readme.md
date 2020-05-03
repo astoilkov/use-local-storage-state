@@ -15,8 +15,6 @@ $ npm install use-local-storage-state
 
 ## Why?
 
-Why this module even exists? There are more than a few libraries to achieve almost the same thing. I created this module in frustration with the big number of non-optimal solutions.
-
 - Uses `JSON.parse()` and `JSON.stringify()` to support non string values.
 - SSR. Supports server-side rendering.
 - Well tested. 100% coverage.
