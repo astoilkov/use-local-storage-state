@@ -43,30 +43,47 @@ type SetStateParameter<T> = T | undefined | ((value: T | undefined) => T | undef
 
 export default function useLocalStorageState<T = undefined>(
     key: string,
-): [T | undefined, Dispatch<SetStateAction<T | undefined>>]
+): [T | undefined, Dispatch<SetStateAction<T | undefined>>, boolean]
 export default function useLocalStorageState<T>(
     key: string,
     defaultValue: T | (() => T),
-): [T, Dispatch<SetStateAction<T>>]
+): [T, Dispatch<SetStateAction<T>>, boolean]
 export default function useLocalStorageState<T = undefined>(
     key: string,
     defaultValue?: T | (() => T),
-): [T | undefined, Dispatch<SetStateAction<T | undefined>>] {
-    const [value, setValue] = useState(() => {
+): [T | undefined, Dispatch<SetStateAction<T | undefined>>, boolean] {
+    const [state, setState] = useState(() => {
         const isCallable = (value: unknown): value is () => T => typeof value === 'function'
-        return isCallable(defaultValue)
-            ? storage.get(key, defaultValue())
-            : storage.get(key, defaultValue)
+        return {
+            isPersistent: (() => {
+                if (typeof window === 'undefined') {
+                    return true
+                }
+                try {
+                    localStorage.setItem('--use-local-storage-state--', 'dummy')
+                    localStorage.removeItem('--use-local-storage-state--')
+                    return true
+                } catch {
+                    return false
+                }
+            })(),
+            value: isCallable(defaultValue)
+                ? storage.get(key, defaultValue())
+                : storage.get(key, defaultValue),
+        }
     })
     const updateValue = useCallback(
         (newValue: SetStateParameter<T>) => {
-            setValue((value) => {
+            setState((state) => {
                 const isCallable = (
                     value: unknown,
                 ): value is (value: T | undefined) => T | undefined => typeof value === 'function'
-                const result = isCallable(newValue) ? newValue(value) : newValue
-                storage.set(key, result)
-                return result
+                const value = isCallable(newValue) ? newValue(state.value) : newValue
+
+                return {
+                    value: value,
+                    isPersistent: storage.set(key, value),
+                }
             })
         },
         [key],
@@ -96,7 +113,10 @@ export default function useLocalStorageState<T = undefined>(
     useEffect(() => {
         const onStorage = (e: StorageEvent): void => {
             if (e.storageArea === localStorage && e.key === key) {
-                setValue(e.newValue === null ? defaultValue : JSON.parse(e.newValue))
+                setState({
+                    isPersistent: true,
+                    value: e.newValue === null ? defaultValue : JSON.parse(e.newValue),
+                })
             }
         }
 
@@ -105,26 +125,30 @@ export default function useLocalStorageState<T = undefined>(
         return (): void => window.removeEventListener('storage', onStorage)
     }, [])
 
-    return [value, updateValue]
+    return [state.value, updateValue, state.isPersistent]
 }
 
 export function createLocalStorageStateHook<T = undefined>(
     key: string,
-): () => [T | undefined, Dispatch<SetStateAction<T | undefined>>]
+): () => [T | undefined, Dispatch<SetStateAction<T | undefined>>, boolean]
 export function createLocalStorageStateHook<T>(
     key: string,
     defaultValue: T | (() => T),
-): () => [T, Dispatch<SetStateAction<T>>]
+): () => [T, Dispatch<SetStateAction<T>>, boolean]
 export function createLocalStorageStateHook<T>(
     key: string,
     defaultValue?: T | (() => T),
-): () => [T | undefined, Dispatch<SetStateAction<T | undefined>>] {
+): () => [T | undefined, Dispatch<SetStateAction<T | undefined>>, boolean] {
     const updates: ((newValue: SetStateParameter<T>) => void)[] = []
     return function useLocalStorageStateHook(): [
         T | undefined,
         Dispatch<SetStateAction<T | undefined>>,
+        boolean,
     ] {
-        const [value, setValue] = useLocalStorageState<T | undefined>(key, defaultValue)
+        const [value, setValue, isPersistent] = useLocalStorageState<T | undefined>(
+            key,
+            defaultValue,
+        )
         const updateValue = useCallback((newValue: SetStateParameter<T>) => {
             for (const update of updates) {
                 update(newValue)
@@ -140,6 +164,6 @@ export function createLocalStorageStateHook<T>(
             return () => void updates.splice(updates.indexOf(setValue), 1)
         }, [setValue])
 
-        return [value, updateValue]
+        return [value, updateValue, isPersistent]
     }
 }

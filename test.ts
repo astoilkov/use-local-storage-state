@@ -1,5 +1,7 @@
+import { renderToString } from 'react-dom/server'
 import { renderHook, act } from '@testing-library/react-hooks'
 import useLocalStorageState, { createLocalStorageStateHook } from '.'
+import { createElement } from 'react'
 
 beforeEach(() => {
     localStorage.clear()
@@ -218,6 +220,62 @@ describe('useLocalStorageState()', () => {
         expect(value).toEqual(['first', 'second'])
 
         Storage.prototype.setItem = setItem
+    })
+
+    it('isPersistent returns true by default', () => {
+        const { result } = renderHook(() => useLocalStorageState('todos', ['first', 'second']))
+
+        const isPersistent = result.current[2]
+        expect(isPersistent).toBe(true)
+    })
+
+    it('isPersistent returns false when localStorage.setItem() throws an error', () => {
+        const setItem = Storage.prototype.setItem
+        Storage.prototype.setItem = () => {
+            throw new Error()
+        }
+
+        const { result } = renderHook(() => useLocalStorageState('todos', ['first', 'second']))
+        const isPersistent = result.current[2]
+        expect(isPersistent).toBe(false)
+
+        Storage.prototype.setItem = setItem
+    })
+
+    it('isPersistent becomes false when localStorage.setItem() throws an error on consecutive updates', () => {
+        const { result } = renderHook(() => useLocalStorageState('todos', ['first', 'second']))
+
+        const setItem = Storage.prototype.setItem
+        Storage.prototype.setItem = () => {
+            throw new Error()
+        }
+
+        act(() => {
+            const setTodos = result.current[1]
+            setTodos(['second', 'third'])
+        })
+        const todos = result.current[0]
+        const isPersistent = result.current[2]
+        expect(todos).toEqual(['second', 'third'])
+        expect(isPersistent).toBe(false)
+
+        Storage.prototype.setItem = setItem
+    })
+
+    it('isPersistent returns true on the server', () => {
+        const windowSpy = jest.spyOn(global, 'window' as any, 'get')
+        windowSpy.mockImplementation(() => {
+            return undefined
+        })
+
+        function Component() {
+            const [,, isPersistent] = useLocalStorageState('todos', ['first', 'second'])
+            expect(isPersistent).toBe(true)
+            return null
+        }
+        renderToString(createElement(Component))
+
+        windowSpy.mockRestore()
     })
 })
 
