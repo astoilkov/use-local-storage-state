@@ -27,7 +27,7 @@
     "sideEffects": false,
     "scripts": {
         "build": "tsc",
-        "test": "yarn run build && [[ $CI == 'true' ]] && jest --coverage || jest --coverage --coverageReporters=text",
+        "test": "yarn run build && [[ -z $CI ]] && jest --coverage --coverageReporters=text || jest --coverage",
         "release": "yarn run build && np",
         "prettier": "prettier --write --config .prettierrc.yaml *.ts"
     },
