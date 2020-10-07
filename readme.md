@@ -20,7 +20,7 @@ Few other libraries also try to abstract the usage of localStorage into a hook. 
 - Uses `JSON.parse()` and `JSON.stringify()` to support non string values.
 - SSR. Supports server-side rendering.
 - Well tested. 100% coverage.
-- Handles edge cases. [Example](#is-persistent-example)
+- Handles edge cases – [example](#is-persistent-example).
 - Subscribes to the Window [`storage`](https://developer.mozilla.org/en-US/docs/Web/API/Window/storage_event) event which tracks changes across browser tabs and iframe's.
 
 ## Usage
@@ -145,7 +145,7 @@ The initial value of the data. The same as `useState(defaultValue)` property.
 
 ### createLocalStorageStateHook(key, defaultValue?)
 
-Returns a hook to be used in multiple places. [Example](#create-local-storage-state-hook-example)
+Returns a hook to be used in multiple places – [example](#create-local-storage-state-hook-example).
 
 #### key
 
