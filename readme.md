@@ -107,6 +107,21 @@ export default function Todos() {
 
 ```
 
+### Reseting to defaults
+
+The `setTodos.reset()` method will reset the value to its default and will remove the key from the `localStorage`. It returns to the same state as when the hook was initially created.
+
+```tsx
+import useLocalStorageState from 'use-local-storage-state'
+
+const [todos, setTodos] = useLocalStorageState('todos', [
+    'buy milk',
+    'do 50 push-ups'
+])
+
+setTodos.reset()
+```
+
 ## API
 
 ### useLocalStorageState(key, defaultValue?)
