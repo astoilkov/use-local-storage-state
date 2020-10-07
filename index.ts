@@ -1,4 +1,16 @@
-import { useState, useEffect, useCallback, Dispatch, SetStateAction } from 'react'
+import { useState, useEffect, useMemo } from 'react'
+
+/**
+ * A wrapper for `JSON.parse()` which supports the return value of `JSON.stringify(undefined)`
+ * which returns the string `"undefined"` and this method returns the value `undefined`.
+ */
+function parseJSON(value: string | null) {
+    return value === 'undefined'
+        ? undefined
+        : // JSON.parse() doesn't accept non-string values, this is why we pass empty
+          // string which will throw an error which can be handled
+          JSON.parse(value ?? '')
+}
 
 /**
  * Abstraction for localStorage that uses an in-memory fallback when localStorage throws an error.
@@ -13,7 +25,7 @@ const data: Record<string, unknown> = {}
 const storage = {
     get<T>(key: string, defaultValue: T): T {
         try {
-            return data[key] ?? JSON.parse(localStorage.getItem(key) ?? '')
+            return data[key] ?? parseJSON(localStorage.getItem(key))
         } catch {
             return defaultValue
         }
@@ -30,6 +42,13 @@ const storage = {
             return false
         }
     },
+    remove(key: string): void {
+        data[key] = undefined
+
+        try {
+            localStorage.removeItem(key)
+        } catch {}
+    },
 }
 
 /**
@@ -40,18 +59,22 @@ const storage = {
 const initializedStorageKeys = new Set<string>()
 
 type SetStateParameter<T> = T | undefined | ((value: T | undefined) => T | undefined)
+type UpdateState<T> = {
+    (newValue: T | ((value: T) => T)): void
+    reset: () => void
+}
 
 export default function useLocalStorageState<T = undefined>(
     key: string,
-): [T | undefined, Dispatch<SetStateAction<T | undefined>>, boolean]
+): [T | undefined, UpdateState<T | undefined>, boolean]
 export default function useLocalStorageState<T>(
     key: string,
     defaultValue: T | (() => T),
-): [T, Dispatch<SetStateAction<T>>, boolean]
+): [T, UpdateState<T>, boolean]
 export default function useLocalStorageState<T = undefined>(
     key: string,
     defaultValue?: T | (() => T),
-): [T | undefined, Dispatch<SetStateAction<T | undefined>>, boolean] {
+): [T | undefined, UpdateState<T | undefined>, boolean] {
     const [state, setState] = useState(() => {
         const isCallable = (value: unknown): value is () => T => typeof value === 'function'
         return {
@@ -77,8 +100,8 @@ export default function useLocalStorageState<T = undefined>(
                 : storage.get(key, defaultValue),
         }
     })
-    const updateValue = useCallback(
-        (newValue: SetStateParameter<T>) => {
+    const updateValue = useMemo(() => {
+        const fn = (newValue: SetStateParameter<T>) => {
             setState((state) => {
                 const isCallable = (
                     value: unknown,
@@ -90,9 +113,20 @@ export default function useLocalStorageState<T = undefined>(
                     isPersistent: storage.set(key, value),
                 }
             })
-        },
-        [key],
-    )
+        }
+        fn.reset = () => {
+            const isCallable = (value: unknown): value is (value: T | undefined) => T | undefined =>
+                typeof value === 'function'
+            const value = isCallable(defaultValue) ? defaultValue() : defaultValue
+            storage.remove(key)
+            setState({
+                value: value,
+                isPersistent: state.isPersistent,
+            })
+        }
+
+        return fn
+    }, [key])
 
     /**
      * Detects incorrect usage of the library and throws an error with a suggestion how to fix it.
@@ -120,7 +154,7 @@ export default function useLocalStorageState<T = undefined>(
             if (e.storageArea === localStorage && e.key === key) {
                 setState({
                     isPersistent: true,
-                    value: e.newValue === null ? defaultValue : JSON.parse(e.newValue),
+                    value: e.newValue === null ? defaultValue : parseJSON(e.newValue),
                 })
             }
         }
@@ -135,29 +169,37 @@ export default function useLocalStorageState<T = undefined>(
 
 export function createLocalStorageStateHook<T = undefined>(
     key: string,
-): () => [T | undefined, Dispatch<SetStateAction<T | undefined>>, boolean]
+): () => [T | undefined, UpdateState<T | undefined>, boolean]
 export function createLocalStorageStateHook<T>(
     key: string,
     defaultValue: T | (() => T),
-): () => [T, Dispatch<SetStateAction<T>>, boolean]
+): () => [T, UpdateState<T>, boolean]
 export function createLocalStorageStateHook<T>(
     key: string,
     defaultValue?: T | (() => T),
-): () => [T | undefined, Dispatch<SetStateAction<T | undefined>>, boolean] {
-    const updates: ((newValue: SetStateParameter<T>) => void)[] = []
+): () => [T | undefined, UpdateState<T | undefined>, boolean] {
+    const updates: UpdateState<T | undefined>[] = []
     return function useLocalStorageStateHook(): [
         T | undefined,
-        Dispatch<SetStateAction<T | undefined>>,
+        UpdateState<T | undefined>,
         boolean,
     ] {
         const [value, setValue, isPersistent] = useLocalStorageState<T | undefined>(
             key,
             defaultValue,
         )
-        const updateValue = useCallback((newValue: SetStateParameter<T>) => {
-            for (const update of updates) {
-                update(newValue)
+        const updateValue = useMemo(() => {
+            const fn = (newValue: SetStateParameter<T>) => {
+                for (const update of updates) {
+                    update(newValue)
+                }
             }
+            fn.reset = () => {
+                for (const update of updates) {
+                    update.reset()
+                }
+            }
+            return fn
         }, [])
 
         useEffect(() => {

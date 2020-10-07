@@ -1,7 +1,7 @@
+import { createElement } from 'react'
 import { renderToString } from 'react-dom/server'
 import { renderHook, act } from '@testing-library/react-hooks'
 import useLocalStorageState, { createLocalStorageStateHook } from '.'
-import { createElement } from 'react'
 
 beforeEach(() => {
     localStorage.clear()
@@ -180,22 +180,6 @@ describe('useLocalStorageState()', () => {
         }).not.toThrow()
     })
 
-    it('does not throw an error when setting value to undefined', () => {
-        const useUndefined = createLocalStorageStateHook('undefined')
-
-        const { result: resultA } = renderHook(() => useUndefined())
-
-        act(() => {
-            const setValue = resultA.current[1]
-            setValue(undefined)
-        })
-
-        const { result: resultB } = renderHook(() => useUndefined())
-
-        const [value] = resultB.current
-        expect(value).toBe(undefined)
-    })
-
     it('handles errors thrown by localStorage', () => {
         const setItem = Storage.prototype.setItem
         Storage.prototype.setItem = () => {
@@ -286,6 +270,92 @@ describe('useLocalStorageState()', () => {
 
         windowSpy.mockRestore()
     })
+
+    it('can set value to `undefined`', () => {
+        const { result: resultA, unmount } = renderHook(() =>
+            useLocalStorageState<string[] | undefined>('todos', ['first', 'second'])
+        )
+        act(() => {
+            const [,setValue] = resultA.current
+            setValue(undefined)
+        })
+        unmount()
+
+        const { result: resultB } = renderHook(() =>
+            useLocalStorageState<string[] | undefined>('todos', ['first', 'second'])
+        )
+        const [value] = resultB.current
+        expect(value).toBe(undefined)
+    })
+
+    it('can set value to `null`', () => {
+        const { result: resultA, unmount } = renderHook(() =>
+            useLocalStorageState<string[] | null>('todos', ['first', 'second'])
+        )
+        act(() => {
+            const [,setValue] = resultA.current
+            setValue(null)
+        })
+        unmount()
+
+        const { result: resultB } = renderHook(() =>
+            useLocalStorageState<string[] | null>('todos', ['first', 'second'])
+        )
+        const [value] = resultB.current
+        expect(value).toBe(null)
+    })
+
+    it('can reset value to default', () => {
+        const { result: resultA, unmount: unmountA } = renderHook(() =>
+            useLocalStorageState<string[]>('todos', ['first', 'second'])
+        )
+        act(() => {
+            const [,setValue] = resultA.current
+            setValue(['third', 'forth'])
+        })
+        unmountA()
+
+        const { result: resultB, unmount: unmountB } = renderHook(() =>
+            useLocalStorageState<string[]>('todos', ['first', 'second'])
+        )
+        act(() => {
+            const [,setValue] = resultB.current
+            setValue.reset()
+        })
+        unmountB()
+
+        const { result: resultC } = renderHook(() =>
+            useLocalStorageState<string[]>('todos', ['first', 'second'])
+        )
+        const [value] = resultC.current
+        expect(value).toEqual(['first', 'second'])
+    })
+
+    it('can reset value to default (default with callback function)', () => {
+        const { result: resultA, unmount: unmountA } = renderHook(() =>
+            useLocalStorageState<string[]>('todos', () => ['first', 'second'])
+        )
+        act(() => {
+            const [,setValue] = resultA.current
+            setValue(['third', 'forth'])
+        })
+        unmountA()
+
+        const { result: resultB, unmount: unmountB } = renderHook(() =>
+            useLocalStorageState<string[]>('todos', () => ['first', 'second'])
+        )
+        act(() => {
+            const [,setValue] = resultB.current
+            setValue.reset()
+        })
+        unmountB()
+
+        const { result: resultC } = renderHook(() =>
+            useLocalStorageState<string[]>('todos', ['first', 'second'])
+        )
+        const [value] = resultC.current
+        expect(value).toEqual(['first', 'second'])
+    })
 })
 
 describe('createLocalStorageStateHook()', () => {
@@ -328,5 +398,23 @@ describe('createLocalStorageStateHook()', () => {
 
         const [todos] = resultB.current
         expect(todos).toEqual(['third', 'forth'])
+    })
+
+    it('can reset value to default', () => {
+        const useTodos = createLocalStorageStateHook('todos', ['first', 'second'])
+        const { result: resultA } = renderHook(() => useTodos())
+        const { result: resultB } = renderHook(() => useTodos())
+
+        act(() => {
+            const setTodosA = resultA.current[1]
+            const setTodosB = resultB.current[1]
+
+            setTodosA(['third', 'forth'])
+
+            setTodosB.reset()
+        })
+
+        const [todos] = resultB.current
+        expect(todos).toEqual(['first', 'second'])
     })
 })
