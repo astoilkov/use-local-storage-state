@@ -126,7 +126,7 @@ export default function useLocalStorageState<T = undefined>(
         }
 
         return fn
-    }, [key])
+    }, [key], defaultValue)
 
     /**
      * Detects incorrect usage of the library and throws an error with a suggestion how to fix it.
