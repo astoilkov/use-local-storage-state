@@ -78,6 +78,9 @@ export default function useLocalStorageState<T = undefined>(
     const [state, setState] = useState(() => {
         const isCallable = (value: unknown): value is () => T => typeof value === 'function'
         return {
+            value: isCallable(defaultValue)
+                ? storage.get(key, defaultValue())
+                : storage.get(key, defaultValue),
             isPersistent: (() => {
                 /**
                  * We want to return `true` on the server. If you render a message based on `isPersistent` and the
@@ -95,9 +98,6 @@ export default function useLocalStorageState<T = undefined>(
                     return false
                 }
             })(),
-            value: isCallable(defaultValue)
-                ? storage.get(key, defaultValue())
-                : storage.get(key, defaultValue),
         }
     })
     const updateValue = useMemo(() => {
