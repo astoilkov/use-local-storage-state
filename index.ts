@@ -23,11 +23,11 @@ function parseJSON(value: string | null) {
  */
 const data: Record<string, unknown> = {}
 const storage = {
-    get<T>(key: string, defaultValue: T): T {
+    get<T>(key: string, defaultValue: T | (() => T)): T {
         try {
             return data[key] ?? parseJSON(localStorage.getItem(key))
         } catch {
-            return defaultValue
+            return getUnderlyingValue(defaultValue)
         }
     },
     set<T>(key: string, value: T): boolean {
@@ -58,6 +58,11 @@ const storage = {
  */
 const initializedStorageKeys = new Set<string>()
 
+const getUnderlyingValue = <T>(valueOrCallback: T | (() => T)): T => {
+    const isCallable = (value: unknown): value is () => T => typeof value === 'function'
+    return isCallable(valueOrCallback) ? valueOrCallback() : valueOrCallback
+}
+
 type SetStateParameter<T> = T | undefined | ((value: T | undefined) => T | undefined)
 type UpdateState<T> = {
     (newValue: T | ((value: T) => T)): void
@@ -76,11 +81,8 @@ export default function useLocalStorageState<T = undefined>(
     defaultValue?: T | (() => T),
 ): [T | undefined, UpdateState<T | undefined>, boolean] {
     const [state, setState] = useState(() => {
-        const isCallable = (value: unknown): value is () => T => typeof value === 'function'
         return {
-            value: isCallable(defaultValue)
-                ? storage.get(key, defaultValue())
-                : storage.get(key, defaultValue),
+            value: storage.get(key, defaultValue),
             isPersistent: (() => {
                 /**
                  * We want to return `true` on the server. If you render a message based on `isPersistent` and the
@@ -115,18 +117,15 @@ export default function useLocalStorageState<T = undefined>(
             })
         }
         fn.reset = () => {
-            const isCallable = (value: unknown): value is (value: T | undefined) => T | undefined =>
-                typeof value === 'function'
-            const value = isCallable(defaultValue) ? defaultValue() : defaultValue
             storage.remove(key)
             setState({
-                value,
+                value: getUnderlyingValue(defaultValue),
                 isPersistent: state.isPersistent,
             })
         }
 
         return fn
-    }, [key], defaultValue)
+    }, [key, defaultValue])
 
     /**
      * Detects incorrect usage of the library and throws an error with a suggestion how to fix it.
@@ -153,8 +152,8 @@ export default function useLocalStorageState<T = undefined>(
         const onStorage = (e: StorageEvent): void => {
             if (e.storageArea === localStorage && e.key === key) {
                 setState({
-                    isPersistent: true,
-                    value: e.newValue === null ? defaultValue : parseJSON(e.newValue),
+                    value: storage.get(key, defaultValue),
+                    isPersistent: false,
                 })
             }
         }
@@ -162,7 +161,7 @@ export default function useLocalStorageState<T = undefined>(
         window.addEventListener('storage', onStorage)
 
         return (): void => window.removeEventListener('storage', onStorage)
-    }, [])
+    }, [defaultValue])
 
     return [state.value, updateValue, state.isPersistent]
 }

@@ -84,6 +84,7 @@ describe('useLocalStorageState()', () => {
          * #WET 2020-03-19T8:55:25+02:00
          */
         act(() => {
+            localStorage.setItem('todos', JSON.stringify(['third', 'forth']))
             window.dispatchEvent(
                 new StorageEvent('storage', {
                     storageArea: localStorage,
@@ -105,6 +106,7 @@ describe('useLocalStorageState()', () => {
             const setTodos = result.current[1]
             setTodos(['third', 'forth'])
 
+            localStorage.removeItem('todos')
             window.dispatchEvent(
                 new StorageEvent('storage', {
                     storageArea: localStorage,
@@ -124,6 +126,7 @@ describe('useLocalStorageState()', () => {
 
         act(() => {
             // trying with sessionStorage
+            sessionStorage.setItem('todos', JSON.stringify(['third', 'forth']))
             window.dispatchEvent(
                 new StorageEvent('storage', {
                     storageArea: sessionStorage,
@@ -134,6 +137,7 @@ describe('useLocalStorageState()', () => {
             )
 
             // trying with a non relevant key
+            localStorage.setItem('not-todos', JSON.stringify(['third', 'forth']))
             window.dispatchEvent(
                 new StorageEvent('storage', {
                     storageArea: localStorage,
@@ -368,6 +372,7 @@ describe('createLocalStorageStateHook()', () => {
          * #WET 2020-03-19T8:55:25+02:00
          */
         act(() => {
+            localStorage.setItem('todos', JSON.stringify(['third', 'forth']))
             window.dispatchEvent(
                 new StorageEvent('storage', {
                     storageArea: localStorage,
