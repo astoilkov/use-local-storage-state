@@ -109,7 +109,7 @@ export default function useLocalStorageState<T = undefined>(
                 const value = isCallable(newValue) ? newValue(state.value) : newValue
 
                 return {
-                    value: value,
+                    value,
                     isPersistent: storage.set(key, value),
                 }
             })
@@ -120,7 +120,7 @@ export default function useLocalStorageState<T = undefined>(
             const value = isCallable(defaultValue) ? defaultValue() : defaultValue
             storage.remove(key)
             setState({
-                value: value,
+                value,
                 isPersistent: state.isPersistent,
             })
         }
