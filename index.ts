@@ -27,7 +27,7 @@ const storage = {
         try {
             return data[key] ?? parseJSON(localStorage.getItem(key))
         } catch {
-            return getUnderlyingValue(defaultValue)
+            return unwrapValue(defaultValue)
         }
     },
     set<T>(key: string, value: T): boolean {
@@ -58,7 +58,7 @@ const storage = {
  */
 const initializedStorageKeys = new Set<string>()
 
-const getUnderlyingValue = <T>(valueOrCallback: T | (() => T)): T => {
+const unwrapValue = <T>(valueOrCallback: T | (() => T)): T => {
     const isCallable = (value: unknown): value is () => T => typeof value === 'function'
     return isCallable(valueOrCallback) ? valueOrCallback() : valueOrCallback
 }
@@ -119,7 +119,7 @@ export default function useLocalStorageState<T = undefined>(
         fn.reset = () => {
             storage.remove(key)
             setState({
-                value: getUnderlyingValue(defaultValue),
+                value: unwrapValue(defaultValue),
                 isPersistent: state.isPersistent,
             })
         }
