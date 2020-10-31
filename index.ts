@@ -160,7 +160,6 @@ export default function useLocalStorageState<T = undefined>(
         }
 
         window.addEventListener('storage', onStorage)
-        defaultValueRef.current = defaultValue
 
         return (): void => window.removeEventListener('storage', onStorage)
     }, [defaultValue])
