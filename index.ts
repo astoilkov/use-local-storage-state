@@ -84,7 +84,7 @@ export default function useLocalStorageState<T = undefined>(
     const defaultValueRef = useRef(defaultValue)
     const [state, setState] = useState(() => {
         return {
-            value: storage.get(key, defaultValue),
+            value: storage.get(key, defaultValueRef.current),
             isPersistent: (() => {
                 /**
                  * We want to return `true` on the server. If you render a message based on `isPersistent` and the
@@ -154,7 +154,7 @@ export default function useLocalStorageState<T = undefined>(
         const onStorage = (e: StorageEvent): void => {
             if (e.storageArea === localStorage && e.key === key) {
                 setState({
-                    value: storage.get(key, defaultValue),
+                    value: storage.get(key, defaultValueRef.current),
                     isPersistent: false,
                 })
             }
@@ -163,7 +163,7 @@ export default function useLocalStorageState<T = undefined>(
         window.addEventListener('storage', onStorage)
 
         return (): void => window.removeEventListener('storage', onStorage)
-    }, [defaultValue])
+    }, [])
 
     return [state.value, updateValue, state.isPersistent]
 }
