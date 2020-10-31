@@ -80,6 +80,7 @@ export default function useLocalStorageState<T = undefined>(
     key: string,
     defaultValue?: T | (() => T),
 ): [T | undefined, UpdateState<T | undefined>, boolean] {
+    // we don't support updating the `defaultValue` the same way `useState()` doesn't support it
     const defaultValueRef = useRef(defaultValue)
     const [state, setState] = useState(() => {
         return {
