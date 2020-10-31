@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 
 /**
  * A wrapper for `JSON.parse()` which supports the return value of `JSON.stringify(undefined)`
@@ -80,6 +80,7 @@ export default function useLocalStorageState<T = undefined>(
     key: string,
     defaultValue?: T | (() => T),
 ): [T | undefined, UpdateState<T | undefined>, boolean] {
+    const defaultValueRef = useRef(defaultValue)
     const [state, setState] = useState(() => {
         return {
             value: storage.get(key, defaultValue),
@@ -119,13 +120,13 @@ export default function useLocalStorageState<T = undefined>(
         fn.reset = () => {
             storage.remove(key)
             setState({
-                value: unwrapValue(defaultValue),
+                value: unwrapValue(defaultValueRef.current),
                 isPersistent: state.isPersistent,
             })
         }
 
         return fn
-    }, [key, defaultValue])
+    }, [key])
 
     /**
      * Detects incorrect usage of the library and throws an error with a suggestion how to fix it.
@@ -159,6 +160,7 @@ export default function useLocalStorageState<T = undefined>(
         }
 
         window.addEventListener('storage', onStorage)
+        defaultValueRef.current = defaultValue
 
         return (): void => window.removeEventListener('storage', onStorage)
     }, [defaultValue])
