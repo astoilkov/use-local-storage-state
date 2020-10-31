@@ -1,4 +1,4 @@
-import { createElement, useEffect, useState, useRef } from 'react'
+import { createElement, useMemo } from 'react'
 import { renderToString } from 'react-dom/server'
 import { renderHook, act } from '@testing-library/react-hooks'
 import useLocalStorageState, { createLocalStorageStateHook } from '.'
@@ -54,32 +54,6 @@ describe('useLocalStorageState()', () => {
 
         const [todos] = result.current
         expect(todos).toEqual(['first', 'second'])
-    })
-
-    it('returns the same update function when the value is saved', () => {
-        const mockUpdateCallback = jest.fn()
-
-        function useCustomHook(initial = '') {
-            const [savedSearch, saveSearch] = useLocalStorageState('search', () => ({ search: initial }))
-            const [search, setSearch] = useState(savedSearch.search)
-            const count = useRef(0)
-
-            useEffect(() => {
-                // This is here because if this fails, it will be an endless loop
-                if (count.current > 5) return
-                count.current += 1
-                saveSearch({ search })
-                mockUpdateCallback(search)
-            }, [search, saveSearch])
-
-            return [search, setSearch]
-        }
-
-        renderHook(() =>
-            useCustomHook('test'),
-        )
-
-        expect(mockUpdateCallback.mock.calls).toEqual([['test']])
     })
 
     it('does not fail when having an invalid data in localStorage', () => {
@@ -385,6 +359,18 @@ describe('useLocalStorageState()', () => {
         )
         const [value] = resultC.current
         expect(value).toEqual(['first', 'second'])
+    })
+
+    it('returns the same update function when the value is saved', () => {
+        const functionMock = jest.fn()
+        const { rerender } = renderHook(() => {
+            const [, setTodos] = useLocalStorageState('todos', ['first', 'second'])
+            useMemo(functionMock, [setTodos])
+        })
+
+        rerender()
+
+        expect(functionMock.mock.calls.length).toEqual(1)
     })
 })
 
