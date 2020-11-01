@@ -64,22 +64,21 @@ export default function Todos() {
 ### Using the same hook in multiple places
 
 ```typescript
-// store.ts
+// useTodos.ts
 import { createLocalStorageStateHook } from 'use-local-storage-state'
-const useTodos = createLocalStorageStateHook('todos', [
+export default createLocalStorageStateHook('todos', [
     'buy milk',
     'do 50 push-ups'
 ])
-export default useTodos
 
 // Todos.ts
-import useTodos from '../store'
+import useTodos from './useTodos'
 function Todos() {
     const [todos, setTodos] = useTodos()
 }
 
 // Popup.ts
-import useTodos from '../store'
+import useTodos from './useTodos'
 function Popup() {
     const [todos, setTodos] = useTodos()
 }
