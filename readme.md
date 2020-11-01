@@ -71,13 +71,13 @@ export default createLocalStorageStateHook('todos', [
     'do 50 push-ups'
 ])
 
-// Todos.ts
+// Todos.tsx
 import useTodos from './useTodos'
 function Todos() {
     const [todos, setTodos] = useTodos()
 }
 
-// Popup.ts
+// Popup.tsx
 import useTodos from './useTodos'
 function Popup() {
     const [todos, setTodos] = useTodos()
