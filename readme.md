@@ -66,10 +66,11 @@ export default function Todos() {
 ```typescript
 // store.ts
 import { createLocalStorageStateHook } from 'use-local-storage-state'
-export const useTodos = createLocalStorageStateHook('todos', [
+const useTodos = createLocalStorageStateHook('todos', [
     'buy milk',
     'do 50 push-ups'
 ])
+export default useTodos
 
 // Todos.ts
 import useTodos from '../store'
