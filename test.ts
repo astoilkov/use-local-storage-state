@@ -5,6 +5,7 @@ import useLocalStorageState, { createLocalStorageStateHook } from '.'
 
 beforeEach(() => {
     localStorage.clear()
+    sessionStorage.clear()
 })
 
 describe('useLocalStorageState()', () => {
@@ -77,7 +78,21 @@ describe('useLocalStorageState()', () => {
         expect(localStorage.getItem('todos')).toEqual(JSON.stringify(['third', 'forth']))
     })
 
-    it('storage event updates state', () => {
+    it('update writes into sessionStorage', () => {
+        const { result } = renderHook(() =>
+            useLocalStorageState('todos', ['first', 'second'], sessionStorage),
+        )
+
+        act(() => {
+            const setTodos = result.current[1]
+
+            setTodos(['third', 'forth'])
+        })
+
+        expect(sessionStorage.getItem('todos')).toEqual(JSON.stringify(['third', 'forth']))
+    })
+
+    it('storage event updates state with localStorage', () => {
         const { result } = renderHook(() => useLocalStorageState('todos', ['first', 'second']))
 
         /**
@@ -88,6 +103,30 @@ describe('useLocalStorageState()', () => {
             window.dispatchEvent(
                 new StorageEvent('storage', {
                     storageArea: localStorage,
+                    key: 'todos',
+                    oldValue: JSON.stringify(['first', 'second']),
+                    newValue: JSON.stringify(['third', 'forth']),
+                }),
+            )
+        })
+
+        const [todosA] = result.current
+        expect(todosA).toEqual(['third', 'forth'])
+    })
+
+    it('storage event updates state with sessionStorage', () => {
+        const { result } = renderHook(() =>
+            useLocalStorageState('todos', ['first', 'second'], sessionStorage),
+        )
+
+        /**
+         * #WET 2020-03-19T8:55:25+02:00
+         */
+        act(() => {
+            sessionStorage.setItem('todos', JSON.stringify(['third', 'forth']))
+            window.dispatchEvent(
+                new StorageEvent('storage', {
+                    storageArea: sessionStorage,
                     key: 'todos',
                     oldValue: JSON.stringify(['first', 'second']),
                     newValue: JSON.stringify(['third', 'forth']),
@@ -266,7 +305,7 @@ describe('useLocalStorageState()', () => {
         })
 
         function Component() {
-            const [,, isPersistent] = useLocalStorageState('todos', ['first', 'second'])
+            const [, , isPersistent] = useLocalStorageState('todos', ['first', 'second'])
             expect(isPersistent).toBe(true)
             return null
         }
@@ -277,16 +316,16 @@ describe('useLocalStorageState()', () => {
 
     it('can set value to `undefined`', () => {
         const { result: resultA, unmount } = renderHook(() =>
-            useLocalStorageState<string[] | undefined>('todos', ['first', 'second'])
+            useLocalStorageState<string[] | undefined>('todos', ['first', 'second']),
         )
         act(() => {
-            const [,setValue] = resultA.current
+            const [, setValue] = resultA.current
             setValue(undefined)
         })
         unmount()
 
         const { result: resultB } = renderHook(() =>
-            useLocalStorageState<string[] | undefined>('todos', ['first', 'second'])
+            useLocalStorageState<string[] | undefined>('todos', ['first', 'second']),
         )
         const [value] = resultB.current
         expect(value).toBe(undefined)
@@ -294,16 +333,16 @@ describe('useLocalStorageState()', () => {
 
     it('can set value to `null`', () => {
         const { result: resultA, unmount } = renderHook(() =>
-            useLocalStorageState<string[] | null>('todos', ['first', 'second'])
+            useLocalStorageState<string[] | null>('todos', ['first', 'second']),
         )
         act(() => {
-            const [,setValue] = resultA.current
+            const [, setValue] = resultA.current
             setValue(null)
         })
         unmount()
 
         const { result: resultB } = renderHook(() =>
-            useLocalStorageState<string[] | null>('todos', ['first', 'second'])
+            useLocalStorageState<string[] | null>('todos', ['first', 'second']),
         )
         const [value] = resultB.current
         expect(value).toBe(null)
@@ -311,25 +350,25 @@ describe('useLocalStorageState()', () => {
 
     it('can reset value to default', () => {
         const { result: resultA, unmount: unmountA } = renderHook(() =>
-            useLocalStorageState<string[]>('todos', ['first', 'second'])
+            useLocalStorageState<string[]>('todos', ['first', 'second']),
         )
         act(() => {
-            const [,setValue] = resultA.current
+            const [, setValue] = resultA.current
             setValue(['third', 'forth'])
         })
         unmountA()
 
         const { result: resultB, unmount: unmountB } = renderHook(() =>
-            useLocalStorageState<string[]>('todos', ['first', 'second'])
+            useLocalStorageState<string[]>('todos', ['first', 'second']),
         )
         act(() => {
-            const [,setValue] = resultB.current
+            const [, setValue] = resultB.current
             setValue.reset()
         })
         unmountB()
 
         const { result: resultC } = renderHook(() =>
-            useLocalStorageState<string[]>('todos', ['first', 'second'])
+            useLocalStorageState<string[]>('todos', ['first', 'second']),
         )
         const [value] = resultC.current
         expect(value).toEqual(['first', 'second'])
@@ -337,25 +376,25 @@ describe('useLocalStorageState()', () => {
 
     it('can reset value to default (default with callback function)', () => {
         const { result: resultA, unmount: unmountA } = renderHook(() =>
-            useLocalStorageState<string[]>('todos', () => ['first', 'second'])
+            useLocalStorageState<string[]>('todos', () => ['first', 'second']),
         )
         act(() => {
-            const [,setValue] = resultA.current
+            const [, setValue] = resultA.current
             setValue(['third', 'forth'])
         })
         unmountA()
 
         const { result: resultB, unmount: unmountB } = renderHook(() =>
-            useLocalStorageState<string[]>('todos', () => ['first', 'second'])
+            useLocalStorageState<string[]>('todos', () => ['first', 'second']),
         )
         act(() => {
-            const [,setValue] = resultB.current
+            const [, setValue] = resultB.current
             setValue.reset()
         })
         unmountB()
 
         const { result: resultC } = renderHook(() =>
-            useLocalStorageState<string[]>('todos', ['first', 'second'])
+            useLocalStorageState<string[]>('todos', ['first', 'second']),
         )
         const [value] = resultC.current
         expect(value).toEqual(['first', 'second'])
