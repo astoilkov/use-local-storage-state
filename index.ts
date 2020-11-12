@@ -70,7 +70,7 @@ const storages = new Map([
  * duplicates we throw an error to the user telling them to use `createLocalStorageStateHook`
  * instead.
  */
-type StorageKeys = Set<string>;
+type StorageKeys = Set<string>
 
 const initializedStorageKeys = new Map([
     [localStorage, new Set<string>()],
@@ -83,7 +83,7 @@ const unwrapValue = <T>(valueOrCallback: T | (() => T)): T => {
 }
 
 type SetStateParameter<T> = T | undefined | ((value: T | undefined) => T | undefined)
-type UpdateState<T> = {
+export type UpdateState<T> = {
     (newValue: T | ((value: T) => T)): void
     reset: () => void
 }
@@ -164,7 +164,7 @@ export default function useLocalStorageState<T = undefined>(
                     `https://github.com/astoilkov/use-local-storage-state#create-local-storage-state-hook-example`,
             )
         }
-        (initializedStorageKeys.get(provider) as StorageKeys).add(key)
+        ;(initializedStorageKeys.get(provider) as StorageKeys).add(key)
 
         return () => void (initializedStorageKeys.get(provider) as StorageKeys).delete(key)
     }, [])
@@ -230,7 +230,7 @@ export function createLocalStorageStateHook<T>(
         }, [])
 
         useEffect(() => {
-            (initializedStorageKeys.get(provider) as StorageKeys).delete(key)
+            ;(initializedStorageKeys.get(provider) as StorageKeys).delete(key)
         }, [])
 
         useEffect(() => {
