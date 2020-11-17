@@ -10,7 +10,7 @@
 ## Install
 
 ```shell
-$ npm install use-local-storage-state
+npm install use-local-storage-state
 ```
 
 ## Why
