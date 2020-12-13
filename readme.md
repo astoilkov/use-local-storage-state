@@ -161,3 +161,10 @@ Type: `any`
 Default: `undefined`
 
 The initial value of the data. The same as `useState(defaultValue)` property.
+
+## Alternatives
+
+These are the best alternatives to my repo I have found so far:
+- [donavon/use-persisted-state](https://github.com/donavon/use-persisted-state)
+- [imbhargav5/rooks](https://github.com/imbhargav5/rooks/blob/master/packages/localstorage-state/README.md)
+- [dance2die/react-use-localstorage](https://github.com/dance2die/react-use-localstorage)
