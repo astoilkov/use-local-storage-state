@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useRef } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 
 /**
  * A wrapper for `JSON.parse()` which supports the return value of `JSON.stringify(undefined)`
@@ -23,11 +23,11 @@ function parseJSON(value: string | null) {
  */
 const data: Record<string, unknown> = {}
 const storage = {
-    get<T>(key: string, defaultValue: T | (() => T)): T {
+    get<T>(key: string, defaultValue: T): T {
         try {
             return data[key] ?? parseJSON(localStorage.getItem(key))
         } catch {
-            return unwrapValue(defaultValue)
+            return defaultValue
         }
     },
     set<T>(key: string, value: T): boolean {
@@ -81,10 +81,10 @@ export default function useLocalStorageState<T = undefined>(
     defaultValue?: T | (() => T),
 ): [T | undefined, UpdateState<T | undefined>, boolean] {
     // we don't support updating the `defaultValue` the same way `useState()` doesn't support it
-    const defaultValueRef = useRef(defaultValue)
+    const [defaultValueState] = useState(() => unwrapValue(defaultValue))
     const [state, setState] = useState(() => {
         return {
-            value: storage.get(key, defaultValueRef.current),
+            value: storage.get(key, defaultValueState),
             isPersistent: (() => {
                 /**
                  * We want to return `true` on the server. If you render a message based on `isPersistent` and the
@@ -121,13 +121,13 @@ export default function useLocalStorageState<T = undefined>(
         fn.reset = () => {
             storage.remove(key)
             setState({
-                value: unwrapValue(defaultValueRef.current),
+                value: unwrapValue(defaultValueState),
                 isPersistent: state.isPersistent,
             })
         }
 
         return fn
-    }, [key])
+    }, [key, defaultValueState])
 
     /**
      * Detects incorrect usage of the library and throws an error with a suggestion how to fix it.
@@ -154,7 +154,7 @@ export default function useLocalStorageState<T = undefined>(
         const onStorage = (e: StorageEvent): void => {
             if (e.storageArea === localStorage && e.key === key) {
                 setState({
-                    value: storage.get(key, defaultValueRef.current),
+                    value: storage.get(key, defaultValueState),
                     isPersistent: true,
                 })
             }
@@ -163,7 +163,7 @@ export default function useLocalStorageState<T = undefined>(
         window.addEventListener('storage', onStorage)
 
         return (): void => window.removeEventListener('storage', onStorage)
-    }, [])
+    }, [defaultValueState])
 
     return [state.value, updateValue, state.isPersistent]
 }
