@@ -104,17 +104,20 @@ export default function useLocalStorageState<T = undefined>(
     })
     const updateValue = useMemo(() => {
         const fn = (newValue: SetStateParameter<T>) => {
-            setState((state) => {
-                const isCallable = (
-                    value: unknown,
-                ): value is (value: T | undefined) => T | undefined => typeof value === 'function'
-                const value = isCallable(newValue) ? newValue(state.value) : newValue
+            const isCallable = (value: unknown): value is (value: T | undefined) => T | undefined =>
+                typeof value === 'function'
 
-                return {
-                    value,
-                    isPersistent: storage.set(key, value),
-                }
-            })
+            if (isCallable(newValue)) {
+                setState((state) => ({
+                    value: newValue(state.value),
+                    isPersistent: storage.set(key, newValue),
+                }))
+            } else {
+                setState({
+                    value: newValue,
+                    isPersistent: storage.set(key, newValue),
+                })
+            }
         }
         fn.reset = () => {
             storage.remove(key)
