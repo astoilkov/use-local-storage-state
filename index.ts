@@ -58,11 +58,6 @@ const storage = {
  */
 const initializedStorageKeys = new Set<string>()
 
-const unwrapValue = <T>(valueOrCallback: T | (() => T)): T => {
-    const isCallable = (value: unknown): value is () => T => typeof value === 'function'
-    return isCallable(valueOrCallback) ? valueOrCallback() : valueOrCallback
-}
-
 type SetStateParameter<T> = T | undefined | ((value: T | undefined) => T | undefined)
 type UpdateState<T> = {
     (newValue: T | ((value: T) => T)): void
@@ -81,7 +76,10 @@ export default function useLocalStorageState<T = undefined>(
     defaultValue?: T | (() => T),
 ): [T | undefined, UpdateState<T | undefined>, boolean] {
     // we don't support updating the `defaultValue` the same way `useState()` doesn't support it
-    const [defaultValueState] = useState(() => unwrapValue(defaultValue))
+    const [defaultValueState] = useState(() => {
+        const isCallable = (value: unknown): value is () => T => typeof value === 'function'
+        return isCallable(defaultValue) ? defaultValue() : defaultValue
+    })
     const [state, setState] = useState(() => {
         return {
             value: storage.get(key, defaultValueState),
