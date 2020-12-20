@@ -80,9 +80,7 @@ describe('useLocalStorageState()', () => {
     it('storage event updates state', () => {
         const { result } = renderHook(() => useLocalStorageState('todos', ['first', 'second']))
 
-        /**
-         * #WET 2020-03-19T8:55:25+02:00
-         */
+        // #WET 2020-03-19T8:55:25+02:00
         act(() => {
             localStorage.setItem('todos', JSON.stringify(['third', 'forth']))
             window.dispatchEvent(
@@ -275,6 +273,26 @@ describe('useLocalStorageState()', () => {
         windowSpy.mockRestore()
     })
 
+    it('isPersistent returns true after "storage" event', () => {
+        const { result } = renderHook(() => useLocalStorageState('todos', ['first', 'second']))
+
+        // #WET 2020-03-19T8:55:25+02:00
+        act(() => {
+            localStorage.setItem('todos', JSON.stringify(['third', 'forth']))
+            window.dispatchEvent(
+                new StorageEvent('storage', {
+                    storageArea: localStorage,
+                    key: 'todos',
+                    oldValue: JSON.stringify(['first', 'second']),
+                    newValue: JSON.stringify(['third', 'forth']),
+                }),
+            )
+        })
+
+        const isPersistent = result.current[2]
+        expect(isPersistent).toBe(true)
+    })
+
     it('can set value to `undefined`', () => {
         const { result: resultA, unmount } = renderHook(() =>
             useLocalStorageState<string[] | undefined>('todos', ['first', 'second'])
@@ -380,9 +398,7 @@ describe('createLocalStorageStateHook()', () => {
         const { result: resultA } = renderHook(() => useTodos())
         const { result: resultB } = renderHook(() => useTodos())
 
-        /**
-         * #WET 2020-03-19T8:55:25+02:00
-         */
+        // #WET 2020-03-19T8:55:25+02:00
         act(() => {
             localStorage.setItem('todos', JSON.stringify(['third', 'forth']))
             window.dispatchEvent(

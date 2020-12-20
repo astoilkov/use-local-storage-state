@@ -155,7 +155,7 @@ export default function useLocalStorageState<T = undefined>(
             if (e.storageArea === localStorage && e.key === key) {
                 setState({
                     value: storage.get(key, defaultValueRef.current),
-                    isPersistent: false,
+                    isPersistent: true,
                 })
             }
         }
