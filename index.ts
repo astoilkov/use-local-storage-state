@@ -121,7 +121,7 @@ export default function useLocalStorageState<T = undefined>(
         fn.reset = () => {
             storage.remove(key)
             setState({
-                value: unwrapValue(defaultValueState),
+                value: defaultValueState,
                 isPersistent: state.isPersistent,
             })
         }
