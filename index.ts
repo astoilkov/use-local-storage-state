@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 
 /**
  * A wrapper for `JSON.parse()` which supports the return value of `JSON.stringify(undefined)`
@@ -80,7 +80,7 @@ export default function useLocalStorageState<T = undefined>(
         const isCallable = (value: unknown): value is () => T => typeof value === 'function'
         return isCallable(defaultValue) ? defaultValue() : defaultValue
     })
-    const [state, setState] = useState(() => {
+    const getDefaultState = useCallback(() => {
         return {
             value: storage.get(key, defaultValueState),
             isPersistent: (() => {
@@ -101,7 +101,8 @@ export default function useLocalStorageState<T = undefined>(
                 }
             })(),
         }
-    })
+    }, [defaultValueState, key])
+    const [state, setState] = useState(getDefaultState)
     const updateValue = useMemo(() => {
         const fn = (newValue: SetStateParameter<T>) => {
             const isCallable = (value: unknown): value is (value: T | undefined) => T | undefined =>
@@ -165,6 +166,18 @@ export default function useLocalStorageState<T = undefined>(
 
         return (): void => window.removeEventListener('storage', onStorage)
     }, [defaultValueState])
+
+    /**
+     * Update the state when the `key` property changes.
+     */
+    const isFirstRender = useRef(true)
+    useEffect(() => {
+        if (isFirstRender.current) {
+            isFirstRender.current = false
+            return
+        }
+        setState(getDefaultState())
+    }, [getDefaultState])
 
     return [state.value, updateValue, state.isPersistent]
 }

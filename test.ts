@@ -390,6 +390,25 @@ describe('useLocalStorageState()', () => {
 
         expect(functionMock.mock.calls.length).toEqual(1)
     })
+
+    it('changing the "key" property updates the value from local storage', () => {
+        localStorage.setItem('valueA', JSON.stringify('A'))
+        localStorage.setItem('valueB', JSON.stringify('B'))
+
+        const { result, rerender } = renderHook(
+            (props) => useLocalStorageState(props.key, undefined),
+            {
+                initialProps: {
+                    key: 'valueA',
+                },
+            },
+        )
+
+        rerender({ key: 'valueB' })
+
+        const [value] = result.current
+        expect(value).toEqual('B')
+    })
 })
 
 describe('createLocalStorageStateHook()', () => {
