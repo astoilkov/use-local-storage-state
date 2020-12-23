@@ -6,13 +6,12 @@
 
         "declaration": true,
 
-        /**
-         * Allows modules which were exported using `module.exports` or `export = ` to be imported using
-         * `import module from 'module'`.
-         */
+        // allows modules which were exported using `module.exports` or `export = ` to be imported using
+        // `import module from 'module'`.
         "esModuleInterop": true,
         "allowSyntheticDefaultImports": true,
 
+        // strict options ensuring more stable code
         "strict": true,
         "noUnusedLocals": true,
         "noUnusedParameters": true,
