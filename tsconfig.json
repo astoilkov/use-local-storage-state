@@ -13,11 +13,6 @@
         "esModuleInterop": true,
         "allowSyntheticDefaultImports": true,
 
-        /**
-         * Remove all comments except copy-right header comments beginning with /*!.
-         */
-        "removeComments": true,
-
         "strict": true,
         "noUnusedLocals": true,
         "noUnusedParameters": true,
