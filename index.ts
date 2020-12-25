@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
  * A wrapper for `JSON.parse()` which supports the return value of `JSON.stringify(undefined)`
  * which returns the string `"undefined"` and this method returns the value `undefined`.
  */
-function parseJSON(value: string | null) {
+function parseJSON<T>(value: string | null): T | undefined {
     return value === 'undefined'
         ? undefined
         : // JSON.parse() doesn't accept non-string values, this is why we pass empty
@@ -23,9 +23,9 @@ function parseJSON(value: string | null) {
  */
 const data: Record<string, unknown> = {}
 const storage = {
-    get<T>(key: string, defaultValue: T): T {
+    get<T>(key: string, defaultValue: T): T | undefined {
         try {
-            return data[key] ?? parseJSON(localStorage.getItem(key))
+            return (data[key] as T | undefined) ?? parseJSON<T>(localStorage.getItem(key))
         } catch {
             return defaultValue
         }
@@ -60,8 +60,8 @@ const initializedStorageKeys = new Set<string>()
 
 type SetStateParameter<T> = T | undefined | ((value: T | undefined) => T | undefined)
 type UpdateState<T> = {
-    (newValue: T | ((value: T) => T)): void
     reset: () => void
+    (newValue: T | ((value: T) => T)): void
 }
 
 export default function useLocalStorageState<T = undefined>(
@@ -83,7 +83,7 @@ export default function useLocalStorageState<T = undefined>(
     const getDefaultState = useCallback(() => {
         return {
             value: storage.get(key, defaultValueState),
-            isPersistent: (() => {
+            isPersistent: ((): boolean => {
                 /**
                  * We want to return `true` on the server. If you render a message based on `isPersistent` and the
                  * server returns `false` then the message will flicker until hydration is done:
@@ -104,7 +104,7 @@ export default function useLocalStorageState<T = undefined>(
     }, [defaultValueState, key])
     const [state, setState] = useState(getDefaultState)
     const updateValue = useMemo(() => {
-        const fn = (newValue: SetStateParameter<T>) => {
+        const fn = (newValue: SetStateParameter<T>): void => {
             const isCallable = (value: unknown): value is (value: T | undefined) => T | undefined =>
                 typeof value === 'function'
 
@@ -120,12 +120,12 @@ export default function useLocalStorageState<T = undefined>(
                 })
             }
         }
-        fn.reset = () => {
+        fn.reset = (): void => {
             storage.remove(key)
-            setState({
+            setState((state) => ({
                 value: defaultValueState,
                 isPersistent: state.isPersistent,
-            })
+            }))
         }
 
         return fn
@@ -146,8 +146,8 @@ export default function useLocalStorageState<T = undefined>(
             initializedStorageKeys.add(key)
         }
 
-        return () => void initializedStorageKeys.delete(key)
-    }, [])
+        return (): void => void initializedStorageKeys.delete(key)
+    }, [key])
 
     /**
      * Syncs changes across tabs and iframe's.
@@ -165,7 +165,7 @@ export default function useLocalStorageState<T = undefined>(
         window.addEventListener('storage', onStorage)
 
         return (): void => window.removeEventListener('storage', onStorage)
-    }, [defaultValueState])
+    }, [key, defaultValueState])
 
     /**
      * Update the state when the `key` property changes.
@@ -204,12 +204,12 @@ export function createLocalStorageStateHook<T>(
             defaultValue,
         )
         const updateValue = useMemo(() => {
-            const fn = (newValue: SetStateParameter<T>) => {
+            const fn = (newValue: SetStateParameter<T>): void => {
                 for (const update of updates) {
                     update(newValue)
                 }
             }
-            fn.reset = () => {
+            fn.reset = (): void => {
                 for (const update of updates) {
                     update.reset()
                 }
@@ -223,7 +223,7 @@ export function createLocalStorageStateHook<T>(
 
         useEffect(() => {
             updates.push(setValue)
-            return () => void updates.splice(updates.indexOf(setValue), 1)
+            return (): void => void updates.splice(updates.indexOf(setValue), 1)
         }, [setValue])
 
         return [value, updateValue, isPersistent]
