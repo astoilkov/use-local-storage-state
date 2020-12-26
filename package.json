@@ -28,7 +28,7 @@
     "scripts": {
         "build": "tsc",
         "lint": "eslint --cache --ext .ts ./",
-        "test": "yarn run build && [[ -z $CI ]] && jest --coverage --coverageReporters=text || jest --coverage",
+        "test": "yarn run build && yarn run lint && [[ -z $CI ]] && jest --coverage --coverageReporters=text || jest --coverage",
         "release": "yarn run build && np",
         "prettier": "prettier --write --config .prettierrc.yaml {*.ts,*.json}"
     },
