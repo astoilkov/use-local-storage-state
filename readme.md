@@ -22,7 +22,7 @@ Few other libraries also try to abstract the usage of localStorage into a hook. 
 - 100% test coverage. No `istanbul ignore`
 - Handles edge cases – [example](#is-persistent-example)
 - Subscribes to the Window [`storage`](https://developer.mozilla.org/en-US/docs/Web/API/Window/storage_event) event which tracks changes across browser tabs and iframe's
-- [My open-source principles](https://github.com/astoilkov/me/blob/master/essays/My%20open-source%20principles.md) aim for quality and maintenance
+- High quality with [my open-source principles](https://github.com/astoilkov/me/blob/master/essays/My%20open-source%20principles.md)
 
 ## Usage
 
