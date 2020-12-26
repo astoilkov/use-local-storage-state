@@ -27,7 +27,7 @@
     "sideEffects": false,
     "scripts": {
         "build": "tsc",
-        "lint": "eslint --cache --ext .ts ./",
+        "lint": "eslint --cache --format=pretty --ext=.ts ./",
         "test": "yarn run build && yarn run lint && [[ -z $CI ]] && jest --coverage --coverageReporters=text || jest --coverage",
         "release": "yarn run build && np",
         "prettier": "prettier --write --config .prettierrc.yaml {*.ts,*.json}"
@@ -51,6 +51,7 @@
         "@typescript-eslint/parser": "^4.11.0",
         "eslint": "^7.16.0",
         "eslint-config-strictest": "^0.3.1",
+        "eslint-formatter-pretty": "^4.0.0",
         "eslint-plugin-promise": "^4.2.1",
         "eslint-plugin-react": "^7.21.5",
         "eslint-plugin-react-hooks": "^4.2.0",
