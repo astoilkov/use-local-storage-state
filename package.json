@@ -49,6 +49,7 @@
         "@types/react-dom": "^16.9.8",
         "@typescript-eslint/eslint-plugin": "^4.11.0",
         "@typescript-eslint/parser": "^4.11.0",
+        "confusing-browser-globals": "^1.0.10",
         "eslint": "^7.16.0",
         "eslint-config-strictest": "^0.3.1",
         "eslint-formatter-pretty": "^4.0.0",

@@ -1,3 +1,5 @@
+const confusingBrowserGlobals = require('confusing-browser-globals')
+
 module.exports = {
     parser: '@typescript-eslint/parser',
 
@@ -30,5 +32,9 @@ module.exports = {
     env: {
         es6: true,
         browser: true,
+    },
+
+    rules: {
+        'no-restricted-globals': ['error', ...confusingBrowserGlobals],
     },
 }
