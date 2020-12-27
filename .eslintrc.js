@@ -24,7 +24,7 @@ module.exports = {
     settings: {
         react: {
             // probably can remove it in the future because docs say:
-            // it will default to "detect" in the future
+            // "it will default to "detect" in the future"
             version: 'detect',
         },
     },
