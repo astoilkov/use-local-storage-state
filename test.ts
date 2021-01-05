@@ -32,6 +32,7 @@ describe('useLocalStorageState()', () => {
 
         const [todos] = result.current
         expect(todos).toEqual(['third', 'forth'])
+        expect(localStorage.getItem('todos')).toEqual(JSON.stringify(['third', 'forth']))
     })
 
     it('updates state with callback function', () => {
@@ -45,6 +46,9 @@ describe('useLocalStorageState()', () => {
 
         const [todos] = result.current
         expect(todos).toEqual(['first', 'second', 'third', 'forth'])
+        expect(localStorage.getItem('todos')).toEqual(
+            JSON.stringify(['first', 'second', 'third', 'forth']),
+        )
     })
 
     it('accepts a callback as a default value', () => {

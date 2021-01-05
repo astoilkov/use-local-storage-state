@@ -111,7 +111,7 @@ export default function useLocalStorageState<T = undefined>(
             if (isCallable(newValue)) {
                 setState((state) => ({
                     value: newValue(state.value),
-                    isPersistent: storage.set(key, newValue),
+                    isPersistent: storage.set(key, newValue(state.value)),
                 }))
             } else {
                 setState({
