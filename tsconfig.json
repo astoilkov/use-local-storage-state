@@ -4,6 +4,13 @@
         "target": "ES6",
         "module": "commonjs",
 
+        // From what I understand while reading the docs "classic" was introduced first and "classic" is by
+        // default(except when "module": "commonjs") because of backwards compatibility.
+        //
+        // From the docs: "node module resolution is the most-commonly used in the TypeScript community and is
+        // recommended for most projects."
+        "moduleResolution": "node",
+
         "declaration": true,
 
         // allows modules which were exported using `module.exports` or `export = ` to be imported using
