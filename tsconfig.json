@@ -25,8 +25,13 @@
         "allowUnreachableCode": false,
         "noUncheckedIndexedAccess": true,
         "noFallthroughCasesInSwitch": true,
-        "forceConsistentCasingInFileNames": true
-    },
+        "forceConsistentCasingInFileNames": true,
 
+        // - ℹ️ https://www.typescriptlang.org/tsconfig#isolatedModules
+        // - 😃 Deno requires "isolatedModules" to be set to `true`
+        // - 😃 the stricter version - I always prefer the stricter version
+        // - 😃 probably the future
+        "isolatedModules": true
+    },
     "include": ["index.ts"]
 }
