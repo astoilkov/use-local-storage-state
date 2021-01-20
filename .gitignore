@@ -1,6 +1,8 @@
-/dist
 /coverage
-node_modules
+/node_modules
+
+*.js
+*.d.ts
 yarn.lock
 yarn-error.log
 .eslintcache

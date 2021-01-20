@@ -1,8 +1,7 @@
 {
     "compilerOptions": {
-        "outDir": "dist",
         "target": "ES6",
-        "module": "commonjs",
+        "module": "ES2015",
 
         // From what I understand while reading the docs "classic" was introduced first and "classic" is by
         // default(except when "module": "commonjs") because of backwards compatibility.
