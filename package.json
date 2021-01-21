@@ -23,7 +23,7 @@
         "local storage"
     ],
     "type": "module",
-    "module": ".",
+    "module": "",
     "sideEffects": false,
     "scripts": {
         "build": "tsc",
