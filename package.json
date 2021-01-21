@@ -23,7 +23,7 @@
         "local storage"
     ],
     "type": "module",
-    "module": "",
+    "jsnext:main": "index.js",
     "sideEffects": false,
     "scripts": {
         "build": "tsc",
