@@ -22,7 +22,6 @@
         "localStorage",
         "local storage"
     ],
-    "type": "module",
     "jsnext:main": "index.js",
     "sideEffects": false,
     "scripts": {
