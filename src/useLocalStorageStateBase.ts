@@ -36,8 +36,8 @@ export default function useLocalStorageStateBase<T = undefined>(
                     return true
                 }
                 try {
-                    localStorage.setItem('--use-local-storage-state--', 'dummy')
-                    localStorage.removeItem('--use-local-storage-state--')
+                    localStorage.setItem('__ulss', '#')
+                    localStorage.removeItem('__ulss')
                     return true
                 } catch {
                     return false
