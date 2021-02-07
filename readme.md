@@ -4,7 +4,6 @@
 
 [![Build Status](https://travis-ci.org/astoilkov/use-local-storage-state.svg?branch=master)](https://travis-ci.org/astoilkov/use-local-storage-state)
 [![Test Coverage](https://api.codeclimate.com/v1/badges/38dfdf48f7f326ccfa8e/test_coverage)](https://codeclimate.com/github/astoilkov/use-local-storage-state/test_coverage)
-[![Minified Size](https://badgen.net/bundlephobia/min/use-local-storage-state)](https://bundlephobia.com/result?p=use-local-storage-state)
 ![Dependencies](https://david-dm.org/astoilkov/use-local-storage-state.svg)
 
 ## Install
@@ -17,6 +16,9 @@ npm install use-local-storage-state
 
 Few other libraries also try to abstract the usage of localStorage into a hook. Here are the reasons why you would consider this one:
 
+- Small. Controlled by `size-limit`.
+    - `import { useLocalStorageState } from 'use-local-storage-state'` 1.55 kB
+    - `import { createLocalStorageState } from 'use-local-storage-state'` 1.5 kB
 - Uses `JSON.parse()` and `JSON.stringify()` to support non string values
 - Supports SSR
 - 100% test coverage. No `istanbul ignore`
