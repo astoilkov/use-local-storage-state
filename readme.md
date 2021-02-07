@@ -16,14 +16,14 @@ npm install use-local-storage-state
 
 Few other libraries also try to abstract the usage of localStorage into a hook. Here are the reasons why you would consider this one:
 
-- Small. Controlled by `size-limit`.
-    - `import { useLocalStorageState } from 'use-local-storage-state'` 1.55 kB
-    - `import { createLocalStorageState } from 'use-local-storage-state'` 1.5 kB
 - Uses `JSON.parse()` and `JSON.stringify()` to support non string values
 - Supports SSR
 - 100% test coverage. No `istanbul ignore`
 - Handles edge cases – [example](#is-persistent-example)
 - Subscribes to the Window [`storage`](https://developer.mozilla.org/en-US/docs/Web/API/Window/storage_event) event which tracks changes across browser tabs and iframe's
+- Small. Controlled by `size-limit`.
+    - `import { useLocalStorageState } from 'use-local-storage-state'` 1.55 kB
+    - `import { createLocalStorageState } from 'use-local-storage-state'` 1.5 kB
 - High quality with [my open-source principles](https://github.com/astoilkov/me/blob/master/essays/My%20open-source%20principles.md)
 
 ## Usage
