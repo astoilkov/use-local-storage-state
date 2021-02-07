@@ -22,10 +22,10 @@
         "localStorage",
         "local storage"
     ],
-    "jsnext:main": "index.js",
+    "module": "esm/index.js",
     "sideEffects": false,
     "scripts": {
-        "build": "tsc",
+        "build": "tsc && tsc --project tsconfig.esm.json",
         "size": "yarn run build && size-limit",
         "lint": "eslint --cache --format=pretty --ext=.ts ./",
         "test": "yarn run build && yarn run lint && [[ -z $CI ]] && jest --coverage --coverageReporters=text || jest --coverage",
@@ -34,22 +34,22 @@
     },
     "size-limit": [
         {
-            "path": "index.js",
-            "limit": "2.3 KB",
+            "path": "esm/index.js",
+            "limit": "2 KB",
             "gzip": false
         },
         {
             "name": "useLocalStorageState",
-            "path": "index.js",
+            "path": "esm/index.js",
             "import": "{ useLocalStorageState }",
-            "limit": "2.3 KB",
+            "limit": "1.6 KB",
             "gzip": false
         },
         {
             "name": "createLocalStorageState",
-            "path": "index.js",
+            "path": "esm/index.js",
             "import": "{ createLocalStorageStateHook }",
-            "limit": "2.3 KB",
+            "limit": "1.6 KB",
             "gzip": false
         }
     ],
