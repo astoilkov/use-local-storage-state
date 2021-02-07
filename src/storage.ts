@@ -30,10 +30,7 @@ export default {
     },
     remove(key: string): void {
         data[key] = undefined
-
-        try {
-            localStorage.removeItem(key)
-        } catch {}
+        localStorage.removeItem(key)
     },
 }
 
