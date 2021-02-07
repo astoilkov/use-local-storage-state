@@ -23,6 +23,7 @@
         "local storage"
     ],
     "module": "es",
+    "jsnext:main": "es",
     "sideEffects": false,
     "scripts": {
         "build": "tsc && tsc --project tsconfig.esm.json",
