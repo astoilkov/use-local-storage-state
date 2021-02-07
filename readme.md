@@ -35,7 +35,7 @@ const [todos, setTodos] = useLocalStorageState('todos', [
 ])
 ```
 
-### Todo list
+### Todo list example
 
 ```tsx
 import React, { useState } from 'react'
