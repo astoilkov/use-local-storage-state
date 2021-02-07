@@ -40,7 +40,8 @@
         "index.js",
         "src/*.js",
         "index.d.ts",
-        "src/*.d.ts"
+        "src/*.d.ts",
+        "es/**/*.js"
     ],
     "peerDependencies": {
         "react": ">=16.8.0"
