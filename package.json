@@ -22,7 +22,7 @@
         "localStorage",
         "local storage"
     ],
-    "module": "esm/index.js",
+    "module": "es",
     "sideEffects": false,
     "scripts": {
         "build": "tsc && tsc --project tsconfig.esm.json",
@@ -34,20 +34,20 @@
     },
     "size-limit": [
         {
-            "path": "esm/index.js",
+            "path": "es/index.js",
             "limit": "2 KB",
             "gzip": false
         },
         {
             "name": "useLocalStorageState",
-            "path": "esm/index.js",
+            "path": "es/index.js",
             "import": "{ useLocalStorageState }",
             "limit": "1.6 KB",
             "gzip": false
         },
         {
             "name": "createLocalStorageState",
-            "path": "esm/index.js",
+            "path": "es/index.js",
             "import": "{ createLocalStorageStateHook }",
             "limit": "1.6 KB",
             "gzip": false
