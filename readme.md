@@ -4,6 +4,7 @@
 
 [![Build Status](https://travis-ci.org/astoilkov/use-local-storage-state.svg?branch=master)](https://travis-ci.org/astoilkov/use-local-storage-state)
 [![Test Coverage](https://api.codeclimate.com/v1/badges/38dfdf48f7f326ccfa8e/test_coverage)](https://codeclimate.com/github/astoilkov/use-local-storage-state/test_coverage)
+[![Minified Size](https://badgen.net/bundlephobia/min/use-local-storage-state)](https://bundlephobia.com/result?p=use-local-storage-state)
 ![Dependencies](https://david-dm.org/astoilkov/use-local-storage-state.svg)
 
 ## Install
@@ -21,9 +22,6 @@ Few other libraries also try to abstract the usage of localStorage into a hook. 
 - 100% test coverage. No `istanbul ignore`
 - Handles edge cases – [example](#is-persistent-example)
 - Subscribes to the Window [`storage`](https://developer.mozilla.org/en-US/docs/Web/API/Window/storage_event) event which tracks changes across browser tabs and iframe's
-- Small. Controlled by `size-limit`.
-    - `import { useLocalStorageState } from 'use-local-storage-state'` 1.55 kB
-    - `import { createLocalStorageState } from 'use-local-storage-state'` 1.5 kB
 - High quality with [my open-source principles](https://github.com/astoilkov/me/blob/master/essays/My%20open-source%20principles.md)
 
 ## Usage
