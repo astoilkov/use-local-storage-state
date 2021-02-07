@@ -35,19 +35,20 @@
     },
     "size-limit": [
         {
+            "name": "import *",
             "path": "es/index.js",
             "limit": "2 KB",
             "gzip": false
         },
         {
-            "name": "useLocalStorageState",
+            "name": "import { useLocalStorageState }",
             "path": "es/index.js",
             "import": "{ useLocalStorageState }",
             "limit": "1.6 KB",
             "gzip": false
         },
         {
-            "name": "createLocalStorageState",
+            "name": "import { createLocalStorageState }",
             "path": "es/index.js",
             "import": "{ createLocalStorageStateHook }",
             "limit": "1.6 KB",
