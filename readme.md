@@ -61,6 +61,7 @@ export default function Todos() {
 ```
 
 <div id="is-persistent-example"></div>
+
 ### Handling edge cases with `isPersistent`
 
 There are a few cases when `localStorage` [isn't available](https://github.com/astoilkov/use-local-storage-state/blob/7db8872397eae8b9d2421f068283286847f326ac/index.ts#L3-L11). The `isPersistent` property tells you if the data is persisted in local storage or in-memory. Useful when you want to notify the user that their data won't be persisted.
@@ -119,6 +120,7 @@ Default: `undefined`
 The initial value of the data. The same as `useState(defaultValue)` property.
 
 <div id="create-local-storage-state-hook"></div>
+
 ### createLocalStorageStateHook(key, defaultValue?)
 
 If you want to have the same data in multiple components in your code use `createLocalStorageStateHook()` instead of `useLocalStorageState()`. This avoids:
