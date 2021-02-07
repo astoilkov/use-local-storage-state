@@ -15,7 +15,7 @@ export default function createLocalStorageStateHook<T>(
     key: string,
     defaultValue?: T | (() => T),
 ): () => [T | undefined, UpdateState<T | undefined>, boolean] {
-    const updates: UpdateState<T | undefined>[] = []
+    const setValueFunctions: UpdateState<T | undefined>[] = []
     return function useLocalStorageStateHook(): [
         T | undefined,
         UpdateState<T | undefined>,
@@ -25,25 +25,25 @@ export default function createLocalStorageStateHook<T>(
             key,
             defaultValue,
         )
-        const updateValue = useMemo(() => {
+        const setValueAll = useMemo(() => {
             const fn = (newValue: SetStateParameter<T>): void => {
-                for (const update of updates) {
-                    update(newValue)
+                for (const setValueFunction of setValueFunctions) {
+                    setValueFunction(newValue)
                 }
             }
             fn.reset = (): void => {
-                for (const update of updates) {
-                    update.reset()
+                for (const setValueFunction of setValueFunctions) {
+                    setValueFunction.reset()
                 }
             }
             return fn
         }, [])
 
         useEffect(() => {
-            updates.push(setValue)
-            return (): void => void updates.splice(updates.indexOf(setValue), 1)
+            setValueFunctions.push(setValue)
+            return (): void => void setValueFunctions.splice(setValueFunctions.indexOf(setValue), 1)
         }, [setValue])
 
-        return [value, updateValue, isPersistent]
+        return [value, setValueAll, isPersistent]
     }
 }
