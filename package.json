@@ -33,28 +33,6 @@
         "release": "yarn run build && np",
         "prettier": "prettier --write --config .prettierrc.yaml {*.ts,*.json}"
     },
-    "size-limit": [
-        {
-            "name": "import *",
-            "path": "es/index.js",
-            "limit": "2 KB",
-            "gzip": false
-        },
-        {
-            "name": "import { useLocalStorageState }",
-            "path": "es/index.js",
-            "import": "{ useLocalStorageState }",
-            "limit": "1.6 KB",
-            "gzip": false
-        },
-        {
-            "name": "import { createLocalStorageState }",
-            "path": "es/index.js",
-            "import": "{ createLocalStorageStateHook }",
-            "limit": "1.6 KB",
-            "gzip": false
-        }
-    ],
     "engines": {
         "node": ">=10"
     },
@@ -92,5 +70,27 @@
         "size-limit": "^4.9.2",
         "ts-jest": "^26.4.4",
         "typescript": "^4.1.3"
-    }
+    },
+    "size-limit": [
+        {
+            "name": "import *",
+            "path": "es/index.js",
+            "limit": "2 KB",
+            "gzip": false
+        },
+        {
+            "name": "import { useLocalStorageState }",
+            "path": "es/index.js",
+            "import": "{ useLocalStorageState }",
+            "limit": "1.6 KB",
+            "gzip": false
+        },
+        {
+            "name": "import { createLocalStorageState }",
+            "path": "es/index.js",
+            "import": "{ createLocalStorageStateHook }",
+            "limit": "1.6 KB",
+            "gzip": false
+        }
+    ]
 }
