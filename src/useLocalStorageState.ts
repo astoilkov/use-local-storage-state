@@ -27,8 +27,8 @@ export default function useLocalStorageState<T = undefined>(
     useEffect(() => {
         if (initializedStorageKeys.has(key)) {
             throw new Error(
-                `useLocalStorageState() doesn't support multiple instances with the same key.` +
-                    `Use createLocalStorageStateHook('${key}'). Example: https://bit.ly/39PfEcV`,
+                `When using the same key in multiple places use createLocalStorageStateHook('${key}'): ` +
+                    `https://github.com/astoilkov/use-local-storage-state#create-local-storage-state-hook`,
             )
         } else {
             initializedStorageKeys.add(key)
