@@ -60,33 +60,7 @@ export default function Todos() {
 
 ```
 
-<div id="create-local-storage-state-hook-example"></div>
-
-### Using the same hook in multiple places
-
-```typescript
-// useTodos.ts
-import { createLocalStorageStateHook } from 'use-local-storage-state'
-export default createLocalStorageStateHook('todos', [
-    'buy milk',
-    'do 50 push-ups'
-])
-
-// Todos.tsx
-import useTodos from './useTodos'
-function Todos() {
-    const [todos, setTodos] = useTodos()
-}
-
-// Popup.tsx
-import useTodos from './useTodos'
-function Popup() {
-    const [todos, setTodos] = useTodos()
-}
-```
-
 <div id="is-persistent-example"></div>
-
 ### Handling edge cases with `isPersistent`
 
 There are a few cases when `localStorage` [isn't available](https://github.com/astoilkov/use-local-storage-state/blob/7db8872397eae8b9d2421f068283286847f326ac/index.ts#L3-L11). The `isPersistent` property tells you if the data is persisted in local storage or in-memory. Useful when you want to notify the user that their data won't be persisted.
@@ -144,9 +118,32 @@ Default: `undefined`
 
 The initial value of the data. The same as `useState(defaultValue)` property.
 
+<div id="create-local-storage-state-hook"></div>
 ### createLocalStorageStateHook(key, defaultValue?)
 
-Returns a hook to be used in multiple places – [example](#create-local-storage-state-hook-example).
+If you want to have the same data in multiple components in your code use `createLocalStorageStateHook()` instead of `useLocalStorageState()`. This avoids:
+- maintenance issues with duplicate code that should always be in sync
+- conflicts with different default values
+- `key` parameter misspellings
+
+```typescript
+import { createLocalStorageStateHook } from 'use-local-storage-state'
+
+// Todos.tsx
+const useTodos = createLocalStorageStateHook('todos', [
+    'buy milk',
+    'do 50 push-ups'
+])
+function Todos() {
+    const [todos, setTodos] = useTodos()
+}
+
+// Popup.tsx
+import useTodos from './useTodos'
+function Popup() {
+    const [todos, setTodos] = useTodos()
+}
+```
 
 #### key
 
