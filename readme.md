@@ -37,6 +37,8 @@ const [todos, setTodos] = useLocalStorageState('todos', [
 
 ### Todo list example
 
+See a demo of this example on [CodeSandbox](https://codesandbox.io/s/romantic-http-pemxz?file=/src/App.js)
+
 ```tsx
 import React, { useState } from 'react'
 import useLocalStorageState from 'use-local-storage-state'
