@@ -37,7 +37,7 @@ const [todos, setTodos] = useLocalStorageState('todos', [
 
 ### Todo list example
 
-See a demo of this example on [CodeSandbox](https://codesandbox.io/s/romantic-http-pemxz?file=/src/App.js)
+You can experiment with the example [here](https://codesandbox.io/s/todos-example-q48ch?file=/src/App.tsx).
 
 ```tsx
 import React, { useState } from 'react'
@@ -48,6 +48,7 @@ export default function Todos() {
     const [todos, setTodos] = useLocalStorageState('todos', ['buy milk'])
 
     function onClick() {
+        setQuery('')
         setTodos([...todos, query])
     }
 
