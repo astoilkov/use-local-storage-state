@@ -36,6 +36,8 @@ export default function useLocalStorageStateBase<T = undefined>(
                     return true
                 }
                 try {
+                    // ulss = use-local-storage-state
+                    // using shorthand to make library smaller in size
                     localStorage.setItem('__ulss', '#')
                     localStorage.removeItem('__ulss')
                     return true
