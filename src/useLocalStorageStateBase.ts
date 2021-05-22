@@ -1,5 +1,5 @@
 import storage from './storage'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
 export type SetStateParameter<T> = T | undefined | ((value: T | undefined) => T | undefined)
 export type UpdateState<T> = {
@@ -18,14 +18,17 @@ export default function useLocalStorageStateBase<T = undefined>(
     key: string,
     defaultValue?: T | (() => T),
 ): [T | undefined, UpdateState<T | undefined>, boolean] {
-    // we don't support updating the `defaultValue` the same way `useState()` doesn't support it
-    const [defaultValueState] = useState(() => {
+    const defaultValueForKey = useMemo(() => {
         const isCallable = (value: unknown): value is () => T => typeof value === 'function'
         return isCallable(defaultValue) ? defaultValue() : defaultValue
-    })
-    const getDefaultState = useCallback(() => {
+
+        // disabling "exhaustive-deps" on purpose. we don't want to change the default state when
+        // the `defaultValue` is changed.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [key])
+    const defaultState = useMemo(() => {
         return {
-            value: storage.get(key, defaultValueState),
+            value: storage.get(key, defaultValueForKey),
             isPersistent: ((): boolean => {
                 /**
                  * We want to return `true` on the server. If you render a message based on
@@ -47,8 +50,8 @@ export default function useLocalStorageStateBase<T = undefined>(
                 }
             })(),
         }
-    }, [defaultValueState, key])
-    const [state, setState] = useState(getDefaultState)
+    }, [key, defaultValueForKey])
+    const [state, setState] = useState(defaultState)
     const updateValue = useMemo(() => {
         const fn = (newValue: SetStateParameter<T>): void => {
             const isCallable = (value: unknown): value is (value: T | undefined) => T | undefined =>
@@ -69,22 +72,20 @@ export default function useLocalStorageStateBase<T = undefined>(
         fn.reset = (): void => {
             storage.remove(key)
             setState((state) => ({
-                value: defaultValueState,
+                value: defaultValueForKey,
                 isPersistent: state.isPersistent,
             }))
         }
 
         return fn
-    }, [key, defaultValueState])
+    }, [key, defaultValueForKey])
 
-    /**
-     * Syncs changes across tabs and iframe's.
-     */
+    // syncs changes across tabs and iframe's
     useEffect(() => {
         const onStorage = (e: StorageEvent): void => {
             if (e.storageArea === localStorage && e.key === key) {
                 setState({
-                    value: storage.get(key, defaultValueState),
+                    value: storage.get(key, defaultValueForKey),
                     isPersistent: true,
                 })
             }
@@ -93,19 +94,23 @@ export default function useLocalStorageStateBase<T = undefined>(
         window.addEventListener('storage', onStorage)
 
         return (): void => window.removeEventListener('storage', onStorage)
-    }, [key, defaultValueState])
+    }, [key, defaultValueForKey])
 
-    /**
-     * Update the state when the `key` property changes.
-     */
     const isFirstRender = useRef(true)
     useEffect(() => {
+        // set the `defaultValue` in the localStorage on initial render:
+        // https://github.com/astoilkov/use-local-storage-state/issues/26
+        storage.set(key, defaultState.value)
+
         if (isFirstRender.current) {
             isFirstRender.current = false
             return
         }
-        setState(getDefaultState())
-    }, [getDefaultState])
+
+        // update the state when the `key` property changes (not on first render because this will
+        // cause a second unnecessary render)
+        setState(defaultState)
+    }, [key, defaultState])
 
     return [state.value, updateValue, state.isPersistent]
 }

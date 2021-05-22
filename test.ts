@@ -18,7 +18,7 @@ describe('useLocalStorageState()', () => {
     it(`initial state isn't written into localStorage`, () => {
         renderHook(() => useLocalStorageState('todos', ['first', 'second']))
 
-        expect(localStorage.getItem('todos')).toEqual(null)
+        expect(localStorage.getItem('todos')).toEqual(JSON.stringify(['first', 'second']))
     })
 
     it('updates state', () => {
