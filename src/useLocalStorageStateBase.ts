@@ -28,8 +28,9 @@ export default function useLocalStorageStateBase<T = undefined>(
             value: storage.get(key, defaultValueState),
             isPersistent: ((): boolean => {
                 /**
-                 * We want to return `true` on the server. If you render a message based on `isPersistent` and the
-                 * server returns `false` then the message will flicker until hydration is done:
+                 * We want to return `true` on the server. If you render a message based on
+                 * `isPersistent` and the server returns `false` then the message will flicker until
+                 * hydration is done:
                  * `{!isPersistent && <span>You changes aren't being persisted.</span>}`
                  */
                 if (typeof window === 'undefined') {
