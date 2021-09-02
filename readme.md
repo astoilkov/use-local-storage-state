@@ -67,29 +67,31 @@ export default function Todos() {
 
 ### Reseting to defaults
 
-The `setTodos.reset()` method will reset the value to its default and will remove the key from the `localStorage`. It returns to the same state as when the hook was initially created.
+The `removeItem()` method will reset the value to its default and will remove the key from the `localStorage`. It returns to the same state as when the hook was initially created.
 
 ```tsx
 import useLocalStorageState from 'use-local-storage-state'
 
-const [todos, setTodos] = useLocalStorageState('todos', [
+const [todos, setTodos, { removeItem }] = useLocalStorageState('todos', [
     'buy milk',
     'do 50 push-ups'
 ])
 
-setTodos.reset()
+function onClick() {
+    removeItem()
+}
 ```
 
 ### Handling edge cases with `isPersistent`
 
-There are a few cases when `localStorage` [isn't available](https://github.com/astoilkov/use-local-storage-state/blob/7db8872397eae8b9d2421f068283286847f326ac/index.ts#L3-L11). The `isPersistent` property tells you if the data is persisted in local storage or in-memory. Useful when you want to notify the user that their data won't be persisted.
+There are a few cases when `localStorage` [isn't available](https://github.com/astoilkov/use-local-storage-state/blob/7db8872397eae8b9d2421f068283286847f326ac/index.ts#L3-L11). The `isPersistent` property tells you if the data is persisted in `localStorage` or in-memory. Useful when you want to notify the user that their data won't be persisted.
 
 ```tsx
 import React, { useState } from 'react'
 import useLocalStorageState from 'use-local-storage-state'
 
 export default function Todos() {
-    const [todos, setTodos, isPersistent] = useLocalStorageState('todos', ['buy milk'])
+    const [todos, setTodos, { isPersistent }] = useLocalStorageState('todos', ['buy milk'])
 
     return (
         <>
@@ -105,7 +107,9 @@ export default function Todos() {
 
 ### useLocalStorageState(key, defaultValue?)
 
-Returns `[value, setValue, isPersistent]`. The first two are the same as `useState()`. The third(`isPersistent`) determines if the data is persisted in `localStorage` or in-memory – [example](#is-persistent-example). 
+Returns `[value, setValue, { removeItem, isPersistent }]`. The first two values are the same as `useState()`. The third value contains extra properties specific to `localStorage`:
+- `removeItem()` — [example](#reseting-to-defaults)
+- `isPersistent()` — [example]()asdfasdfasdf
 
 #### key
 

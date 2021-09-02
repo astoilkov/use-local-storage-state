@@ -1,5 +1,8 @@
 import { useEffect } from 'react'
-import useLocalStorageStateBase, { UpdateState } from './useLocalStorageStateBase'
+import useLocalStorageStateBase, {
+    LocalStorageProperties,
+    UpdateState,
+} from './useLocalStorageStateBase'
 
 /**
  * Used to track usages of `useLocalStorageState()` with identical `key` values. If we encounter
@@ -10,15 +13,15 @@ const initializedStorageKeys = new Set<string>()
 
 export default function useLocalStorageState<T = undefined>(
     key: string,
-): [T | undefined, UpdateState<T | undefined>, boolean]
+): [T | undefined, UpdateState<T | undefined>, LocalStorageProperties]
 export default function useLocalStorageState<T>(
     key: string,
     defaultValue: T | (() => T),
-): [T, UpdateState<T>, boolean]
+): [T, UpdateState<T>, LocalStorageProperties]
 export default function useLocalStorageState<T = undefined>(
     key: string,
     defaultValue?: T | (() => T),
-): [T | undefined, UpdateState<T | undefined>, boolean] {
+): [T | undefined, UpdateState<T | undefined>, LocalStorageProperties] {
     const value = useLocalStorageStateBase(key, defaultValue)
 
     /**

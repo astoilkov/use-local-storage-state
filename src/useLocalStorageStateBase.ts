@@ -1,29 +1,30 @@
 import storage from './storage'
 import { useEffect, useMemo, useRef, useState } from 'react'
 
+export type UpdateState<T> = (newValue: T | ((value: T) => T)) => void
 export type SetStateParameter<T> = T | undefined | ((value: T | undefined) => T | undefined)
-export type UpdateState<T> = {
-    reset: () => void
-    (newValue: T | ((value: T) => T)): void
+export type LocalStorageProperties = {
+    isPersistent: boolean
+    removeItem: () => void
 }
 
 export default function useLocalStorageStateBase<T = undefined>(
     key: string,
-): [T | undefined, UpdateState<T | undefined>, boolean]
+): [T | undefined, UpdateState<T | undefined>, LocalStorageProperties]
 export default function useLocalStorageStateBase<T>(
     key: string,
     defaultValue: T | (() => T),
-): [T, UpdateState<T>, boolean]
+): [T, UpdateState<T>, LocalStorageProperties]
 export default function useLocalStorageStateBase<T = undefined>(
     key: string,
     defaultValue?: T | (() => T),
-): [T | undefined, UpdateState<T | undefined>, boolean] {
+): [T | undefined, UpdateState<T | undefined>, LocalStorageProperties] {
     const defaultValueForKey = useMemo(() => {
         const isCallable = (value: unknown): value is () => T => typeof value === 'function'
         return isCallable(defaultValue) ? defaultValue() : defaultValue
 
-        // disabling "exhaustive-deps" on purpose. we don't want to change the default state when
-        // the `defaultValue` is changed.
+        // disabling "exhaustive-deps" because we don't want to change the default state when the
+        // `defaultValue` is changed
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [key])
     const defaultState = useMemo(() => {
@@ -40,8 +41,8 @@ export default function useLocalStorageStateBase<T = undefined>(
                     return true
                 }
                 try {
-                    // ulss = use-local-storage-state
-                    // using shorthand to make library smaller in size
+                    // - ulss = use-local-storage-state
+                    // - using shorthand to make library smaller in size
                     localStorage.setItem('__ulss', '#')
                     localStorage.removeItem('__ulss')
                     return true
@@ -51,9 +52,9 @@ export default function useLocalStorageStateBase<T = undefined>(
             })(),
         }
     }, [key, defaultValueForKey])
-    const [state, setState] = useState(defaultState)
+    const [{ value, isPersistent }, setState] = useState(defaultState)
     const updateValue = useMemo(() => {
-        const fn = (newValue: SetStateParameter<T>): void => {
+        return (newValue: SetStateParameter<T>): void => {
             const isCallable = (value: unknown): value is (value: T | undefined) => T | undefined =>
                 typeof value === 'function'
 
@@ -69,16 +70,7 @@ export default function useLocalStorageStateBase<T = undefined>(
                 })
             }
         }
-        fn.reset = (): void => {
-            storage.remove(key)
-            setState((state) => ({
-                value: defaultValueForKey,
-                isPersistent: state.isPersistent,
-            }))
-        }
-
-        return fn
-    }, [key, defaultValueForKey])
+    }, [key])
 
     // syncs changes across tabs and iframe's
     useEffect(() => {
@@ -112,5 +104,21 @@ export default function useLocalStorageStateBase<T = undefined>(
         setState(defaultState)
     }, [key, defaultState])
 
-    return [state.value, updateValue, state.isPersistent]
+    return useMemo(
+        () => [
+            value,
+            updateValue,
+            {
+                isPersistent: isPersistent,
+                removeItem(): void {
+                    storage.remove(key)
+                    setState((state) => ({
+                        value: defaultValueForKey,
+                        isPersistent: state.isPersistent,
+                    }))
+                },
+            },
+        ],
+        [value, updateValue, isPersistent, key, defaultValueForKey],
+    )
 }

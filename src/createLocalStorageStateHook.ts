@@ -1,49 +1,60 @@
-import { useEffect, useMemo } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
 import useLocalStorageStateBase, {
     UpdateState,
     SetStateParameter,
+    LocalStorageProperties,
 } from './useLocalStorageStateBase'
 
 export default function createLocalStorageStateHook<T = undefined>(
     key: string,
-): () => [T | undefined, UpdateState<T | undefined>, boolean]
+): () => [T | undefined, UpdateState<T | undefined>, LocalStorageProperties]
 export default function createLocalStorageStateHook<T>(
     key: string,
     defaultValue: T | (() => T),
-): () => [T, UpdateState<T>, boolean]
+): () => [T, UpdateState<T>, LocalStorageProperties]
 export default function createLocalStorageStateHook<T>(
     key: string,
     defaultValue?: T | (() => T),
-): () => [T | undefined, UpdateState<T | undefined>, boolean] {
+): () => [T | undefined, UpdateState<T | undefined>, LocalStorageProperties] {
     const setValueFunctions: UpdateState<T | undefined>[] = []
+    const removeItemFunctions: (() => void)[] = []
     return function useLocalStorageStateHook(): [
         T | undefined,
         UpdateState<T | undefined>,
-        boolean,
+        LocalStorageProperties,
     ] {
-        const [value, setValue, isPersistent] = useLocalStorageStateBase<T | undefined>(
-            key,
-            defaultValue,
-        )
-        const setValueAll = useMemo(() => {
-            const fn = (newValue: SetStateParameter<T>): void => {
-                for (const setValueFunction of setValueFunctions) {
-                    setValueFunction(newValue)
-                }
+        const [value, setValue, { isPersistent, removeItem }] = useLocalStorageStateBase<
+            T | undefined
+        >(key, defaultValue)
+        const setValueAll = useCallback((newValue: SetStateParameter<T>) => {
+            for (const setValueFunction of setValueFunctions) {
+                setValueFunction(newValue)
             }
-            fn.reset = (): void => {
-                for (const setValueFunction of setValueFunctions) {
-                    setValueFunction.reset()
-                }
-            }
-            return fn
         }, [])
 
         useEffect(() => {
             setValueFunctions.push(setValue)
-            return (): void => void setValueFunctions.splice(setValueFunctions.indexOf(setValue), 1)
-        }, [setValue])
+            removeItemFunctions.push(removeItem)
+            return (): void => {
+                setValueFunctions.splice(setValueFunctions.indexOf(setValue), 1)
+                removeItemFunctions.splice(removeItemFunctions.indexOf(removeItem), 1)
+            }
+        }, [setValue, removeItem])
 
-        return [value, setValueAll, isPersistent]
+        return useMemo(
+            () => [
+                value,
+                setValueAll,
+                {
+                    isPersistent,
+                    removeItem(): void {
+                        for (const removeItemFunction of removeItemFunctions) {
+                            removeItemFunction()
+                        }
+                    },
+                },
+            ],
+            [value, setValueAll, isPersistent],
+        )
     }
 }

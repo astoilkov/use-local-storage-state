@@ -223,8 +223,7 @@ describe('useLocalStorageState()', () => {
 
     it('isPersistent returns true by default', () => {
         const { result } = renderHook(() => useLocalStorageState('todos', ['first', 'second']))
-
-        const isPersistent = result.current[2]
+        const [, , { isPersistent }] = result.current
         expect(isPersistent).toBe(true)
     })
 
@@ -235,7 +234,7 @@ describe('useLocalStorageState()', () => {
         }
 
         const { result } = renderHook(() => useLocalStorageState('todos', ['first', 'second']))
-        const isPersistent = result.current[2]
+        const [, , { isPersistent }] = result.current
         expect(isPersistent).toBe(false)
 
         Storage.prototype.setItem = setItem
@@ -253,8 +252,7 @@ describe('useLocalStorageState()', () => {
             const setTodos = result.current[1]
             setTodos(['second', 'third'])
         })
-        const todos = result.current[0]
-        const isPersistent = result.current[2]
+        const [todos, , { isPersistent }] = result.current
         expect(todos).toEqual(['second', 'third'])
         expect(isPersistent).toBe(false)
 
@@ -268,7 +266,7 @@ describe('useLocalStorageState()', () => {
         })
 
         function Component() {
-            const [, , isPersistent] = useLocalStorageState('todos', ['first', 'second'])
+            const [, , { isPersistent }] = useLocalStorageState('todos', ['first', 'second'])
             expect(isPersistent).toBe(true)
             return null
         }
@@ -293,7 +291,7 @@ describe('useLocalStorageState()', () => {
             )
         })
 
-        const isPersistent = result.current[2]
+        const [, , { isPersistent }] = result.current
         expect(isPersistent).toBe(true)
     })
 
@@ -345,8 +343,8 @@ describe('useLocalStorageState()', () => {
             useLocalStorageState<string[]>('todos', ['first', 'second']),
         )
         act(() => {
-            const [, setValue] = resultB.current
-            setValue.reset()
+            const [, , { removeItem }] = resultB.current
+            removeItem()
         })
         unmountB()
 
@@ -371,8 +369,8 @@ describe('useLocalStorageState()', () => {
             useLocalStorageState<string[]>('todos', () => ['first', 'second']),
         )
         act(() => {
-            const [, setValue] = resultB.current
-            setValue.reset()
+            const [, , { removeItem }] = resultB.current
+            removeItem()
         })
         unmountB()
 
@@ -463,11 +461,11 @@ describe('createLocalStorageStateHook()', () => {
 
         act(() => {
             const setTodosA = resultA.current[1]
-            const setTodosB = resultB.current[1]
+            const removeTodosB = resultB.current[2].removeItem
 
             setTodosA(['third', 'forth'])
 
-            setTodosB.reset()
+            removeTodosB()
         })
 
         const [todos] = resultB.current
