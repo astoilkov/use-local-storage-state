@@ -4,6 +4,7 @@
     "description": "React hook that persist data in localStorage",
     "license": "MIT",
     "repository": "astoilkov/use-local-storage-state",
+    "funding": "https://github.com/sponsors/astoilkov",
     "author": {
         "name": "Antonio Stoilkov",
         "email": "hello@astoilkov.com",
