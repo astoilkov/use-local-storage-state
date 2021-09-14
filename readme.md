@@ -109,7 +109,7 @@ export default function Todos() {
 
 Returns `[value, setValue, { removeItem, isPersistent }]`. The first two values are the same as `useState()`. The third value contains extra properties specific to `localStorage`:
 - `removeItem()` — [example](#reseting-to-defaults)
-- `isPersistent()` — [example](#handling-edge-cases-with)
+- `isPersistent()` — [example](#handling-edge-cases-with-is-persistent)
 
 #### key
 
