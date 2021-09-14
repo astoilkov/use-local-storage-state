@@ -411,6 +411,12 @@ describe('useLocalStorageState()', () => {
         const [value] = result.current
         expect(value).toEqual('B')
     })
+
+    it(`when defaultValue isn't provided — don't write to localStorage on initial render`, () => {
+        renderHook(() => useLocalStorageState('todos'))
+
+        expect(localStorage.getItem('todos')).toEqual(null)
+    })
 })
 
 describe('createLocalStorageStateHook()', () => {
@@ -470,5 +476,12 @@ describe('createLocalStorageStateHook()', () => {
 
         const [todos] = resultB.current
         expect(todos).toEqual(['first', 'second'])
+    })
+
+    it("when defaultValue isn't provided — don't write to localStorage on initial render", () => {
+        const useTodos = createLocalStorageStateHook('todos')
+        renderHook(() => useTodos())
+
+        expect(localStorage.getItem('todos')).toEqual(null)
     })
 })

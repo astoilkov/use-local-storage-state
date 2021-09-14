@@ -90,6 +90,11 @@ export default function useLocalStorageStateBase<T = undefined>(
 
     const isFirstRender = useRef(true)
     useEffect(() => {
+        // https://github.com/astoilkov/use-local-storage-state/issues/30
+        if (isFirstRender.current && defaultState.value === undefined) {
+            return
+        }
+
         // set the `defaultValue` in the localStorage on initial render:
         // https://github.com/astoilkov/use-local-storage-state/issues/26
         storage.set(key, defaultState.value)
