@@ -11,17 +11,15 @@
         "url": "http://astoilkov.com"
     },
     "keywords": [
-        "use",
-        "hook",
-        "local",
-        "hooks",
         "react",
-        "state",
-        "store",
-        "storage",
-        "persistent",
+        "hook",
         "localStorage",
-        "local storage"
+        "persistent",
+        "state",
+        "useState",
+        "hooks",
+        "local storage",
+        "store"
     ],
     "module": "es/index.js",
     "jsnext:main": "es/index.js",
