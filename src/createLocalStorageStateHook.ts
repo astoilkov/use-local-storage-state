@@ -1,3 +1,4 @@
+import { unstable_batchedUpdates } from 'react-dom'
 import { useCallback, useEffect, useMemo } from 'react'
 import useLocalStorageStateBase, {
     UpdateState,
@@ -27,9 +28,11 @@ export default function createLocalStorageStateHook<T>(
             T | undefined
         >(key, defaultValue)
         const setValueAll = useCallback((newValue: SetStateParameter<T>) => {
-            for (const setValueFunction of setValueFunctions) {
-                setValueFunction(newValue)
-            }
+            unstable_batchedUpdates(() => {
+                for (const setValueFunction of setValueFunctions) {
+                    setValueFunction(newValue)
+                }
+            })
         }, [])
 
         useEffect(() => {
