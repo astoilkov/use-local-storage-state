@@ -6,6 +6,9 @@ import useLocalStorageStateBase, {
     LocalStorageProperties,
 } from './useLocalStorageStateBase'
 
+export default function createLocalStorageStateHook(
+    key: string,
+): () => [unknown, UpdateState<unknown>, LocalStorageProperties]
 export default function createLocalStorageStateHook<T = undefined>(
     key: string,
 ): () => [T | undefined, UpdateState<T | undefined>, LocalStorageProperties]

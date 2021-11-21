@@ -11,6 +11,9 @@ import useLocalStorageStateBase, {
  */
 const initializedStorageKeys = new Set<string>()
 
+export default function useLocalStorageState(
+    key: string,
+): [unknown, UpdateState<unknown>, LocalStorageProperties]
 export default function useLocalStorageState<T = undefined>(
     key: string,
 ): [T | undefined, UpdateState<T | undefined>, LocalStorageProperties]
