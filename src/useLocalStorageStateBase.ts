@@ -19,7 +19,7 @@ export default function useLocalStorageStateBase<T = undefined>(
     key: string,
     defaultValue?: T | (() => T),
 ): [T | undefined, UpdateState<T | undefined>, LocalStorageProperties] {
-    const defaultValueForKey = useMemo(() => {
+    const unwrappedDefaultValue = useMemo(() => {
         const isCallable = (value: unknown): value is () => T => typeof value === 'function'
         return isCallable(defaultValue) ? defaultValue() : defaultValue
 
@@ -29,7 +29,7 @@ export default function useLocalStorageStateBase<T = undefined>(
     }, [key])
     const defaultState = useMemo(() => {
         return {
-            value: storage.get(key, defaultValueForKey),
+            value: storage.get(key, unwrappedDefaultValue),
             isPersistent: ((): boolean => {
                 /**
                  * We want to return `true` on the server. If you render a message based on
@@ -51,7 +51,7 @@ export default function useLocalStorageStateBase<T = undefined>(
                 }
             })(),
         }
-    }, [key, defaultValueForKey])
+    }, [key, unwrappedDefaultValue])
     const [{ value, isPersistent }, setState] = useState(defaultState)
     const updateValue = useMemo(() => {
         return (newValue: SetStateParameter<T>): void => {
@@ -77,7 +77,7 @@ export default function useLocalStorageStateBase<T = undefined>(
         const onStorage = (e: StorageEvent): void => {
             if (e.storageArea === localStorage && e.key === key) {
                 setState({
-                    value: storage.get(key, defaultValueForKey),
+                    value: storage.get(key, unwrappedDefaultValue),
                     isPersistent: true,
                 })
             }
@@ -86,7 +86,7 @@ export default function useLocalStorageStateBase<T = undefined>(
         window.addEventListener('storage', onStorage)
 
         return (): void => window.removeEventListener('storage', onStorage)
-    }, [key, defaultValueForKey])
+    }, [key, unwrappedDefaultValue])
 
     const isFirstRender = useRef(true)
     useEffect(() => {
@@ -116,12 +116,12 @@ export default function useLocalStorageStateBase<T = undefined>(
                 removeItem(): void {
                     storage.remove(key)
                     setState((state) => ({
-                        value: defaultValueForKey,
+                        value: unwrappedDefaultValue,
                         isPersistent: state.isPersistent,
                     }))
                 },
             },
         ],
-        [value, updateValue, isPersistent, key, defaultValueForKey],
+        [value, updateValue, isPersistent, key, unwrappedDefaultValue],
     )
 }
