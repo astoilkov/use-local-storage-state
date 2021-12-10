@@ -418,6 +418,15 @@ describe('useLocalStorageState()', () => {
 
         expect(localStorage.getItem('todos')).toEqual(null)
     })
+
+    // https://github.com/astoilkov/use-local-storage-state/issues/33
+    it(`localStorage value shouldn't be overwritten`, () => {
+        localStorage.setItem('color', 'red')
+
+        renderHook(() => useLocalStorageState('color', 'blue'))
+
+        expect(localStorage.getItem('color')).toEqual('red')
+    })
 })
 
 describe('createLocalStorageStateHook()', () => {

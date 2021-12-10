@@ -95,9 +95,12 @@ export default function useLocalStorageStateBase<T = undefined>(
             return
         }
 
-        // set the `defaultValue` in the localStorage on initial render:
-        // https://github.com/astoilkov/use-local-storage-state/issues/26
-        storage.set(key, defaultState.value)
+        // https://github.com/astoilkov/use-local-storage-state/issues/33
+        if (localStorage.getItem(key) === null) {
+            // set the `defaultValue` in the localStorage on initial render:
+            // https://github.com/astoilkov/use-local-storage-state/issues/26
+            storage.set(key, defaultState.value)
+        }
 
         if (isFirstRender.current) {
             isFirstRender.current = false
