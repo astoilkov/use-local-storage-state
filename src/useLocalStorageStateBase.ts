@@ -114,7 +114,7 @@ export default function useLocalStorageStateBase<T = undefined>(
             value,
             updateValue,
             {
-                isPersistent: isPersistent,
+                isPersistent,
                 removeItem(): void {
                     storage.remove(key)
                     setState((state) => ({
