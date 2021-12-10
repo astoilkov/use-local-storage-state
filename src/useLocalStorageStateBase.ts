@@ -90,26 +90,21 @@ export default function useLocalStorageStateBase<T = undefined>(
 
     const isFirstRender = useRef(true)
     useEffect(() => {
-        // https://github.com/astoilkov/use-local-storage-state/issues/30
-        if (isFirstRender.current && defaultState.value === undefined) {
-            return
-        }
-
-        // https://github.com/astoilkov/use-local-storage-state/issues/33
-        if (localStorage.getItem(key) === null) {
-            // set the `defaultValue` in the localStorage on initial render:
-            // https://github.com/astoilkov/use-local-storage-state/issues/26
+        // initial issue: https://github.com/astoilkov/use-local-storage-state/issues/26
+        // issues that were caused by incorrect initial and secondary implementations:
+        // - https://github.com/astoilkov/use-local-storage-state/issues/30
+        // - https://github.com/astoilkov/use-local-storage-state/issues/33
+        if (defaultState.value !== undefined && localStorage.getItem(key) === null) {
             storage.set(key, defaultState.value)
         }
 
-        // call `setState(defaultState)` below when the `key` property changes (not on first render
-        // because this will cause a second unnecessary render)
+        // call `setState(defaultState)` below only when the `key` property changes — not on first
+        // render because this will cause a second unnecessary render
         if (isFirstRender.current) {
             isFirstRender.current = false
-            return
+        } else {
+            setState(defaultState)
         }
-
-        setState(defaultState)
     }, [key, defaultState])
 
     return useMemo(
