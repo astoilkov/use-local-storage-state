@@ -412,6 +412,7 @@ describe('useLocalStorageState()', () => {
         expect(value).toEqual('B')
     })
 
+    // https://github.com/astoilkov/use-local-storage-state/issues/30
     it(`when defaultValue isn't provided — don't write to localStorage on initial render`, () => {
         renderHook(() => useLocalStorageState('todos'))
 
@@ -478,6 +479,7 @@ describe('createLocalStorageStateHook()', () => {
         expect(todos).toEqual(['first', 'second'])
     })
 
+    // https://github.com/astoilkov/use-local-storage-state/issues/30
     it("when defaultValue isn't provided — don't write to localStorage on initial render", () => {
         const useTodos = createLocalStorageStateHook('todos')
         renderHook(() => useTodos())
