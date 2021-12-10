@@ -102,13 +102,13 @@ export default function useLocalStorageStateBase<T = undefined>(
             storage.set(key, defaultState.value)
         }
 
+        // call `setState(defaultState)` below when the `key` property changes (not on first render
+        // because this will cause a second unnecessary render)
         if (isFirstRender.current) {
             isFirstRender.current = false
             return
         }
 
-        // update the state when the `key` property changes (not on first render because this will
-        // cause a second unnecessary render)
         setState(defaultState)
     }, [key, defaultState])
 
