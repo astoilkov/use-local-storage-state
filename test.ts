@@ -1,7 +1,12 @@
 import { createElement, useMemo } from 'react'
 import { renderToString } from 'react-dom/server'
 import { renderHook, act } from '@testing-library/react-hooks'
-import { useLocalStorageState, createLocalStorageStateHook } from '.'
+import {
+    useLocalStorageState,
+    createLocalStorageStateHook,
+    useSsrLocalStorageState,
+    createSsrLocalStorageStateHook
+} from '.'
 
 beforeEach(() => {
     localStorage.clear()
@@ -494,5 +499,40 @@ describe('createLocalStorageStateHook()', () => {
         renderHook(() => useTodos())
 
         expect(localStorage.getItem('todos')).toEqual(null)
+    })
+})
+
+describe('useSsrLocalStorageState()', () => {
+    it('basic setup with default value', () => {
+        const { result } = renderHook(() => useSsrLocalStorageState('todos', [1, 2, 3]))
+
+        const [todos] = result.current
+        expect(todos).toEqual([1, 2, 3])
+    })
+
+    it('turns server rendering when `window` object is `undefined`', () => {
+        const windowSpy = jest.spyOn(global, 'window' as any, 'get')
+        windowSpy.mockImplementation(() => {
+            return undefined
+        })
+
+        function Component() {
+            const [todos] = useSsrLocalStorageState('todos', [1, 2, 3])
+            expect(todos).toEqual([1, 2, 3])
+            return null
+        }
+        renderToString(createElement(Component))
+
+        windowSpy.mockRestore()
+    })
+})
+
+describe('createSsrLocalStorageStateHook()', () => {
+    it('basic setup with default value', () => {
+        const useTodos = createSsrLocalStorageStateHook('todos', [1, 2, 3])
+        const { result } = renderHook(() => useTodos())
+
+        const [todos] = result.current
+        expect(todos).toEqual([1, 2, 3])
     })
 })

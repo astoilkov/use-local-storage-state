@@ -1,5 +1,6 @@
 import storage from './storage'
 import { useEffect, useMemo, useRef, useState } from 'react'
+import unwrapValue from './unwrapValue'
 
 export type UpdateState<T> = (newValue: T | ((value: T) => T)) => void
 export type SetStateParameter<T> = T | undefined | ((value: T | undefined) => T | undefined)
@@ -19,14 +20,14 @@ export default function useLocalStorageStateBase<T = undefined>(
     key: string,
     defaultValue?: T | (() => T),
 ): [T | undefined, UpdateState<T | undefined>, LocalStorageProperties] {
-    const unwrappedDefaultValue = useMemo(() => {
-        const isCallable = (value: unknown): value is () => T => typeof value === 'function'
-        return isCallable(defaultValue) ? defaultValue() : defaultValue
+    const unwrappedDefaultValue = useMemo(
+        () => unwrapValue(defaultValue),
 
         // disabling "exhaustive-deps" because we don't want to change the default state when the
         // `defaultValue` is changed
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [key])
+        [key],
+    )
     const defaultState = useMemo(() => {
         return {
             value: storage.get(key, unwrappedDefaultValue),
