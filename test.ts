@@ -1,7 +1,7 @@
 import { createElement, useMemo } from 'react'
 import { renderToString } from 'react-dom/server'
 import { renderHook, act } from '@testing-library/react-hooks'
-import useLocalStorageState, { createLocalStorageStateHook } from '.'
+import { useLocalStorageState, createLocalStorageStateHook } from '.'
 
 beforeEach(() => {
     localStorage.clear()
