@@ -510,6 +510,15 @@ describe('useSsrLocalStorageState()', () => {
         expect(todos).toEqual([1, 2, 3])
     })
 
+    it('if there are already items in localStorage', () => {
+        localStorage.setItem('todos', JSON.stringify([4, 5, 6]))
+
+        const { result } = renderHook(() => useSsrLocalStorageState('todos', [1, 2, 3]))
+
+        const [todos] = result.current
+        expect(todos).toEqual([4, 5, 6])
+    })
+
     it('turns server rendering when `window` object is `undefined`', () => {
         const windowSpy = jest.spyOn(global, 'window' as any, 'get')
         windowSpy.mockImplementation(() => {
