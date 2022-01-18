@@ -1,8 +1,9 @@
 language: node_js
 
 node_js:
+    - '16'
+    - '14'
     - '12'
-    - '10'
 
 # everything below is Code Climate setup based on ↓
 # https://github.com/codeclimate/test-reporter/blob/master/examples/javascript_examples.md
