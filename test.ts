@@ -5,7 +5,7 @@ import {
     useLocalStorageState,
     createLocalStorageStateHook,
     useSsrLocalStorageState,
-    createSsrLocalStorageStateHook
+    createSsrLocalStorageStateHook,
 } from '.'
 
 beforeEach(() => {
@@ -169,17 +169,14 @@ describe('useLocalStorageState()', () => {
     })
 
     it('throws an error on two instances with the same key', () => {
-        const consoleError = console.error
-        console.error = () => {}
+        const { result } = renderHook(() => {
+            useLocalStorageState('duplicate-key', 1)
+            useLocalStorageState('duplicate-key', 2)
+        })
 
-        expect(() => {
-            renderHook(() => {
-                useLocalStorageState('todos', ['first', 'second'])
-                useLocalStorageState('todos', ['second', 'third'])
-            })
-        }).toThrow()
-
-        console.error = consoleError
+        expect(result.error?.message).toContain(
+            'When using the same key in multiple places use createLocalStorageStateHook',
+        )
     })
 
     it('does not throw an error on two instances with different keys', () => {
