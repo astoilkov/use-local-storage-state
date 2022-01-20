@@ -1,6 +1,6 @@
 import storage from './storage'
-import { useEffect, useMemo, useRef, useState } from 'react'
 import unwrapValue from './unwrapValue'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 export type UpdateState<T> = (newValue: T | ((value: T) => T)) => void
 export type SetStateParameter<T> = T | undefined | ((value: T | undefined) => T | undefined)
@@ -54,22 +54,18 @@ export default function useLocalStorageStateBase<T = undefined>(
         }
     }, [key, unwrappedDefaultValue])
     const [{ value, isPersistent }, setState] = useState(defaultState)
-    const updateValue = useMemo(
-        () =>
-            (newValue: SetStateParameter<T>): void =>
-                setState((state) => {
-                    const isCallable = (
-                        value: unknown,
-                    ): value is (value: T | undefined) => T | undefined =>
-                        typeof value === 'function'
-                    const newUnwrappedValue = isCallable(newValue)
-                        ? newValue(state.value)
-                        : newValue
-                    return {
-                        value: newUnwrappedValue,
-                        isPersistent: storage.set(key, newUnwrappedValue),
-                    }
-                }),
+    const updateValue = useCallback(
+        (newValue: SetStateParameter<T>) =>
+            setState((state) => {
+                const isCallable = (
+                    value: unknown,
+                ): value is (value: T | undefined) => T | undefined => typeof value === 'function'
+                const newUnwrappedValue = isCallable(newValue) ? newValue(state.value) : newValue
+                return {
+                    value: newUnwrappedValue,
+                    isPersistent: storage.set(key, newUnwrappedValue),
+                }
+            }),
         [key],
     )
 
