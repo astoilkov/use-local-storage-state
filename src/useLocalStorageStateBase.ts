@@ -54,24 +54,24 @@ export default function useLocalStorageStateBase<T = undefined>(
         }
     }, [key, unwrappedDefaultValue])
     const [{ value, isPersistent }, setState] = useState(defaultState)
-    const updateValue = useMemo(() => {
-        return (newValue: SetStateParameter<T>): void => {
-            const isCallable = (value: unknown): value is (value: T | undefined) => T | undefined =>
-                typeof value === 'function'
-
-            if (isCallable(newValue)) {
-                setState((state) => ({
-                    value: newValue(state.value),
-                    isPersistent: storage.set(key, newValue(state.value)),
-                }))
-            } else {
-                setState({
-                    value: newValue,
-                    isPersistent: storage.set(key, newValue),
-                })
-            }
-        }
-    }, [key])
+    const updateValue = useMemo(
+        () =>
+            (newValue: SetStateParameter<T>): void =>
+                setState((state) => {
+                    const isCallable = (
+                        value: unknown,
+                    ): value is (value: T | undefined) => T | undefined =>
+                        typeof value === 'function'
+                    const newUnwrappedValue = isCallable(newValue)
+                        ? newValue(state.value)
+                        : newValue
+                    return {
+                        value: newUnwrappedValue,
+                        isPersistent: storage.set(key, newUnwrappedValue),
+                    }
+                }),
+        [key],
+    )
 
     // syncs change across tabs and iframe's
     useEffect(() => {
