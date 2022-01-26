@@ -128,18 +128,18 @@ The initial value of the data. The same as `useState(defaultValue)` property.
 
 <div id="create-local-storage-state-hook"></div>
 
-### createLocalStorageStateHook(key, defaultValue?)
+### createLocalStorageHook(key, defaultValue?)
 
-If you want to have the same data in multiple components in your code use `createLocalStorageStateHook()` instead of `useLocalStorageState()`. This avoids:
+If you want to have the same data in multiple components in your code use `createLocalStorageHook()` instead of `useLocalStorageState()`. This avoids:
 - maintenance issues with duplicate code that should always be in sync
 - conflicts with different default values
 - `key` parameter misspellings
 
 ```typescript
-import { createLocalStorageStateHook } from 'use-local-storage-state'
+import { createLocalStorageHook } from 'use-local-storage-state'
 
 // Todos.tsx
-const useTodos = createLocalStorageStateHook('todos', [
+const useTodos = createLocalStorageHook('todos', [
     'buy milk',
     'do 50 push-ups'
 ])

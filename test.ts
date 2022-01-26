@@ -1,15 +1,13 @@
 import { createElement, useMemo } from 'react'
 import { renderToString } from 'react-dom/server'
+import useLocalStorageState from './src/useLocalStorageState'
 import { renderHook, act } from '@testing-library/react-hooks'
-import {
-    useLocalStorageState,
-    createLocalStorageStateHook,
-    useSsrLocalStorageState,
-    createSsrLocalStorageStateHook,
-} from '.'
+import createLocalStorageHook from './src/createLocalStorageHook'
+import storage from './src/storage'
 
 beforeEach(() => {
     localStorage.clear()
+    storage.data.clear()
 })
 
 describe('useLocalStorageState()', () => {
@@ -168,17 +166,6 @@ describe('useLocalStorageState()', () => {
         expect(todos).toEqual(['third', 'forth'])
     })
 
-    it('throws an error on two instances with the same key', () => {
-        const { result } = renderHook(() => {
-            useLocalStorageState('duplicate-key', 1)
-            useLocalStorageState('duplicate-key', 2)
-        })
-
-        expect(result.error?.message).toContain(
-            'When using the same key in multiple places use createLocalStorageStateHook',
-        )
-    })
-
     it('does not throw an error on two instances with different keys', () => {
         expect(() => {
             renderHook(() => {
@@ -210,7 +197,7 @@ describe('useLocalStorageState()', () => {
             throw new Error()
         }
 
-        const useTodos = createLocalStorageStateHook('todos', ['first'])
+        const useTodos = createLocalStorageHook('todos', ['first'])
         const { result: resultA } = renderHook(() => useTodos())
         act(() => {
             const setValue = resultA.current[1]
@@ -433,7 +420,7 @@ describe('useLocalStorageState()', () => {
 
 describe('createLocalStorageStateHook()', () => {
     it('storage event updates state', () => {
-        const useTodos = createLocalStorageStateHook('todos', ['first', 'second'])
+        const useTodos = createLocalStorageHook('todos', ['first', 'second'])
         const { result: resultA } = renderHook(() => useTodos())
         const { result: resultB } = renderHook(() => useTodos())
 
@@ -458,7 +445,7 @@ describe('createLocalStorageStateHook()', () => {
     })
 
     it('calling update from one hook updates the other', () => {
-        const useTodos = createLocalStorageStateHook('todos', ['first', 'second'])
+        const useTodos = createLocalStorageHook('todos', ['first', 'second'])
         const { result: resultA } = renderHook(() => useTodos())
         const { result: resultB } = renderHook(() => useTodos())
 
@@ -473,7 +460,7 @@ describe('createLocalStorageStateHook()', () => {
     })
 
     it('can reset value to default', () => {
-        const useTodos = createLocalStorageStateHook('todos', ['first', 'second'])
+        const useTodos = createLocalStorageHook('todos', ['first', 'second'])
         const { result: resultA } = renderHook(() => useTodos())
         const { result: resultB } = renderHook(() => useTodos())
 
@@ -492,53 +479,53 @@ describe('createLocalStorageStateHook()', () => {
 
     // https://github.com/astoilkov/use-local-storage-state/issues/30
     it("when defaultValue isn't provided — don't write to localStorage on initial render", () => {
-        const useTodos = createLocalStorageStateHook('todos')
+        const useTodos = createLocalStorageHook('todos')
         renderHook(() => useTodos())
 
         expect(localStorage.getItem('todos')).toEqual(null)
     })
 })
 
-describe('useSsrLocalStorageState()', () => {
-    it('basic setup with default value', () => {
-        const { result } = renderHook(() => useSsrLocalStorageState('todos', [1, 2, 3]))
-
-        const [todos] = result.current
-        expect(todos).toEqual([1, 2, 3])
-    })
-
-    it('if there are already items in localStorage', () => {
-        localStorage.setItem('todos', JSON.stringify([4, 5, 6]))
-
-        const { result } = renderHook(() => useSsrLocalStorageState('todos', [1, 2, 3]))
-
-        const [todos] = result.current
-        expect(todos).toEqual([4, 5, 6])
-    })
-
-    it('turns server rendering when `window` object is `undefined`', () => {
-        const windowSpy = jest.spyOn(global, 'window' as any, 'get')
-        windowSpy.mockImplementation(() => {
-            return undefined
-        })
-
-        function Component() {
-            const [todos] = useSsrLocalStorageState('todos', [1, 2, 3])
-            expect(todos).toEqual([1, 2, 3])
-            return null
-        }
-        renderToString(createElement(Component))
-
-        windowSpy.mockRestore()
-    })
-})
-
-describe('createSsrLocalStorageStateHook()', () => {
-    it('basic setup with default value', () => {
-        const useTodos = createSsrLocalStorageStateHook('todos', [1, 2, 3])
-        const { result } = renderHook(() => useTodos())
-
-        const [todos] = result.current
-        expect(todos).toEqual([1, 2, 3])
-    })
-})
+// describe('useSsrLocalStorageState()', () => {
+//     it('basic setup with default value', () => {
+//         const { result } = renderHook(() => useSsrLocalStorageState('todos', [1, 2, 3]))
+//
+//         const [todos] = result.current
+//         expect(todos).toEqual([1, 2, 3])
+//     })
+//
+//     it('if there are already items in localStorage', () => {
+//         localStorage.setItem('todos', JSON.stringify([4, 5, 6]))
+//
+//         const { result } = renderHook(() => useSsrLocalStorageState('todos', [1, 2, 3]))
+//
+//         const [todos] = result.current
+//         expect(todos).toEqual([4, 5, 6])
+//     })
+//
+//     it('turns server rendering when `window` object is `undefined`', () => {
+//         const windowSpy = jest.spyOn(global, 'window' as any, 'get')
+//         windowSpy.mockImplementation(() => {
+//             return undefined
+//         })
+//
+//         function Component() {
+//             const [todos] = useSsrLocalStorageState('todos', [1, 2, 3])
+//             expect(todos).toEqual([1, 2, 3])
+//             return null
+//         }
+//         renderToString(createElement(Component))
+//
+//         windowSpy.mockRestore()
+//     })
+// })
+//
+// describe('createSsrLocalStorageStateHook()', () => {
+//     it('basic setup with default value', () => {
+//         const useTodos = createSsrLocalStorageStateHook('todos', [1, 2, 3])
+//         const { result } = renderHook(() => useTodos())
+//
+//         const [todos] = result.current
+//         expect(todos).toEqual([1, 2, 3])
+//     })
+// })

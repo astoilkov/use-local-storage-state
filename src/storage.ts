@@ -7,29 +7,28 @@
  * - trying to access localStorage object when cookies are disabled in Safari throws
  *   "SecurityError: The operation is insecure."
  */
-const data: Record<string, unknown> = {}
 export default {
+    data: new Map<string, unknown>(),
     get<T>(key: string, defaultValue: T): T | undefined {
         try {
-            return (data[key] as T | undefined) ?? parseJSON<T>(localStorage.getItem(key))
+            return this.data.has(key)
+                ? (this.data.get(key) as T | undefined)
+                : parseJSON<T>(localStorage.getItem(key))
         } catch {
             return defaultValue
         }
     },
-    set<T>(key: string, value: T): boolean {
+    set<T>(key: string, value: T): void {
         try {
             localStorage.setItem(key, JSON.stringify(value))
 
-            data[key] = undefined
-
-            return true
+            this.data.delete(key)
         } catch {
-            data[key] = value
-            return false
+            this.data.set(key, value)
         }
     },
     remove(key: string): void {
-        data[key] = undefined
+        this.data.delete(key)
         localStorage.removeItem(key)
     },
 }

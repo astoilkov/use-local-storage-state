@@ -1,30 +1,31 @@
 import { useMemo } from 'react'
 import useSsrMismatch from './useSsrMismatch'
-import createLocalStorageStateHook from './createLocalStorageStateHook'
-import { UpdateState, LocalStorageProperties } from './useLocalStorageStateBase'
+import useLocalStorageState, { LocalStorageProperties, UpdateState } from './useLocalStorageState'
 
-export default function createSsrLocalStorageStateHook(
+export default function createLocalStorageHook(
     key: string,
 ): () => [unknown, UpdateState<unknown>, LocalStorageProperties]
-export default function createSsrLocalStorageStateHook<T = undefined>(
+export default function createLocalStorageHook<T = undefined>(
     key: string,
 ): () => [T | undefined, UpdateState<T | undefined>, LocalStorageProperties]
-export default function createSsrLocalStorageStateHook<T>(
+export default function createLocalStorageHook<T>(
     key: string,
     defaultValue: T | (() => T),
 ): () => [T, UpdateState<T>, LocalStorageProperties]
-export default function createSsrLocalStorageStateHook<T>(
+export default function createLocalStorageHook<T>(
     key: string,
     defaultValue?: T | (() => T),
 ): () => [T | undefined, UpdateState<T | undefined>, LocalStorageProperties] {
-    const useLocalStorageStateHook = createLocalStorageStateHook(key, defaultValue)
     return function useLocalStorage(): [
         T | undefined,
         UpdateState<T | undefined>,
         LocalStorageProperties,
     ] {
-        const [value, setValue, properties] = useLocalStorageStateHook()
+        const [value, setValue, properties] = useLocalStorageState(key, defaultValue)
         const hydratedValue = useSsrMismatch(defaultValue, value)
+
+        // todo: think about this
+        // const isPersistent = useSsrMismatch(true, properties.isPersistent)
 
         return useMemo(
             () => [hydratedValue, setValue, properties],

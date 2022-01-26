@@ -1,12 +1,3 @@
-import useLocalStorageState from './src/useLocalStorageState'
-import useSsrLocalStorageState from './src/useSsrLocalStorageState'
-import createLocalStorageStateHook from './src/createLocalStorageStateHook'
-import createSsrLocalStorageStateHook from './src/createSsrLocalStorageStateHook'
+import createLocalStorageHook from './src/createLocalStorageHook'
 
-export default useLocalStorageState
-export {
-    useLocalStorageState,
-    useSsrLocalStorageState,
-    createLocalStorageStateHook,
-    createSsrLocalStorageStateHook,
-}
+export default createLocalStorageHook
