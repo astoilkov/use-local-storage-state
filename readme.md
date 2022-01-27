@@ -27,25 +27,35 @@ Few other libraries also try to abstract the usage of localStorage into a hook. 
 ## Usage
 
 ```typescript
-import useLocalStorageState from 'use-local-storage-state'
+import createLocalStorageHook from 'use-local-storage-state'
 
-const [todos, setTodos] = useLocalStorageState('todos', [
-    'buy milk',
-    'do 50 push-ups'
-])
+const useTodos = createLocalStorageHook('todos', {
+    ssr: true,
+    defaultValue: ['buy avocado', 'do 50 push-ups']
+})
+
+export default function Todos() {
+    const [todos, setTodos] = useTodos()
+}
 ```
 
-### Todo list example
+<details>
+<summary>Todo list example + CodeSandbox link</summary>
+<p></p>
 
 You can experiment with the example [here](https://codesandbox.io/s/todos-example-q48ch?file=/src/App.tsx).
 
 ```tsx
 import React, { useState } from 'react'
-import useLocalStorageState from 'use-local-storage-state'
+import createLocalStorateHook from 'use-local-storage-state'
+
+const useTodos = createLocalStorateHook('todos', {
+    defaultValue: ['buy avocado']
+})
 
 export default function Todos() {
+    const [todos, setTodos] = useTodos()
     const [query, setQuery] = useState('')
-    const [todos, setTodos] = useLocalStorageState('todos', ['buy milk'])
 
     function onClick() {
         setQuery('')
@@ -56,33 +66,66 @@ export default function Todos() {
         <>
             <input value={query} onChange={e => setQuery(e.target.value)} />
             <button onClick={onClick}>Create</button>
-            {todos.map(todo => (<div>{todo}</div>))}
+            {todos.map(todo => (
+                <div>{todo}</div>
+            ))}
         </>
     )
 }
 
 ```
 
-<div id="is-persistent-example"></div>
+</details>
 
-### Reseting to defaults
+<details>
+<summary>SSR support</summary>
+
+```tsx
+import createLocalStorageHook from 'use-local-storage-state'
+
+const useTodos = createLocalStorageHook('todos', {
+    ssr: true,
+    defaultValue: ['buy avocado', 'do 50 push-ups']
+})
+
+export default function Todos() {
+    const [todos, setTodos] = useTodos()
+}
+```
+
+</details>
+
+<details>
+<summary>Removing the data from <code>localStorage</code> and resetting to the default</summary>
+<p></p>
+
+<div id="remove-item"></div>
 
 The `removeItem()` method will reset the value to its default and will remove the key from the `localStorage`. It returns to the same state as when the hook was initially created.
 
 ```tsx
 import useLocalStorageState from 'use-local-storage-state'
 
-const [todos, setTodos, { removeItem }] = useLocalStorageState('todos', [
-    'buy milk',
-    'do 50 push-ups'
-])
+const useTodos = createLocalStorateHook('todos', {
+    defaultValue: ['buy avocado']
+})
 
-function onClick() {
-    removeItem()
+export default function Todos() {
+    const [todos, setTodos, { removeItem }] = useTodos()
+
+    function onClick() {
+        removeItem()
+    }
 }
 ```
 
-### Handling edge cases with `isPersistent`
+</details>
+
+<details>
+<summary>Notify the user when <code>localStorage</code> isn't saving the data</summary>
+<p></p>
+
+<div id="is-persistent"></div>
 
 There are a few cases when `localStorage` [isn't available](https://github.com/astoilkov/use-local-storage-state/blob/7db8872397eae8b9d2421f068283286847f326ac/index.ts#L3-L11). The `isPersistent` property tells you if the data is persisted in `localStorage` or in-memory. Useful when you want to notify the user that their data won't be persisted.
 
@@ -90,8 +133,12 @@ There are a few cases when `localStorage` [isn't available](https://github.com/a
 import React, { useState } from 'react'
 import useLocalStorageState from 'use-local-storage-state'
 
+const useTodos = createLocalStorateHook('todos', {
+    defaultValue: ['buy avocado']
+})
+
 export default function Todos() {
-    const [todos, setTodos, { isPersistent }] = useLocalStorageState('todos', ['buy milk'])
+    const [todos, setTodos, { isPersistent }] = useTodos()
 
     return (
         <>
@@ -103,71 +150,39 @@ export default function Todos() {
 
 ```
 
+</details>
+
 ## API
 
-### useLocalStorageState(key, defaultValue?)
+### `createLocalStorageHook(key, options?)`
 
-Returns `[value, setValue, { removeItem, isPersistent }]`. The first two values are the same as `useState()`. The third value contains extra properties specific to `localStorage`:
-- `removeItem()` — [example](#reseting-to-defaults)
-- `isPersistent()` — [example](#handling-edge-cases-with-ispersistent)
+Returns a React hook that returns `[value, setValue, { removeItem, isPersistent }]` when called. The first two values are the same as `useState()`. The third value contains extra properties specific to `localStorage`:
+- `removeItem()` — [example](#remove-item)
+- `isPersistent()` — [example](#is-persistent)
 
-#### key
+### `key`
 
 Type: `string`
 
-The key used when calling `localStorage.setItem(key)`and `localStorage.getItem(key)`.
+The key used when calling `localStorage.setItem(key)` and `localStorage.getItem(key)`.
 
 ⚠️ Be careful with name conflicts as it is possible to access a property which is already in `localStorage` that was created from another place in the codebase or in an old version of the application.
 
-#### defaultValue
+### `options.defaultValue`
 
 Type: `any`
+
 Default: `undefined`
 
 The initial value of the data. The same as `useState(defaultValue)` property.
 
-<div id="create-local-storage-state-hook"></div>
+### `options.ssr`
 
-### createLocalStorageHook(key, defaultValue?)
+Type: `boolean`
 
-If you want to have the same data in multiple components in your code use `createLocalStorageHook()` instead of `useLocalStorageState()`. This avoids:
-- maintenance issues with duplicate code that should always be in sync
-- conflicts with different default values
-- `key` parameter misspellings
+Default: `false`
 
-```typescript
-import { createLocalStorageHook } from 'use-local-storage-state'
-
-// Todos.tsx
-const useTodos = createLocalStorageHook('todos', [
-    'buy milk',
-    'do 50 push-ups'
-])
-function Todos() {
-    const [todos, setTodos] = useTodos()
-}
-
-// Popup.tsx
-import useTodos from './useTodos'
-function Popup() {
-    const [todos, setTodos] = useTodos()
-}
-```
-
-#### key
-
-Type: `string`
-
-The key used when calling `localStorage.setItem(key)`and `localStorage.getItem(key)`.
-
-⚠️ Be careful with name conflicts as it is possible to access a property which is already in `localStorage` that was created from another place in the codebase or in an old version of the application.
-
-#### defaultValue
-
-Type: `any`
-Default: `undefined`
-
-The initial value of the data. The same as `useState(defaultValue)` property.
+Enables SSR support and handles hydration mismatches. Not enabling this can cause the following error: `Warning: Expected server HTML to contain a matching ...`. This is the only library I'm aware of that handles this case. For more, see [discussion here](https://github.com/astoilkov/use-local-storage-state/issues/23).
 
 ## Alternatives
 

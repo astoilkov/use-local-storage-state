@@ -1,6 +1,7 @@
 import storage from './storage'
 import { unstable_batchedUpdates } from 'react-dom'
-import { useEffect, useMemo, useReducer, useRef } from 'react'
+import { useEffect, useMemo, useReducer } from 'react'
+import { LocalStorageProperties, UpdateState } from './createLocalStorageHook'
 
 // todo: explain
 const activeHooks: {
@@ -8,35 +9,22 @@ const activeHooks: {
     forceUpdate: () => void
 }[] = []
 
-export type UpdateState<T> = (newValue: T | ((value: T) => T)) => void
-export type SetStateParameter<T> = T | undefined | ((value: T | undefined) => T | undefined)
-export type LocalStorageProperties = {
-    isPersistent: boolean
-    removeItem: () => void
-}
-
 export default function useLocalStorageState<T = undefined>(
     key: string,
-    defaultValue?: T,
+    defaultValue: T,
 ): [T | undefined, UpdateState<T | undefined>, LocalStorageProperties] {
     const [id, forceUpdate] = useReducer((number) => number + 1, 0)
 
-    // todo: explain
-    const isFirstRenderRef = useRef(true)
-    if (isFirstRenderRef.current) {
-        isFirstRenderRef.current = false
-
-        // initial issue: https://github.com/astoilkov/use-local-storage-state/issues/26
-        // issues that were caused by incorrect initial and secondary implementations:
-        // - https://github.com/astoilkov/use-local-storage-state/issues/30
-        // - https://github.com/astoilkov/use-local-storage-state/issues/33
-        if (
-            defaultValue !== undefined &&
-            !storage.data.has(key) &&
-            localStorage.getItem(key) === null
-        ) {
-            storage.set(key, defaultValue)
-        }
+    // initial issue: https://github.com/astoilkov/use-local-storage-state/issues/26
+    // issues that were caused by incorrect initial and secondary implementations:
+    // - https://github.com/astoilkov/use-local-storage-state/issues/30
+    // - https://github.com/astoilkov/use-local-storage-state/issues/33
+    if (
+        defaultValue !== undefined &&
+        !storage.data.has(key) &&
+        localStorage.getItem(key) === null
+    ) {
+        storage.set(key, defaultValue)
     }
 
     // - syncs change across tabs, windows, iframe's
@@ -68,18 +56,17 @@ export default function useLocalStorageState<T = undefined>(
     return useMemo(
         () => [
             storage.get(key, defaultValue),
-            (newValue: SetStateParameter<T>): void => {
+            (newValue: T | undefined | ((value: T | undefined) => T | undefined)): void => {
+                const isCallable = (
+                    value: unknown,
+                ): value is (value: T | undefined) => T | undefined => typeof value === 'function'
+                const newUnwrappedValue = isCallable(newValue)
+                    ? newValue(storage.get(key, defaultValue))
+                    : newValue
+
+                storage.set(key, newUnwrappedValue)
+
                 unstable_batchedUpdates(() => {
-                    const isCallable = (
-                        value: unknown,
-                    ): value is (value: T | undefined) => T | undefined =>
-                        typeof value === 'function'
-                    const newUnwrappedValue = isCallable(newValue)
-                        ? newValue(storage.get(key, defaultValue))
-                        : newValue
-
-                    storage.set(key, newUnwrappedValue)
-
                     for (const update of activeHooks) {
                         if (update.key === key) {
                             update.forceUpdate()
@@ -89,10 +76,15 @@ export default function useLocalStorageState<T = undefined>(
             },
             {
                 isPersistent: !storage.data.has(key),
+                // todo: better name?
                 removeItem(): void {
                     storage.remove(key)
 
-                    forceUpdate()
+                    for (const update of activeHooks) {
+                        if (update.key === key) {
+                            update.forceUpdate()
+                        }
+                    }
                 },
             },
         ],

@@ -1,10 +1,19 @@
 import { useMemo } from 'react'
 import useSsrMismatch from './useSsrMismatch'
-import useLocalStorageState, { LocalStorageProperties, UpdateState } from './useLocalStorageState'
+import useLocalStorageState from './useLocalStorageState'
+
+export type UpdateState<T> = (newValue: T | ((value: T) => T)) => void
+export type LocalStorageProperties = {
+    isPersistent: boolean
+    removeItem: () => void
+}
 
 export default function createLocalStorageHook(
     key: string,
 ): () => [unknown, UpdateState<unknown>, LocalStorageProperties]
+export default function createLocalStorageHook<T>(
+    key: string,
+): () => [T | undefined, UpdateState<T | undefined>, LocalStorageProperties]
 export default function createLocalStorageHook<T>(
     key: string,
     options?: { defaultValue?: T | (() => T); ssr?: boolean },
