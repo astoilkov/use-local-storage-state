@@ -79,20 +79,6 @@
             "path": "es/index.js",
             "limit": "2 KB",
             "gzip": false
-        },
-        {
-            "name": "import { useLocalStorageState }",
-            "path": "es/index.js",
-            "import": "{ useLocalStorageState }",
-            "limit": "1.6 KB",
-            "gzip": false
-        },
-        {
-            "name": "import { createLocalStorageState }",
-            "path": "es/index.js",
-            "import": "{ createLocalStorageStateHook }",
-            "limit": "1.6 KB",
-            "gzip": false
         }
     ]
 }

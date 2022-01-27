@@ -1,7 +1,12 @@
 import storage from './storage'
-import unwrapValue from './unwrapValue'
 import { unstable_batchedUpdates } from 'react-dom'
 import { useEffect, useMemo, useReducer, useRef } from 'react'
+
+// todo: explain
+const activeHooks: {
+    key: string
+    forceUpdate: () => void
+}[] = []
 
 export type UpdateState<T> = (newValue: T | ((value: T) => T)) => void
 export type SetStateParameter<T> = T | undefined | ((value: T | undefined) => T | undefined)
@@ -10,31 +15,29 @@ export type LocalStorageProperties = {
     removeItem: () => void
 }
 
-const activeHooks: {
-    key: string
-    forceUpdate: () => void
-}[] = []
-
 export default function useLocalStorageState<T = undefined>(
     key: string,
-): [T | undefined, UpdateState<T | undefined>, LocalStorageProperties]
-export default function useLocalStorageState<T>(
-    key: string,
-    defaultValue: T | (() => T),
-): [T, UpdateState<T>, LocalStorageProperties]
-export default function useLocalStorageState<T = undefined>(
-    key: string,
-    defaultValue?: T | (() => T),
+    defaultValue?: T,
 ): [T | undefined, UpdateState<T | undefined>, LocalStorageProperties] {
     const [id, forceUpdate] = useReducer((number) => number + 1, 0)
-    const unwrappedDefaultValue = useMemo(
-        () => unwrapValue(defaultValue),
 
-        // disabling "exhaustive-deps" because we don't want to change the default state when the
-        // `defaultValue` is changed
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-        [key],
-    )
+    // todo: explain
+    const isFirstRenderRef = useRef(true)
+    if (isFirstRenderRef.current) {
+        isFirstRenderRef.current = false
+
+        // initial issue: https://github.com/astoilkov/use-local-storage-state/issues/26
+        // issues that were caused by incorrect initial and secondary implementations:
+        // - https://github.com/astoilkov/use-local-storage-state/issues/30
+        // - https://github.com/astoilkov/use-local-storage-state/issues/33
+        if (
+            defaultValue !== undefined &&
+            !storage.data.has(key) &&
+            localStorage.getItem(key) === null
+        ) {
+            storage.set(key, defaultValue)
+        }
+    }
 
     // - syncs change across tabs, windows, iframe's
     // - the `storage` event is called only in all tabs, windows, iframe's except the one that
@@ -49,25 +52,11 @@ export default function useLocalStorageState<T = undefined>(
         window.addEventListener('storage', onStorage)
 
         return (): void => window.removeEventListener('storage', onStorage)
-    }, [key, unwrappedDefaultValue])
 
-    const isFirstRenderRef = useRef(true)
-    if (isFirstRenderRef.current) {
-        isFirstRenderRef.current = false
+        // `key` never changes
+    }, [key])
 
-        // initial issue: https://github.com/astoilkov/use-local-storage-state/issues/26
-        // issues that were caused by incorrect initial and secondary implementations:
-        // - https://github.com/astoilkov/use-local-storage-state/issues/30
-        // - https://github.com/astoilkov/use-local-storage-state/issues/33
-        if (
-            unwrappedDefaultValue !== undefined &&
-            !storage.data.has(key) &&
-            localStorage.getItem(key) === null
-        ) {
-            storage.set(key, unwrappedDefaultValue)
-        }
-    }
-
+    // todo: explain
     useEffect(() => {
         const entry = { key, forceUpdate }
         activeHooks.push(entry)
@@ -78,7 +67,7 @@ export default function useLocalStorageState<T = undefined>(
 
     return useMemo(
         () => [
-            storage.get(key, unwrappedDefaultValue),
+            storage.get(key, defaultValue),
             (newValue: SetStateParameter<T>): void => {
                 unstable_batchedUpdates(() => {
                     const isCallable = (
@@ -86,7 +75,7 @@ export default function useLocalStorageState<T = undefined>(
                     ): value is (value: T | undefined) => T | undefined =>
                         typeof value === 'function'
                     const newUnwrappedValue = isCallable(newValue)
-                        ? newValue(storage.get(key, unwrappedDefaultValue))
+                        ? newValue(storage.get(key, defaultValue))
                         : newValue
 
                     storage.set(key, newUnwrappedValue)
@@ -107,7 +96,9 @@ export default function useLocalStorageState<T = undefined>(
                 },
             },
         ],
+
+        // todo: explain why
         // eslint-disable-next-line react-hooks/exhaustive-deps
-        [id, key, unwrappedDefaultValue],
+        [id, key],
     )
 }

@@ -1,7 +1,6 @@
-import unwrapValue from './unwrapValue'
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 
-export default function useSsrMismatch<T>(defaultValue: T | (() => T), value: T): T {
+export default function useSsrMismatch<T>(defaultValue: T, value: T): T {
     const isFirstRender = useRef(true)
     const [_, forceUpdate] = useState(false)
     // - use `useEffect()` on the server and `useLayoutEffect()` in the browser
@@ -9,7 +8,7 @@ export default function useSsrMismatch<T>(defaultValue: T | (() => T), value: T)
     const useIsomorphicEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect
 
     useIsomorphicEffect(() => {
-        if (unwrapValue(defaultValue) !== value) {
+        if (defaultValue !== value) {
             forceUpdate(true)
         }
 
@@ -17,7 +16,7 @@ export default function useSsrMismatch<T>(defaultValue: T | (() => T), value: T)
     }, [])
 
     if (isFirstRender.current) {
-        return unwrapValue(defaultValue)
+        return defaultValue
     }
 
     return value
