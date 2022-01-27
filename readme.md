@@ -15,13 +15,10 @@ npm install use-local-storage-state
 
 ## Why
 
-Few other libraries also try to abstract the usage of localStorage into a hook. Here are the reasons why you would consider this one:
-
-- Uses `JSON.parse()` and `JSON.stringify()` to support non string values
-- SSR support
-- 100% test coverage. No `istanbul ignore`
-- Handles edge cases – [example](#is-persistent-example)
-- Subscribes to the Window [`storage`](https://developer.mozilla.org/en-US/docs/Web/API/Window/storage_event) event which tracks changes across browser tabs and iframe's
+- Actively maintained for the past 2 years. See [Contributions](https://github.com/astoilkov/use-local-storage-state/graphs/contributors) page
+- SSR support with handling of hydration mismatches
+- In-memory fallback when `localStorage` throws an error and can't store the data. Provides an API to notify the user if that happens
+- Handles the `Window` [`storage`](https://developer.mozilla.org/en-US/docs/Web/API/Window/storage_event) event and updates changes across browser tabs, windows, and iframe's
 - Aiming for high-quality with [my open-source principles](https://astoilkov.com/my-open-source-principles)
 
 ## Usage
@@ -79,6 +76,9 @@ export default function Todos() {
 
 <details>
 <summary>SSR support</summary>
+<p></p>
+
+SSR supports includes handling of hydration mismatches. This prevents the following error:  `Warning: Expected server HTML to contain a matching ...`. This is the only library I'm aware of that handles this case. For more, see [discussion here](https://github.com/astoilkov/use-local-storage-state/issues/23).
 
 ```tsx
 import createLocalStorageHook from 'use-local-storage-state'
@@ -170,7 +170,7 @@ Type: `any`
 
 Default: `undefined`
 
-The initial value of the data. The same as `useState(defaultValue)` property.
+The default value. The same as `useState(defaultValue)` property.
 
 ### `options.ssr`
 
