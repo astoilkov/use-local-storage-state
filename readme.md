@@ -96,10 +96,8 @@ export default function Todos() {
 </details>
 
 <details>
-<summary>Removing the data from <code>localStorage</code> and resetting to the default</summary>
+<summary id="remove-item">Removing the data from <code>localStorage</code> and resetting to the default</summary>
 <p></p>
-
-<div id="remove-item"></div>
 
 The `removeItem()` method will reset the value to its default and will remove the key from the `localStorage`. It returns to the same state as when the hook was initially created.
 
@@ -122,10 +120,8 @@ export default function Todos() {
 </details>
 
 <details>
-<summary>Notify the user when <code>localStorage</code> isn't saving the data</summary>
+<summary id="is-persistent">Notify the user when <code>localStorage</code> isn't saving the data</summary>
 <p></p>
-
-<div id="is-persistent"></div>
 
 There are a few cases when `localStorage` [isn't available](https://github.com/astoilkov/use-local-storage-state/blob/7db8872397eae8b9d2421f068283286847f326ac/index.ts#L3-L11). The `isPersistent` property tells you if the data is persisted in `localStorage` or in-memory. Useful when you want to notify the user that their data won't be persisted.
 
