@@ -57,16 +57,6 @@ describe('createLocalStorageStateHook()', () => {
         )
     })
 
-    it('accepts a callback as a default value', () => {
-        const useTodos = createLocalStorageHook('todos', {
-            defaultValue: () => ['first', 'second'],
-        })
-        const { result } = renderHook(() => useTodos())
-
-        const [todos] = result.current
-        expect(todos).toEqual(['first', 'second'])
-    })
-
     it('does not fail when having an invalid data in localStorage', () => {
         localStorage.setItem('todos', 'some random string')
 
