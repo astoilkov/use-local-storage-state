@@ -344,29 +344,6 @@ describe('createLocalStorageStateHook()', () => {
         expect(value).toEqual(['first', 'second'])
     })
 
-    it('can reset value to default (default with callback function)', () => {
-        const useTodos = createLocalStorageHook('todos', {
-            defaultValue: () => ['first', 'second'],
-        })
-        const { result: resultA, unmount: unmountA } = renderHook(() => useTodos())
-        act(() => {
-            const [, setValue] = resultA.current
-            setValue(['third', 'forth'])
-        })
-        unmountA()
-
-        const { result: resultB, unmount: unmountB } = renderHook(() => useTodos())
-        act(() => {
-            const [, , { removeItem }] = resultB.current
-            removeItem()
-        })
-        unmountB()
-
-        const { result: resultC } = renderHook(() => useTodos())
-        const [value] = resultC.current
-        expect(value).toEqual(['first', 'second'])
-    })
-
     it('returns the same update function when the value is saved', () => {
         const functionMock = jest.fn()
         const useTodos = createLocalStorageHook('todos', { defaultValue: ['first', 'second'] })
