@@ -53,6 +53,8 @@ export default function useLocalStorageState<T = undefined>(
         return (): void => {
             activeHooks.splice(activeHooks.indexOf(entry), 1)
         }
+
+        // both `key` and `forceUpdate` never change
     }, [key, forceUpdate])
 
     return useMemo(
