@@ -383,9 +383,7 @@ describe('createLocalStorageStateHook()', () => {
 
         expect(localStorage.getItem('color')).toEqual('red')
     })
-})
 
-describe('createLocalStorageStateHook()', () => {
     it('storage event updates state', () => {
         const useTodos = createLocalStorageHook('todos', { defaultValue: ['first', 'second'] })
         const { result: resultA } = renderHook(() => useTodos())
