@@ -16,16 +16,15 @@ export default function createLocalStorageHook<T>(
 ): () => [T | undefined, UpdateState<T | undefined>, LocalStorageProperties]
 export default function createLocalStorageHook<T>(
     key: string,
-    options?: { defaultValue?: T | (() => T); ssr?: boolean },
+    options?: { defaultValue?: T; ssr?: boolean },
 ): () => [T, UpdateState<T>, LocalStorageProperties]
 export default function createLocalStorageHook<T>(
     key: string,
-    options?: { defaultValue?: T | (() => T); ssr?: boolean },
+    options?: { defaultValue?: T; ssr?: boolean },
 ): () => [T | undefined, UpdateState<T | undefined>, LocalStorageProperties] {
-    const isCallable = (value: unknown): value is () => T => typeof value === 'function'
-    const defaultValue = isCallable(options?.defaultValue)
-        ? options?.defaultValue()
-        : options?.defaultValue
+    const defaultValue = options?.defaultValue
+    const ssr = options?.ssr
+
     return function useLocalStorage(): [
         T | undefined,
         UpdateState<T | undefined>,
@@ -34,17 +33,16 @@ export default function createLocalStorageHook<T>(
         const [clientValue, setValue, { isPersistent: clientIsPersistent, removeItem }] =
             useLocalStorageState(key, defaultValue)
 
-        const value =
-            // disabling the eslint warning because the condition will never change its value —
-            // `options?.ssr` comes from the parent scope
-            // eslint-disable-next-line react-hooks/rules-of-hooks
-            options?.ssr === true ? useSsrMismatch(defaultValue, clientValue) : clientValue
+        // disabling the eslint warning because the condition will never change its value — `ssr`
+        // comes from the parent scope
+        // eslint-disable-next-line react-hooks/rules-of-hooks
+        const value = ssr === true ? useSsrMismatch(defaultValue, clientValue) : clientValue
 
         const isPersistent =
-            // disabling the eslint warning because the condition will never change its value —
-            // `options?.ssr` comes from the parent scope
+            // disabling the eslint warning because the condition will never change its value — `ssr`
+            // comes from the parent scope
             // eslint-disable-next-line react-hooks/rules-of-hooks
-            options?.ssr === true ? useSsrMismatch(true, clientIsPersistent) : clientIsPersistent
+            ssr === true ? useSsrMismatch(true, clientIsPersistent) : clientIsPersistent
 
         return useMemo(
             () => [value, setValue, { isPersistent, removeItem }],
