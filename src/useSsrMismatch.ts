@@ -8,11 +8,11 @@ export default function useSsrMismatch<T>(defaultValue: T, value: T): T {
     const useIsomorphicEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect
 
     useIsomorphicEffect(() => {
+        isFirstRender.current = false
+
         if (defaultValue !== value) {
             forceUpdate(true)
         }
-
-        isFirstRender.current = false
     }, [])
 
     if (isFirstRender.current) {
