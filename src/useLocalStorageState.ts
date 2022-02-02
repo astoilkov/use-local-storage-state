@@ -3,7 +3,8 @@ import { unstable_batchedUpdates } from 'react-dom'
 import { useEffect, useMemo, useReducer } from 'react'
 import { LocalStorageProperties, UpdateState } from './createLocalStorageHook'
 
-// todo: explain
+// `activeHooks` holds all active hooks. we use the array to update all hooks with the same key —
+// calling `setValue` of one hook triggers an update for all other hooks with the same key
 const activeHooks: {
     key: string
     forceUpdate: () => void
@@ -44,7 +45,8 @@ export default function useLocalStorageState<T = undefined>(
         // `key` never changes
     }, [key])
 
-    // todo: explain
+    // add this hook to the `activeHooks` array. see the `activeHooks` declaration above for a
+    // more detailed explanation
     useEffect(() => {
         const entry = { key, forceUpdate }
         activeHooks.push(entry)
@@ -76,7 +78,6 @@ export default function useLocalStorageState<T = undefined>(
             },
             {
                 isPersistent: !storage.data.has(key),
-                // todo: better name?
                 removeItem(): void {
                     storage.remove(key)
 
@@ -89,8 +90,13 @@ export default function useLocalStorageState<T = undefined>(
             },
         ],
 
-        // todo: explain why
+        // disabling eslint warning for three reasons:
+        // - `id` is needed because when it changes that means the data in `localStorage` has
+        //   changed and we need to update the returned value. However, the eslint rule wants us to
+        //   remove the `id` from the dependencies array.
+        // - `key` never changes so we can skip it and reduce package size
+        // - `defaultValue` never changes so we can skip it and reduce package size
         // eslint-disable-next-line react-hooks/exhaustive-deps
-        [id, key],
+        [id],
     )
 }

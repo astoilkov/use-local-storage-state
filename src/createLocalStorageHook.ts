@@ -31,18 +31,24 @@ export default function createLocalStorageHook<T>(
         UpdateState<T | undefined>,
         LocalStorageProperties,
     ] {
-        const [value, setValue, properties] = useLocalStorageState(key, defaultValue)
+        const [clientValue, setValue, { isPersistent: clientIsPersistent, removeItem }] =
+            useLocalStorageState(key, defaultValue)
 
-        // todo: explain why
-        // eslint-disable-next-line react-hooks/rules-of-hooks
-        const hydratedValue = options?.ssr === true ? useSsrMismatch(defaultValue, value) : value
+        const value =
+            // disabling the eslint warning because the condition will never change its value —
+            // `options?.ssr` comes from the parent scope
+            // eslint-disable-next-line react-hooks/rules-of-hooks
+            options?.ssr === true ? useSsrMismatch(defaultValue, clientValue) : clientValue
 
-        // todo: think about this
-        // const isPersistent = useSsrMismatch(true, properties.isPersistent)
+        const isPersistent =
+            // disabling the eslint warning because the condition will never change its value —
+            // `options?.ssr` comes from the parent scope
+            // eslint-disable-next-line react-hooks/rules-of-hooks
+            options?.ssr === true ? useSsrMismatch(true, clientIsPersistent) : clientIsPersistent
 
         return useMemo(
-            () => [hydratedValue, setValue, properties],
-            [hydratedValue, setValue, properties],
+            () => [value, setValue, { isPersistent, removeItem }],
+            [value, setValue, isPersistent, removeItem],
         )
     }
 }
