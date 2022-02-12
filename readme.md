@@ -96,30 +96,6 @@ export default function Todos() {
 </details>
 
 <details>
-<summary id="remove-item">Removing the data from <code>localStorage</code> and resetting to the default</summary>
-<p></p>
-
-The `removeItem()` method will reset the value to its default and will remove the key from the `localStorage`. It returns to the same state as when the hook was initially created.
-
-```tsx
-import useLocalStorageState from 'use-local-storage-state'
-
-const useTodos = createLocalStorateHook('todos', {
-    defaultValue: ['buy avocado']
-})
-
-export default function Todos() {
-    const [todos, setTodos, { removeItem }] = useTodos()
-
-    function onClick() {
-        removeItem()
-    }
-}
-```
-
-</details>
-
-<details>
 <summary id="is-persistent">Notify the user when <code>localStorage</code> isn't saving the data with <code>`isPersistent`</code> property</summary>
 <p></p>
 
@@ -144,6 +120,30 @@ export default function Todos() {
     )
 }
 
+```
+
+</details>
+
+<details>
+<summary id="remove-item">Removing the data from <code>localStorage</code> and resetting to the default</summary>
+<p></p>
+
+The `removeItem()` method will reset the value to its default and will remove the key from the `localStorage`. It returns to the same state as when the hook was initially created.
+
+```tsx
+import useLocalStorageState from 'use-local-storage-state'
+
+const useTodos = createLocalStorateHook('todos', {
+    defaultValue: ['buy avocado']
+})
+
+export default function Todos() {
+    const [todos, setTodos, { removeItem }] = useTodos()
+
+    function onClick() {
+        removeItem()
+    }
+}
 ```
 
 </details>
