@@ -2,10 +2,10 @@
 
 > React hook that persist data in local storage
 
-[![Build Status](https://www.travis-ci.com/astoilkov/use-local-storage-state.svg?branch=master)](https://travis-ci.org/astoilkov/use-local-storage-state)
-[![Test Coverage](https://img.shields.io/codeclimate/coverage/astoilkov/use-local-storage-state)](https://codeclimate.com/github/astoilkov/use-local-storage-state/test_coverage)
 [![Downloads](https://img.shields.io/npm/dm/use-local-storage-state)](https://www.npmjs.com/package/use-local-storage-state)
 [![Minified Size](https://badgen.net/bundlephobia/min/use-local-storage-state)](https://bundlephobia.com/result?p=use-local-storage-state)
+[![Test Coverage](https://img.shields.io/codeclimate/coverage/astoilkov/use-local-storage-state)](https://codeclimate.com/github/astoilkov/use-local-storage-state/test_coverage)
+[![Build Status](https://www.travis-ci.com/astoilkov/use-local-storage-state.svg?branch=master)](https://travis-ci.org/astoilkov/use-local-storage-state)
 
 ## Install
 
@@ -15,9 +15,9 @@ npm install use-local-storage-state
 
 ## Why
 
-- Actively maintained for the past 2 years. See [Contributions](https://github.com/astoilkov/use-local-storage-state/graphs/contributors) page
-- SSR support with handling of hydration mismatches
-- In-memory fallback when `localStorage` throws an error and can't store the data. Provides an API to notify the user if that happens
+- Actively maintained for the past 2 years — see [Contributions](https://github.com/astoilkov/use-local-storage-state/graphs/contributors) page
+- SSR support with handling of [hydration mismatches](https://github.com/astoilkov/use-local-storage-state/issues/23)
+- In-memory fallback when `localStorage` throws an error and can't store the data. Provides a `isPersistent` API to let you notify the user their data isn't currently being stored
 - Handles the `Window` [`storage`](https://developer.mozilla.org/en-US/docs/Web/API/Window/storage_event) event and updates changes across browser tabs, windows, and iframe's
 - Aiming for high-quality with [my open-source principles](https://astoilkov.com/my-open-source-principles)
 
@@ -78,7 +78,7 @@ export default function Todos() {
 <summary>SSR support</summary>
 <p></p>
 
-SSR supports includes handling of hydration mismatches. This prevents the following error:  `Warning: Expected server HTML to contain a matching ...`. This is the only library I'm aware of that handles this case. For more, see [discussion here](https://github.com/astoilkov/use-local-storage-state/issues/23).
+SSR supports includes handling of [hydration mismatches](https://github.com/astoilkov/use-local-storage-state/issues/23). This prevents the following error:  `Warning: Expected server HTML to contain a matching ...`. This is the only library I'm aware of that handles this case. For more, see [discussion here](https://github.com/astoilkov/use-local-storage-state/issues/23).
 
 ```tsx
 import createLocalStorageHook from 'use-local-storage-state'
@@ -170,7 +170,7 @@ Type: `any`
 
 Default: `undefined`
 
-The default value. The same as `useState(defaultValue)` property.
+The default value. You can think of it as the same as `useState(defaultValue)`.
 
 ### `options.ssr`
 
@@ -178,7 +178,7 @@ Type: `boolean`
 
 Default: `false`
 
-Enables SSR support and handles hydration mismatches. Not enabling this can cause the following error: `Warning: Expected server HTML to contain a matching ...`. This is the only library I'm aware of that handles this case. For more, see [discussion here](https://github.com/astoilkov/use-local-storage-state/issues/23).
+Enables SSR support and handles [hydration mismatches](https://github.com/astoilkov/use-local-storage-state/issues/23). Not enabling this can cause the following error: `Warning: Expected server HTML to contain a matching ...`. This is the only library I'm aware of that handles this case. For more, see [discussion here](https://github.com/astoilkov/use-local-storage-state/issues/23).
 
 ## Alternatives
 
