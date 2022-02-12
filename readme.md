@@ -15,11 +15,11 @@ npm install use-local-storage-state
 
 ## Why
 
-- Actively maintained for the past 2 years — see [Contributions](https://github.com/astoilkov/use-local-storage-state/graphs/contributors) page
-- SSR support with handling of [hydration mismatches](https://github.com/astoilkov/use-local-storage-state/issues/23)
-- In-memory fallback when `localStorage` throws an error and can't store the data. Provides a `isPersistent` API to let you notify the user their data isn't currently being stored
-- Handles the `Window` [`storage`](https://developer.mozilla.org/en-US/docs/Web/API/Window/storage_event) event and updates changes across browser tabs, windows, and iframe's
-- Aiming for high-quality with [my open-source principles](https://astoilkov.com/my-open-source-principles)
+- Actively maintained for the past 2 years — see [contributions](https://github.com/astoilkov/use-local-storage-state/graphs/contributors) page.
+- SSR support with handling of [hydration mismatches](https://github.com/astoilkov/use-local-storage-state/issues/23).
+- In-memory fallback when `localStorage` throws an error and can't store the data. Provides a `isPersistent` API to let you notify the user their data isn't currently being stored.
+- Handles the `Window` [`storage`](https://developer.mozilla.org/en-US/docs/Web/API/Window/storage_event) event and updates changes across browser tabs, windows, and iframe's.
+- Aiming for high-quality with [my open-source principles](https://astoilkov.com/my-open-source-principles).
 
 ## Usage
 
@@ -78,7 +78,7 @@ export default function Todos() {
 <summary>SSR support</summary>
 <p></p>
 
-SSR supports includes handling of [hydration mismatches](https://github.com/astoilkov/use-local-storage-state/issues/23). This prevents the following error:  `Warning: Expected server HTML to contain a matching ...`. This is the only library I'm aware of that handles this case. For more, see [discussion here](https://github.com/astoilkov/use-local-storage-state/issues/23).
+SSR supports includes handling of hydration mismatches. This prevents the following error:  `Warning: Expected server HTML to contain a matching ...`. This is the only library I'm aware of that handles this case. For more, see [discussion here](https://github.com/astoilkov/use-local-storage-state/issues/23).
 
 ```tsx
 import createLocalStorageHook from 'use-local-storage-state'
@@ -120,7 +120,7 @@ export default function Todos() {
 </details>
 
 <details>
-<summary id="is-persistent">Notify the user when <code>localStorage</code> isn't saving the data</summary>
+<summary id="is-persistent">Notify the user when <code>localStorage</code> isn't saving the data with <code>`isPersistent`</code> property</summary>
 <p></p>
 
 There are a few cases when `localStorage` [isn't available](https://github.com/astoilkov/use-local-storage-state/blob/7db8872397eae8b9d2421f068283286847f326ac/index.ts#L3-L11). The `isPersistent` property tells you if the data is persisted in `localStorage` or in-memory. Useful when you want to notify the user that their data won't be persisted.
@@ -178,7 +178,7 @@ Type: `boolean`
 
 Default: `false`
 
-Enables SSR support and handles [hydration mismatches](https://github.com/astoilkov/use-local-storage-state/issues/23). Not enabling this can cause the following error: `Warning: Expected server HTML to contain a matching ...`. This is the only library I'm aware of that handles this case. For more, see [discussion here](https://github.com/astoilkov/use-local-storage-state/issues/23).
+Enables SSR support and handles hydration mismatches. Not enabling this can cause the following error: `Warning: Expected server HTML to contain a matching ...`. This is the only library I'm aware of that handles this case. For more, see [discussion here](https://github.com/astoilkov/use-local-storage-state/issues/23).
 
 ## Alternatives
 
