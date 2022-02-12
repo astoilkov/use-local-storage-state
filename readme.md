@@ -96,7 +96,7 @@ export default function Todos() {
 </details>
 
 <details>
-<summary id="is-persistent">Notify the user when <code>localStorage</code> isn't saving the data with <code>`isPersistent`</code> property</summary>
+<summary id="is-persistent">Notify the user when <code>localStorage</code> isn't saving the data using the <code>`isPersistent`</code> property</summary>
 <p></p>
 
 There are a few cases when `localStorage` [isn't available](https://github.com/astoilkov/use-local-storage-state/blob/7db8872397eae8b9d2421f068283286847f326ac/index.ts#L3-L11). The `isPersistent` property tells you if the data is persisted in `localStorage` or in-memory. Useful when you want to notify the user that their data won't be persisted.
