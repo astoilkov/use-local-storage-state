@@ -93,7 +93,7 @@ export default function useLocalStorageState<T = undefined>(
             },
         ],
 
-        // disabling eslint warning for three reasons:
+        // disabling eslint warning for the following reasons:
         // - `id` is needed because when it changes that means the data in `localStorage` has
         //   changed and we need to update the returned value. However, the eslint rule wants us to
         //   remove the `id` from the dependencies array.
