@@ -14,6 +14,7 @@ export default function useLocalStorageState<T = undefined>(
     key: string,
     defaultValue: T,
 ): [T | undefined, UpdateState<T | undefined>, LocalStorageProperties] {
+    // `id` changes every time a change in the `localStorage` occurs
     const [id, forceUpdate] = useReducer((number) => number + 1, 0)
 
     // initial issue: https://github.com/astoilkov/use-local-storage-state/issues/26
