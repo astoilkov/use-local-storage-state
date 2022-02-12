@@ -40,7 +40,9 @@ export default {
 function parseJSON<T>(value: string | null): T | undefined {
     return value === 'undefined'
         ? undefined
-        : // JSON.parse() doesn't accept non-string values, this is why we pass empty
-          // string which will throw an error which can be handled
+        : // - `JSON.parse()` TypeScript types don't accept non-string values, this is why we pass
+          //   empty string which will throw an error
+          // - when `value` is `null`, we will pass empty string and the `JSON.parse()` will throw
+          //   an error which we need and is required by the parent function
           JSON.parse(value ?? '')
 }
