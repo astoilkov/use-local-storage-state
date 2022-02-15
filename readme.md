@@ -154,7 +154,7 @@ export default function Todos() {
 
 Returns a React hook that returns `[value, setValue, { removeItem, isPersistent }]` when called. The first two values are the same as `useState()`. The third value contains two extra properties:
 - `removeItem()` — calls `localStorage.removeItem(key)` and resets the hook to it's default state
-- `isPersistent` — `boolean` property that returns `false` is `localStorage` is throwing an error and the data is stored only in-memory
+- `isPersistent` — `boolean` property that returns `false` if `localStorage` is throwing an error and the data is stored only in-memory
 
 ### `key`
 
