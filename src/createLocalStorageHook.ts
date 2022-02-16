@@ -25,6 +25,7 @@ export default function createLocalStorageHook<T>(
     const defaultValue = options?.defaultValue
     const ssr = options?.ssr
 
+    // SSR support
     if (typeof window === 'undefined') {
         return () => [
             defaultValue,
