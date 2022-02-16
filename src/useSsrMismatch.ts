@@ -1,18 +1,19 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { useLayoutEffect, useRef, useState } from 'react'
 
 export default function useSsrMismatch<T>(defaultValue: T, value: T): T {
     const isFirstRender = useRef(true)
     const [_, forceUpdate] = useState(false)
-    // - use `useEffect()` on the server and `useLayoutEffect()` in the browser
-    // - using `useLayoutEffect()` on the server shows a warning
-    const useIsomorphicEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect
 
-    useIsomorphicEffect(() => {
+    useLayoutEffect(() => {
         isFirstRender.current = false
 
         if (defaultValue !== value) {
             forceUpdate(true)
         }
+
+        // disabling dependencies because we want the effect to run only once — after hydration has
+        // finished
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
     if (isFirstRender.current) {

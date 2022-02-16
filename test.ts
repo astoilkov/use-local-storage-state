@@ -493,4 +493,26 @@ describe('createLocalStorageStateHook()', () => {
 
         windowSpy.mockRestore()
     })
+
+    it(`test server-side rendering where window and localStorage aren't available`, () => {
+        const localStorageSpy = jest.spyOn(global, 'localStorage' as any, 'get')
+        const windowSpy = jest.spyOn(global, 'window' as any, 'get')
+        windowSpy.mockImplementation(() => {
+            return undefined
+        })
+        localStorageSpy.mockImplementation(() => {
+            return undefined
+        })
+
+        const useTodos = createLocalStorageHook('todos', { defaultValue: ['first', 'second'] })
+        function Component() {
+            const [, , { isPersistent }] = useTodos()
+            expect(isPersistent).toBe(true)
+            return null
+        }
+        renderToString(createElement(Component))
+
+        windowSpy.mockRestore()
+        localStorageSpy.mockRestore()
+    })
 })

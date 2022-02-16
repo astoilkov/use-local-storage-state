@@ -25,11 +25,15 @@ export default function createLocalStorageHook<T>(
     const defaultValue = options?.defaultValue
     const ssr = options?.ssr
 
-    return function useLocalStorage(): [
-        T | undefined,
-        UpdateState<T | undefined>,
-        LocalStorageProperties,
-    ] {
+    if (typeof window === 'undefined') {
+        return () => [
+            defaultValue,
+            (): void => {},
+            { isPersistent: true, removeItem: (): void => {} },
+        ]
+    }
+
+    return function useLocalStorage() {
         const [clientValue, setValue, { isPersistent: clientIsPersistent, removeItem }] =
             useLocalStorageState(key, defaultValue)
 
