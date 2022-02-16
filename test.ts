@@ -506,10 +506,11 @@ describe('createLocalStorageStateHook()', () => {
 
         const useTodos = createLocalStorageHook('todos', { defaultValue: ['first', 'second'] })
         function Component() {
-            const [, setValue, { isPersistent, removeItem }] = useTodos()
+            const [value, setValue, { isPersistent, removeItem }] = useTodos()
             expect(isPersistent).toBe(true)
             expect(setValue).not.toThrow()
             expect(removeItem).not.toThrow()
+            expect(value).toEqual(['first', 'second'])
             return null
         }
         renderToString(createElement(Component))
