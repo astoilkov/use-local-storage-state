@@ -24,15 +24,13 @@ npm install use-local-storage-state
 ## Usage
 
 ```typescript
-import createLocalStorageHook from 'use-local-storage-state'
-
-const useTodos = createLocalStorageHook('todos', {
-    ssr: true,
-    defaultValue: ['buy avocado', 'do 50 push-ups']
-})
+import useLocalStorageState from 'use-local-storage-state'
 
 export default function Todos() {
-    const [todos, setTodos] = useTodos()
+    const [todos, setTodos] = useLocalStorageState('todos', {
+        ssr: true,
+        defaultValue: ['buy avocado', 'do 50 push-ups']
+    })
 }
 ```
 
@@ -40,18 +38,16 @@ export default function Todos() {
 <summary>Todo list example + CodeSandbox link</summary>
 <p></p>
 
-You can experiment with the example [here](https://codesandbox.io/s/todos-example-q48ch?file=/src/App.tsx).
+You can experiment with the example [here](https://codesandbox.io/s/todos-example-use-local-storage-state-pewbql?file=/src/App.tsx).
 
 ```tsx
 import React, { useState } from 'react'
-import createLocalStorateHook from 'use-local-storage-state'
-
-const useTodos = createLocalStorateHook('todos', {
-    defaultValue: ['buy avocado']
-})
+import useLocalStorageState from 'use-local-storage-state'
 
 export default function Todos() {
-    const [todos, setTodos] = useTodos()
+    const [todos, setTodos] = useLocalStorageState('todos', {
+        defaultValue: ['buy avocado']
+    })
     const [query, setQuery] = useState('')
 
     function onClick() {
@@ -81,15 +77,13 @@ export default function Todos() {
 SSR supports includes handling of hydration mismatches. This prevents the following error:  `Warning: Expected server HTML to contain a matching ...`. This is the only library I'm aware of that handles this case. For more, see [discussion here](https://github.com/astoilkov/use-local-storage-state/issues/23).
 
 ```tsx
-import createLocalStorageHook from 'use-local-storage-state'
-
-const useTodos = createLocalStorageHook('todos', {
-    ssr: true,
-    defaultValue: ['buy avocado', 'do 50 push-ups']
-})
+import useLocalStorageState from 'use-local-storage-state'
 
 export default function Todos() {
-    const [todos, setTodos] = useTodos()
+    const [todos, setTodos] = useLocalStorageState('todos', {
+        ssr: true,
+        defaultValue: ['buy avocado', 'do 50 push-ups']
+    })
 }
 ```
 
@@ -105,12 +99,10 @@ There are a few cases when `localStorage` [isn't available](https://github.com/a
 import React, { useState } from 'react'
 import useLocalStorageState from 'use-local-storage-state'
 
-const useTodos = createLocalStorateHook('todos', {
-    defaultValue: ['buy avocado']
-})
-
 export default function Todos() {
-    const [todos, setTodos, { isPersistent }] = useTodos()
+    const [todos, setTodos, { isPersistent }] = useLocalStorageState('todos', {
+        defaultValue: ['buy avocado']
+    })
 
     return (
         <>
@@ -133,12 +125,10 @@ The `removeItem()` method will reset the value to its default and will remove th
 ```tsx
 import useLocalStorageState from 'use-local-storage-state'
 
-const useTodos = createLocalStorateHook('todos', {
-    defaultValue: ['buy avocado']
-})
-
 export default function Todos() {
-    const [todos, setTodos, { removeItem }] = useTodos()
+    const [todos, setTodos, { removeItem }] = useLocalStorageState('todos', {
+        defaultValue: ['buy avocado']
+    })
 
     function onClick() {
         removeItem()
@@ -150,9 +140,9 @@ export default function Todos() {
 
 ## API
 
-### `createLocalStorageHook(key, options?)`
+### `useLocalStorageState(key, options?)`
 
-Returns a React hook that returns `[value, setValue, { removeItem, isPersistent }]` when called. The first two values are the same as `useState()`. The third value contains two extra properties:
+Returns `[value, setValue, { removeItem, isPersistent }]` when called. The first two values are the same as `useState()`. The third value contains two extra properties:
 - `removeItem()` — calls `localStorage.removeItem(key)` and resets the hook to it's default state
 - `isPersistent` — `boolean` property that returns `false` if `localStorage` is throwing an error and the data is stored only in-memory
 
