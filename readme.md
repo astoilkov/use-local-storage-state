@@ -46,6 +46,7 @@ import useLocalStorageState from 'use-local-storage-state'
 
 export default function Todos() {
     const [todos, setTodos] = useLocalStorageState('todos', {
+        ssr: true,
         defaultValue: ['buy avocado']
     })
     const [query, setQuery] = useState('')
