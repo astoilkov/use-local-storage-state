@@ -1,7 +1,6 @@
 import storage from './storage'
 import { unstable_batchedUpdates } from 'react-dom'
-import { useEffect, useMemo, useReducer } from 'react'
-import { LocalStorageProperties, UpdateState } from './createLocalStorageHook'
+import { useEffect, useLayoutEffect, useMemo, useReducer, useRef } from 'react'
 
 // `activeHooks` holds all active hooks. we use the array to update all hooks with the same key —
 // calling `setValue` of one hook triggers an update for all other hooks with the same key
@@ -10,24 +9,62 @@ const activeHooks: {
     forceUpdate: () => void
 }[] = []
 
+type UpdateState<T> = (newValue: T | ((value: T) => T)) => void
+type LocalStorageProperties = {
+    isPersistent: boolean
+    removeItem: () => void
+}
+
+export default function useLocalStorageState(
+    key: string,
+    options?: { ssr: boolean },
+): [unknown, UpdateState<unknown>, LocalStorageProperties]
+export default function useLocalStorageState<T>(
+    key: string,
+    options?: { ssr: boolean },
+): [T | undefined, UpdateState<T | undefined>, LocalStorageProperties]
+export default function useLocalStorageState<T>(
+    key: string,
+    options?: { defaultValue?: T; ssr?: boolean },
+): [T, UpdateState<T>, LocalStorageProperties]
 export default function useLocalStorageState<T = undefined>(
     key: string,
-    defaultValue: T,
+    options?: { defaultValue?: T; ssr?: boolean },
 ): [T | undefined, UpdateState<T | undefined>, LocalStorageProperties] {
+    // SSR support
+    if (typeof window === 'undefined') {
+        return [
+            options?.defaultValue,
+            (): void => {},
+            { isPersistent: true, removeItem: (): void => {} },
+        ]
+    }
+
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    return useClientLocalStorageState(key, options)
+}
+
+function useClientLocalStorageState<T>(
+    key: string,
+    options?: { defaultValue?: T; ssr?: boolean },
+): [T | undefined, UpdateState<T | undefined>, LocalStorageProperties] {
+    const isFirstRender = useRef(true)
+    const ssr = useRef(options?.ssr).current === true
+    const defaultValue = useRef(options?.defaultValue).current
     // `id` changes every time a change in the `localStorage` occurs
     const [id, forceUpdate] = useReducer((number) => number + 1, 0)
 
-    // initial issue: https://github.com/astoilkov/use-local-storage-state/issues/26
-    // issues that were caused by incorrect initial and secondary implementations:
-    // - https://github.com/astoilkov/use-local-storage-state/issues/30
-    // - https://github.com/astoilkov/use-local-storage-state/issues/33
-    if (
-        defaultValue !== undefined &&
-        !storage.data.has(key) &&
-        localStorage.getItem(key) === null
-    ) {
-        storage.set(key, defaultValue)
-    }
+    useLayoutEffect(() => {
+        // SSR support
+        isFirstRender.current = false
+        if (ssr && (storage.data.has(key) || defaultValue !== storage.get(key, defaultValue))) {
+            forceUpdate()
+        }
+
+        // disabling dependencies because we want the effect to run only once — after hydration has
+        // finished
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [])
 
     // - syncs change across tabs, windows, iframe's
     // - the `storage` event is called only in all tabs, windows, iframe's except the one that
@@ -42,8 +79,6 @@ export default function useLocalStorageState<T = undefined>(
         window.addEventListener('storage', onStorage)
 
         return (): void => window.removeEventListener('storage', onStorage)
-
-        // `key` never changes
     }, [key])
 
     // add this hook to the `activeHooks` array. see the `activeHooks` declaration above for a
@@ -54,13 +89,23 @@ export default function useLocalStorageState<T = undefined>(
         return (): void => {
             activeHooks.splice(activeHooks.indexOf(entry), 1)
         }
+    }, [key])
 
-        // both `key` and `forceUpdate` never change
-    }, [key, forceUpdate])
+    // initial issue: https://github.com/astoilkov/use-local-storage-state/issues/26
+    // issues that were caused by incorrect initial and secondary implementations:
+    // - https://github.com/astoilkov/use-local-storage-state/issues/30
+    // - https://github.com/astoilkov/use-local-storage-state/issues/33
+    if (
+        defaultValue !== undefined &&
+        !storage.data.has(key) &&
+        localStorage.getItem(key) === null
+    ) {
+        storage.set(key, defaultValue)
+    }
 
     return useMemo(
         () => [
-            storage.get(key, defaultValue),
+            ssr && isFirstRender.current ? defaultValue : storage.get(key, defaultValue),
             (newValue: T | undefined | ((value: T | undefined) => T | undefined)): void => {
                 const isCallable = (
                     value: unknown,
@@ -80,7 +125,7 @@ export default function useLocalStorageState<T = undefined>(
                 })
             },
             {
-                isPersistent: !storage.data.has(key),
+                isPersistent: ssr && isFirstRender.current ? true : !storage.data.has(key),
                 removeItem(): void {
                     storage.remove(key)
 
@@ -97,9 +142,8 @@ export default function useLocalStorageState<T = undefined>(
         // - `id` is needed because when it changes that means the data in `localStorage` has
         //   changed and we need to update the returned value. However, the eslint rule wants us to
         //   remove the `id` from the dependencies array.
-        // - `key` never changes so we can skip it and reduce package size
         // - `defaultValue` never changes so we can skip it and reduce package size
         // eslint-disable-next-line react-hooks/exhaustive-deps
-        [id],
+        [id, key],
     )
 }

@@ -1,5 +1,5 @@
 import storage from './src/storage'
-import createLocalStorageHook from '.'
+import useLocalStorageState from '.'
 import { createElement, useMemo } from 'react'
 import { renderToString } from 'react-dom/server'
 import { renderHook, act } from '@testing-library/react-hooks'
@@ -11,23 +11,24 @@ beforeEach(() => {
 
 describe('createLocalStorageStateHook()', () => {
     it('initial state is written into the state', () => {
-        const useTodos = createLocalStorageHook('todos', { defaultValue: ['first', 'second'] })
-        const { result } = renderHook(() => useTodos())
+        const { result } = renderHook(() =>
+            useLocalStorageState('todos', { defaultValue: ['first', 'second'] }),
+        )
 
         const [todos] = result.current
         expect(todos).toEqual(['first', 'second'])
     })
 
     it(`initial state isn't written into localStorage`, () => {
-        const useTodos = createLocalStorageHook('todos', { defaultValue: ['first', 'second'] })
-        renderHook(() => useTodos())
+        renderHook(() => useLocalStorageState('todos', { defaultValue: ['first', 'second'] }))
 
         expect(localStorage.getItem('todos')).toEqual(JSON.stringify(['first', 'second']))
     })
 
     it('updates state', () => {
-        const useTodos = createLocalStorageHook('todos', { defaultValue: ['first', 'second'] })
-        const { result } = renderHook(() => useTodos())
+        const { result } = renderHook(() =>
+            useLocalStorageState('todos', { defaultValue: ['first', 'second'] }),
+        )
 
         act(() => {
             const setTodos = result.current[1]
@@ -41,8 +42,9 @@ describe('createLocalStorageStateHook()', () => {
     })
 
     it('updates state with callback function', () => {
-        const useTodos = createLocalStorageHook('todos', { defaultValue: ['first', 'second'] })
-        const { result } = renderHook(() => useTodos())
+        const { result } = renderHook(() =>
+            useLocalStorageState('todos', { defaultValue: ['first', 'second'] }),
+        )
 
         act(() => {
             const setTodos = result.current[1]
@@ -60,16 +62,18 @@ describe('createLocalStorageStateHook()', () => {
     it('does not fail when having an invalid data in localStorage', () => {
         localStorage.setItem('todos', 'some random string')
 
-        const useTodos = createLocalStorageHook('todos', { defaultValue: ['first', 'second'] })
-        const { result } = renderHook(() => useTodos())
+        const { result } = renderHook(() =>
+            useLocalStorageState('todos', { defaultValue: ['first', 'second'] }),
+        )
 
         const [todos] = result.current
         expect(todos).toEqual(['first', 'second'])
     })
 
     it('updating writes into localStorage', () => {
-        const useTodos = createLocalStorageHook('todos', { defaultValue: ['first', 'second'] })
-        const { result } = renderHook(() => useTodos())
+        const { result } = renderHook(() =>
+            useLocalStorageState('todos', { defaultValue: ['first', 'second'] }),
+        )
 
         act(() => {
             const setTodos = result.current[1]
@@ -80,30 +84,10 @@ describe('createLocalStorageStateHook()', () => {
         expect(localStorage.getItem('todos')).toEqual(JSON.stringify(['third', 'forth']))
     })
 
-    it('storage event updates state', () => {
-        const useTodos = createLocalStorageHook('todos', { defaultValue: ['first', 'second'] })
-        const { result } = renderHook(() => useTodos())
-
-        // #WET 2020-03-19T8:55:25+02:00
-        act(() => {
-            localStorage.setItem('todos', JSON.stringify(['third', 'forth']))
-            window.dispatchEvent(
-                new StorageEvent('storage', {
-                    storageArea: localStorage,
-                    key: 'todos',
-                    oldValue: JSON.stringify(['first', 'second']),
-                    newValue: JSON.stringify(['third', 'forth']),
-                }),
-            )
-        })
-
-        const [todosA] = result.current
-        expect(todosA).toEqual(['third', 'forth'])
-    })
-
     it('storage event updates state to default value', () => {
-        const useTodos = createLocalStorageHook('todos', { defaultValue: ['first', 'second'] })
-        const { result } = renderHook(() => useTodos())
+        const { result } = renderHook(() =>
+            useLocalStorageState('todos', { defaultValue: ['first', 'second'] }),
+        )
 
         act(() => {
             const setTodos = result.current[1]
@@ -125,8 +109,9 @@ describe('createLocalStorageStateHook()', () => {
     })
 
     it(`unrelated storage update doesn't do anything`, () => {
-        const useTodos = createLocalStorageHook('todos', { defaultValue: ['first', 'second'] })
-        const { result } = renderHook(() => useTodos())
+        const { result } = renderHook(() =>
+            useLocalStorageState('todos', { defaultValue: ['first', 'second'] }),
+        )
 
         act(() => {
             // trying with sessionStorage
@@ -140,7 +125,7 @@ describe('createLocalStorageStateHook()', () => {
                 }),
             )
 
-            // trying with a non relevant key
+            // trying with a non-relevant key
             localStorage.setItem('not-todos', JSON.stringify(['third', 'forth']))
             window.dispatchEvent(
                 new StorageEvent('storage', {
@@ -159,88 +144,99 @@ describe('createLocalStorageStateHook()', () => {
     it('initially gets value from local storage if there is a value', () => {
         localStorage.setItem('todos', JSON.stringify(['third', 'forth']))
 
-        const useTodos = createLocalStorageHook('todos', { defaultValue: ['first', 'second'] })
-        const { result } = renderHook(() => useTodos())
+        const { result } = renderHook(() =>
+            useLocalStorageState('todos', { defaultValue: ['first', 'second'] }),
+        )
 
         const [todos] = result.current
         expect(todos).toEqual(['third', 'forth'])
     })
 
     it('handles errors thrown by localStorage', () => {
-        const setItem = Storage.prototype.setItem
-        Storage.prototype.setItem = () => {
+        const mock = jest.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
             throw new Error()
-        }
+        })
 
-        const useLocalStorage = createLocalStorageHook('set-item-will-throw', { defaultValue: '' })
-        const { result } = renderHook(() => useLocalStorage())
+        const { result } = renderHook(() =>
+            useLocalStorageState('set-item-will-throw', { defaultValue: '' }),
+        )
+
         act(() => {
             const setValue = result.current[1]
             setValue('will-throw')
         })
-        expect(result.current[0]).toBe('will-throw')
 
-        Storage.prototype.setItem = setItem
+        mock.mockRestore()
+
+        expect(result.current[0]).toBe('will-throw')
     })
 
     it('can retrieve data from in memory storage', () => {
-        const setItem = Storage.prototype.setItem
-        Storage.prototype.setItem = () => {
+        const mock = jest.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
             throw new Error()
-        }
+        })
 
-        const useTodos = createLocalStorageHook('todos', { defaultValue: ['first'] })
-        const { result: resultA } = renderHook(() => useTodos())
+        const { result: resultA } = renderHook(() =>
+            useLocalStorageState('todos', { defaultValue: ['first'] }),
+        )
+
         act(() => {
             const setValue = resultA.current[1]
             setValue(['first', 'second'])
         })
-        const { result: resultB } = renderHook(() => useTodos())
+
+        const { result: resultB } = renderHook(() =>
+            useLocalStorageState('todos', { defaultValue: ['first'] }),
+        )
+
+        mock.mockRestore()
+
         const [value] = resultB.current
         expect(value).toEqual(['first', 'second'])
-
-        Storage.prototype.setItem = setItem
     })
 
     it('isPersistent returns true by default', () => {
-        const useTodos = createLocalStorageHook('todos', { defaultValue: ['first', 'second'] })
-        const { result } = renderHook(() => useTodos())
+        const { result } = renderHook(() =>
+            useLocalStorageState('todos', { defaultValue: ['first', 'second'] }),
+        )
         const [, , { isPersistent }] = result.current
         expect(isPersistent).toBe(true)
     })
 
     it('isPersistent returns false when localStorage.setItem() throws an error', () => {
-        const setItem = Storage.prototype.setItem
-        Storage.prototype.setItem = () => {
+        const mock = jest.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
             throw new Error()
-        }
+        })
 
-        const useTodos = createLocalStorageHook('todos', { defaultValue: ['first', 'second'] })
-        const { result } = renderHook(() => useTodos())
+        const { result } = renderHook(() =>
+            useLocalStorageState('todos', { defaultValue: ['first', 'second'] }),
+        )
+
+        mock.mockRestore()
+
         const [, , { isPersistent }] = result.current
         expect(isPersistent).toBe(false)
-
-        Storage.prototype.setItem = setItem
     })
 
     it('isPersistent becomes false when localStorage.setItem() throws an error on consecutive updates', () => {
-        const useTodos = createLocalStorageHook('todos', { defaultValue: ['first', 'second'] })
-        const { result } = renderHook(() => useTodos())
+        const { result } = renderHook(() =>
+            useLocalStorageState('todos', { defaultValue: ['first', 'second'] }),
+        )
 
-        const setItem = Storage.prototype.setItem
-        Storage.prototype.setItem = () => {
+        const mock = jest.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
             throw new Error()
-        }
+        })
 
         act(() => {
             const setTodos = result.current[1]
             setTodos(['second', 'third'])
         })
+
+        mock.mockRestore()
+
         const [todos, , { isPersistent }] = result.current
         expect(todos).toEqual(['second', 'third'])
         expect(isPersistent).toBe(false)
-
-        Storage.prototype.setItem = setItem
     })
 
     it('isPersistent returns true on the server', () => {
@@ -249,9 +245,10 @@ describe('createLocalStorageStateHook()', () => {
             return undefined
         })
 
-        const useTodos = createLocalStorageHook('todos', { defaultValue: ['first', 'second'] })
         function Component() {
-            const [, , { isPersistent }] = useTodos()
+            const [, , { isPersistent }] = useLocalStorageState('todos', {
+                defaultValue: ['first', 'second'],
+            })
             expect(isPersistent).toBe(true)
             return null
         }
@@ -261,8 +258,9 @@ describe('createLocalStorageStateHook()', () => {
     })
 
     it('isPersistent returns true after "storage" event', () => {
-        const useTodos = createLocalStorageHook('todos', { defaultValue: ['first', 'second'] })
-        const { result } = renderHook(() => useTodos())
+        const { result } = renderHook(() =>
+            useLocalStorageState('todos', { defaultValue: ['first', 'second'] }),
+        )
 
         // #WET 2020-03-19T8:55:25+02:00
         act(() => {
@@ -282,63 +280,79 @@ describe('createLocalStorageStateHook()', () => {
     })
 
     it('can set value to `undefined`', () => {
-        const useTodos = createLocalStorageHook<string[] | undefined>('todos', {
-            defaultValue: ['first', 'second'],
-        })
-        const { result: resultA, unmount } = renderHook(() => useTodos())
+        const { result: resultA, unmount } = renderHook(() =>
+            useLocalStorageState<string[] | undefined>('todos', {
+                defaultValue: ['first', 'second'],
+            }),
+        )
         act(() => {
             const [, setValue] = resultA.current
             setValue(undefined)
         })
         unmount()
 
-        const { result: resultB } = renderHook(() => useTodos())
+        const { result: resultB } = renderHook(() =>
+            useLocalStorageState<string[] | undefined>('todos', {
+                defaultValue: ['first', 'second'],
+            }),
+        )
         const [value] = resultB.current
         expect(value).toBe(undefined)
     })
 
     it('can set value to `null`', () => {
-        const useTodos = createLocalStorageHook<string[] | null>('todos', {
-            defaultValue: ['first', 'second'],
-        })
-        const { result: resultA, unmount } = renderHook(() => useTodos())
+        const { result: resultA, unmount } = renderHook(() =>
+            useLocalStorageState<string[] | null>('todos', {
+                defaultValue: ['first', 'second'],
+            }),
+        )
         act(() => {
             const [, setValue] = resultA.current
             setValue(null)
         })
         unmount()
 
-        const { result: resultB } = renderHook(() => useTodos())
+        const { result: resultB } = renderHook(() =>
+            useLocalStorageState<string[] | null>('todos', {
+                defaultValue: ['first', 'second'],
+            }),
+        )
         const [value] = resultB.current
         expect(value).toBe(null)
     })
 
     it('can reset value to default', () => {
-        const useTodos = createLocalStorageHook('todos', { defaultValue: ['first', 'second'] })
-        const { result: resultA, unmount: unmountA } = renderHook(() => useTodos())
+        const { result: resultA, unmount: unmountA } = renderHook(() =>
+            useLocalStorageState('todos', { defaultValue: ['first', 'second'] }),
+        )
         act(() => {
             const [, setValue] = resultA.current
             setValue(['third', 'forth'])
         })
         unmountA()
 
-        const { result: resultB, unmount: unmountB } = renderHook(() => useTodos())
+        const { result: resultB, unmount: unmountB } = renderHook(() =>
+            useLocalStorageState('todos', { defaultValue: ['first', 'second'] }),
+        )
         act(() => {
             const [, , { removeItem }] = resultB.current
             removeItem()
         })
         unmountB()
 
-        const { result: resultC } = renderHook(() => useTodos())
+        const { result: resultC } = renderHook(() =>
+            useLocalStorageState('todos', { defaultValue: ['first', 'second'] }),
+        )
         const [value] = resultC.current
         expect(value).toEqual(['first', 'second'])
     })
 
     it('returns the same update function when the value is saved', () => {
         const functionMock = jest.fn()
-        const useTodos = createLocalStorageHook('todos', { defaultValue: ['first', 'second'] })
         const { rerender } = renderHook(() => {
-            const [, setTodos] = useTodos()
+            const [, setTodos] = useLocalStorageState('todos', {
+                defaultValue: ['first', 'second'],
+            })
             useMemo(functionMock, [setTodos])
         })
 
@@ -368,8 +382,7 @@ describe('createLocalStorageStateHook()', () => {
 
     // https://github.com/astoilkov/use-local-storage-state/issues/30
     it(`when defaultValue isn't provided — don't write to localStorage on initial render`, () => {
-        const useTodos = createLocalStorageHook('todos')
-        renderHook(() => useTodos())
+        renderHook(() => useLocalStorageState('todos'))
 
         expect(localStorage.getItem('todos')).toEqual(null)
     })
@@ -378,16 +391,18 @@ describe('createLocalStorageStateHook()', () => {
     it(`localStorage value shouldn't be overwritten`, () => {
         localStorage.setItem('color', 'red')
 
-        const useColor = createLocalStorageHook('todos', { defaultValue: 'blue' })
-        renderHook(() => useColor())
+        renderHook(() => useLocalStorageState('todos', { defaultValue: 'blue' }))
 
         expect(localStorage.getItem('color')).toEqual('red')
     })
 
     it('storage event updates state', () => {
-        const useTodos = createLocalStorageHook('todos', { defaultValue: ['first', 'second'] })
-        const { result: resultA } = renderHook(() => useTodos())
-        const { result: resultB } = renderHook(() => useTodos())
+        const { result: resultA } = renderHook(() =>
+            useLocalStorageState('todos', { defaultValue: ['first', 'second'] }),
+        )
+        const { result: resultB } = renderHook(() =>
+            useLocalStorageState('todos', { defaultValue: ['first', 'second'] }),
+        )
 
         // #WET 2020-03-19T8:55:25+02:00
         act(() => {
@@ -410,9 +425,12 @@ describe('createLocalStorageStateHook()', () => {
     })
 
     it('calling update from one hook updates the other', () => {
-        const useTodos = createLocalStorageHook('todos', { defaultValue: ['first', 'second'] })
-        const { result: resultA } = renderHook(() => useTodos())
-        const { result: resultB } = renderHook(() => useTodos())
+        const { result: resultA } = renderHook(() =>
+            useLocalStorageState('todos', { defaultValue: ['first', 'second'] }),
+        )
+        const { result: resultB } = renderHook(() =>
+            useLocalStorageState('todos', { defaultValue: ['first', 'second'] }),
+        )
 
         act(() => {
             const setTodos = resultA.current[1]
@@ -425,9 +443,12 @@ describe('createLocalStorageStateHook()', () => {
     })
 
     it('can reset value to default', () => {
-        const useTodos = createLocalStorageHook('todos', { defaultValue: ['first', 'second'] })
-        const { result: resultA } = renderHook(() => useTodos())
-        const { result: resultB } = renderHook(() => useTodos())
+        const { result: resultA } = renderHook(() =>
+            useLocalStorageState('todos', { defaultValue: ['first', 'second'] }),
+        )
+        const { result: resultB } = renderHook(() =>
+            useLocalStorageState('todos', { defaultValue: ['first', 'second'] }),
+        )
 
         act(() => {
             const setTodosA = resultA.current[1]
@@ -444,18 +465,18 @@ describe('createLocalStorageStateHook()', () => {
 
     // https://github.com/astoilkov/use-local-storage-state/issues/30
     it("when defaultValue isn't provided — don't write to localStorage on initial render", () => {
-        const useTodos = createLocalStorageHook('todos')
-        renderHook(() => useTodos())
+        renderHook(() => useLocalStorageState('todos'))
 
         expect(localStorage.getItem('todos')).toEqual(null)
     })
 
     it('basic setup with default value', () => {
-        const useTodos = createLocalStorageHook('todos', {
-            ssr: true,
-            defaultValue: ['first', 'second'],
-        })
-        const { result } = renderHook(() => useTodos())
+        const { result } = renderHook(() =>
+            useLocalStorageState('todos', {
+                ssr: true,
+                defaultValue: ['first', 'second'],
+            }),
+        )
 
         const [todos] = result.current
         expect(todos).toEqual(['first', 'second'])
@@ -464,11 +485,12 @@ describe('createLocalStorageStateHook()', () => {
     it('if there are already items in localStorage', () => {
         localStorage.setItem('todos', JSON.stringify([4, 5, 6]))
 
-        const useTodos = createLocalStorageHook('todos', {
-            ssr: true,
-            defaultValue: ['first', 'second'],
-        })
-        const { result } = renderHook(() => useTodos())
+        const { result } = renderHook(() =>
+            useLocalStorageState('todos', {
+                ssr: true,
+                defaultValue: ['first', 'second'],
+            }),
+        )
 
         const [todos] = result.current
         expect(todos).toEqual([4, 5, 6])
@@ -480,12 +502,11 @@ describe('createLocalStorageStateHook()', () => {
             return undefined
         })
 
-        const useTodos = createLocalStorageHook('todos', {
-            ssr: true,
-            defaultValue: ['first', 'second'],
-        })
         function Component() {
-            const [todos] = useTodos()
+            const [todos] = useLocalStorageState('todos', {
+                ssr: true,
+                defaultValue: ['first', 'second'],
+            })
             expect(todos).toEqual(['first', 'second'])
             return null
         }
@@ -504,18 +525,36 @@ describe('createLocalStorageStateHook()', () => {
             return undefined
         })
 
-        const useTodos = createLocalStorageHook('todos', { defaultValue: ['first', 'second'] })
         function Component() {
-            const [value, setValue, { isPersistent, removeItem }] = useTodos()
+            const [value, setValue, { isPersistent, removeItem }] = useLocalStorageState('todos', {
+                defaultValue: ['first', 'second'],
+            })
+            const [value2] = useLocalStorageState('todos2')
             expect(isPersistent).toBe(true)
             expect(setValue).not.toThrow()
             expect(removeItem).not.toThrow()
             expect(value).toEqual(['first', 'second'])
+            expect(value2).toEqual(undefined)
             return null
         }
         renderToString(createElement(Component))
 
         windowSpy.mockRestore()
         localStorageSpy.mockRestore()
+    })
+
+    it('supports changing the key', () => {
+        let key = 'todos1'
+
+        const { rerender } = renderHook(() =>
+            useLocalStorageState(key, { defaultValue: ['first', 'second'] }),
+        )
+
+        key = 'todos2'
+
+        rerender()
+
+        expect(JSON.parse(localStorage.getItem('todos1')!)).toEqual(['first', 'second'])
+        expect(JSON.parse(localStorage.getItem('todos2')!)).toEqual(['first', 'second'])
     })
 })
