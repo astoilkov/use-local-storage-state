@@ -11,6 +11,7 @@ const activeHooks: {
 
 type UpdateState<T> = (newValue: T | ((value: T) => T)) => void
 type LocalStorageProperties = {
+    isLoading: boolean
     isPersistent: boolean
     removeItem: () => void
 }
@@ -36,7 +37,7 @@ export default function useLocalStorageState<T = undefined>(
         return [
             options?.defaultValue,
             (): void => {},
-            { isPersistent: true, removeItem: (): void => {} },
+            { isPersistent: true, isLoading:true, removeItem: (): void => {} },
         ]
     }
 
@@ -126,6 +127,7 @@ function useClientLocalStorageState<T>(
             },
             {
                 isPersistent: ssr && isFirstRender.current ? true : !storage.data.has(key),
+                isLoading: !ssr || (ssr && id > 0),
                 removeItem(): void {
                     storage.remove(key)
 
