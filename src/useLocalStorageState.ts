@@ -17,19 +17,19 @@ type LocalStorageProperties = {
 
 export default function useLocalStorageState(
     key: string,
-    options?: { ssr: boolean },
+    options?: { ssr: boolean; skipSync?: boolean },
 ): [unknown, UpdateState<unknown>, LocalStorageProperties]
 export default function useLocalStorageState<T>(
     key: string,
-    options?: { ssr: boolean },
+    options?: { ssr: boolean; skipSync?: boolean },
 ): [T | undefined, UpdateState<T | undefined>, LocalStorageProperties]
 export default function useLocalStorageState<T>(
     key: string,
-    options?: { defaultValue?: T; ssr?: boolean },
+    options?: { defaultValue?: T; ssr?: boolean; skipSync?: boolean },
 ): [T, UpdateState<T>, LocalStorageProperties]
 export default function useLocalStorageState<T = undefined>(
     key: string,
-    options?: { defaultValue?: T; ssr?: boolean },
+    options?: { defaultValue?: T; ssr?: boolean; skipSync?: boolean },
 ): [T | undefined, UpdateState<T | undefined>, LocalStorageProperties] {
     // SSR support
     if (typeof window === 'undefined') {
@@ -46,10 +46,11 @@ export default function useLocalStorageState<T = undefined>(
 
 function useClientLocalStorageState<T>(
     key: string,
-    options?: { defaultValue?: T; ssr?: boolean },
+    options?: { defaultValue?: T; ssr?: boolean; skipSync?: boolean },
 ): [T | undefined, UpdateState<T | undefined>, LocalStorageProperties] {
     const isFirstRender = useRef(true)
     const ssr = useRef(options?.ssr).current === true
+    const skipSync = useRef(options?.skipSync).current === true
     const defaultValue = useRef(options?.defaultValue).current
     // `id` changes every time a change in the `localStorage` occurs
     const [id, forceUpdate] = useReducer((number) => number + 1, 0)
@@ -71,15 +72,17 @@ function useClientLocalStorageState<T>(
     //   triggered the change
     useEffect(() => {
         const onStorage = (e: StorageEvent): void => {
-            if (e.storageArea === localStorage && e.key === key) {
+            if (!skipSync && e.storageArea === localStorage && e.key === key) {
                 forceUpdate()
             }
         }
 
-        window.addEventListener('storage', onStorage)
+        if (!skipSync) {
+            window.addEventListener('storage', onStorage)
+        }
 
         return (): void => window.removeEventListener('storage', onStorage)
-    }, [key])
+    }, [key, skipSync])
 
     // add this hook to the `activeHooks` array. see the `activeHooks` declaration above for a
     // more detailed explanation
