@@ -1,6 +1,6 @@
 import storage from './storage'
 import { unstable_batchedUpdates } from 'react-dom'
-import { useEffect, useLayoutEffect, useMemo, useReducer, useRef } from 'react'
+import { useEffect, useMemo, useReducer, useRef } from 'react'
 
 // `activeHooks` holds all active hooks. we use the array to update all hooks with the same key —
 // calling `setValue` of one hook triggers an update for all other hooks with the same key
@@ -49,22 +49,9 @@ function useClientLocalStorageState<T>(
     options?: { defaultValue?: T; ssr?: boolean },
 ): [T | undefined, UpdateState<T | undefined>, LocalStorageProperties] {
     const isFirstRender = useRef(true)
-    const ssr = useRef(options?.ssr).current === true
     const defaultValue = useRef(options?.defaultValue).current
     // `id` changes every time a change in the `localStorage` occurs
     const [id, forceUpdate] = useReducer((number) => number + 1, 0)
-
-    useLayoutEffect(() => {
-        // SSR support
-        isFirstRender.current = false
-        if (ssr && (storage.data.has(key) || defaultValue !== storage.get(key, defaultValue))) {
-            forceUpdate()
-        }
-
-        // disabling dependencies because we want the effect to run only once — after hydration has
-        // finished
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [])
 
     // - syncs change across tabs, windows, iframe's
     // - the `storage` event is called only in all tabs, windows, iframe's except the one that
@@ -91,6 +78,19 @@ function useClientLocalStorageState<T>(
         }
     }, [key])
 
+    // - SSR support
+    // - not inside a `useLayoutEffect` because this way we skip the calls to all effects
+    //   - better performance
+    //   - inspired by: https://github.com/astoilkov/use-local-storage-state/pull/40
+    const isFirstSsrRender = useRef(options?.ssr).current === true && isFirstRender.current
+    if (
+        isFirstSsrRender &&
+        (storage.data.has(key) || defaultValue !== storage.get(key, defaultValue))
+    ) {
+        forceUpdate()
+        isFirstRender.current = false
+    }
+
     // initial issue: https://github.com/astoilkov/use-local-storage-state/issues/26
     // issues that were caused by incorrect initial and secondary implementations:
     // - https://github.com/astoilkov/use-local-storage-state/issues/30
@@ -105,7 +105,7 @@ function useClientLocalStorageState<T>(
 
     return useMemo(
         () => [
-            ssr && isFirstRender.current ? defaultValue : storage.get(key, defaultValue),
+            isFirstSsrRender ? defaultValue : storage.get(key, defaultValue),
             (newValue: T | undefined | ((value: T | undefined) => T | undefined)): void => {
                 const isCallable = (
                     value: unknown,
@@ -125,7 +125,7 @@ function useClientLocalStorageState<T>(
                 })
             },
             {
-                isPersistent: ssr && isFirstRender.current ? true : !storage.data.has(key),
+                isPersistent: isFirstSsrRender || !storage.data.has(key),
                 removeItem(): void {
                     storage.remove(key)
 
