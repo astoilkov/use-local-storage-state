@@ -77,8 +77,13 @@
         {
             "name": "import *",
             "path": "es/index.js",
-            "limit": "2 KB",
+            "limit": "1.75 kB",
             "gzip": false
+        },
+        {
+            "name": "import *",
+            "path": "es/index.js",
+            "limit": "800 B"
         }
     ]
 }
