@@ -9,7 +9,7 @@ const activeHooks: {
     forceUpdate: () => void
 }[] = []
 
-// - `useLocalStorageState` return type
+// - `useLocalStorageState()` return type
 // - first two values are the same as `useState`
 export type LocalStorageState<T> = [
     T,
