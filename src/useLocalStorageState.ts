@@ -1,6 +1,6 @@
 import storage from './storage'
 import { unstable_batchedUpdates } from 'react-dom'
-import { useEffect, useMemo, useReducer, useRef } from 'react'
+import { Dispatch, SetStateAction, useEffect, useMemo, useReducer, useRef } from 'react'
 
 // `activeHooks` holds all active hooks. we use the array to update all hooks with the same key —
 // calling `setValue` of one hook triggers an update for all other hooks with the same key
@@ -9,7 +9,6 @@ const activeHooks: {
     forceUpdate: () => void
 }[] = []
 
-type UpdateState<T> = (newValue: T | ((value: T) => T)) => void
 type LocalStorageProperties = {
     isPersistent: boolean
     removeItem: () => void
@@ -18,19 +17,19 @@ type LocalStorageProperties = {
 export default function useLocalStorageState(
     key: string,
     options?: { ssr: boolean },
-): [unknown, UpdateState<unknown>, LocalStorageProperties]
+): [unknown, Dispatch<SetStateAction<unknown>>, LocalStorageProperties]
 export default function useLocalStorageState<T>(
     key: string,
     options?: { ssr: boolean },
-): [T | undefined, UpdateState<T | undefined>, LocalStorageProperties]
+): [T | undefined, Dispatch<SetStateAction<T | undefined>>, LocalStorageProperties]
 export default function useLocalStorageState<T>(
     key: string,
     options?: { defaultValue?: T; ssr?: boolean },
-): [T, UpdateState<T>, LocalStorageProperties]
+): [T, Dispatch<SetStateAction<T>>, LocalStorageProperties]
 export default function useLocalStorageState<T = undefined>(
     key: string,
     options?: { defaultValue?: T; ssr?: boolean },
-): [T | undefined, UpdateState<T | undefined>, LocalStorageProperties] {
+): [T | undefined, Dispatch<SetStateAction<T | undefined>>, LocalStorageProperties] {
     // SSR support
     if (typeof window === 'undefined') {
         return [
@@ -47,7 +46,7 @@ export default function useLocalStorageState<T = undefined>(
 function useClientLocalStorageState<T>(
     key: string,
     options?: { defaultValue?: T; ssr?: boolean },
-): [T | undefined, UpdateState<T | undefined>, LocalStorageProperties] {
+): [T | undefined, Dispatch<SetStateAction<T | undefined>>, LocalStorageProperties] {
     const isFirstRender = useRef(true)
     const defaultValue = useRef(options?.defaultValue).current
     // `id` changes every time a change in the `localStorage` occurs
@@ -106,7 +105,7 @@ function useClientLocalStorageState<T>(
     return useMemo(
         () => [
             isFirstSsrRender ? defaultValue : storage.get(key, defaultValue),
-            (newValue: T | undefined | ((value: T | undefined) => T | undefined)): void => {
+            (newValue: SetStateAction<T | undefined>): void => {
                 const isCallable = (
                     value: unknown,
                 ): value is (value: T | undefined) => T | undefined => typeof value === 'function'
