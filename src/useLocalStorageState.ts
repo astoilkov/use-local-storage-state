@@ -9,27 +9,33 @@ const activeHooks: {
     forceUpdate: () => void
 }[] = []
 
-type LocalStorageProperties = {
-    isPersistent: boolean
-    removeItem: () => void
-}
+// - `useLocalStorageState` return type
+// - first two values are the same as `useState`
+export type LocalStorageState<T> = [
+    T,
+    Dispatch<SetStateAction<T>>,
+    {
+        isPersistent: boolean
+        removeItem: () => void
+    },
+]
 
 export default function useLocalStorageState(
     key: string,
     options?: { ssr: boolean },
-): [unknown, Dispatch<SetStateAction<unknown>>, LocalStorageProperties]
+): LocalStorageState<unknown>
 export default function useLocalStorageState<T>(
     key: string,
     options?: { ssr: boolean },
-): [T | undefined, Dispatch<SetStateAction<T | undefined>>, LocalStorageProperties]
+): LocalStorageState<T | undefined>
 export default function useLocalStorageState<T>(
     key: string,
     options?: { defaultValue?: T; ssr?: boolean },
-): [T, Dispatch<SetStateAction<T>>, LocalStorageProperties]
+): LocalStorageState<T>
 export default function useLocalStorageState<T = undefined>(
     key: string,
     options?: { defaultValue?: T; ssr?: boolean },
-): [T | undefined, Dispatch<SetStateAction<T | undefined>>, LocalStorageProperties] {
+): LocalStorageState<T | undefined> {
     // SSR support
     if (typeof window === 'undefined') {
         return [
@@ -46,7 +52,7 @@ export default function useLocalStorageState<T = undefined>(
 function useClientLocalStorageState<T>(
     key: string,
     options?: { defaultValue?: T; ssr?: boolean },
-): [T | undefined, Dispatch<SetStateAction<T | undefined>>, LocalStorageProperties] {
+): LocalStorageState<T | undefined> {
     const isFirstRender = useRef(true)
     const defaultValue = useRef(options?.defaultValue).current
     // `id` changes every time a change in the `localStorage` occurs
