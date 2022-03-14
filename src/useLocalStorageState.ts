@@ -112,11 +112,11 @@ function useClientLocalStorageState<T>(
     }, [key])
 
     // - SSR support
-    // - not inside a `useLayoutEffect` because this way we skip the calls to all effects
-    //   - better performance
-    //   - inspired by: https://github.com/astoilkov/use-local-storage-state/pull/40
-    //   - related: https://github.com/astoilkov/use-local-storage-state/issues/39
-    //   - related: https://github.com/astoilkov/use-local-storage-state/issues/43
+    // - not inside a `useLayoutEffect` because this way we skip the calls to `useEffect()` and
+    //   `useLayoutEffect()` for the first render (which also increases performance)
+    // - inspired by: https://github.com/astoilkov/use-local-storage-state/pull/40
+    // - related: https://github.com/astoilkov/use-local-storage-state/issues/39
+    // - related: https://github.com/astoilkov/use-local-storage-state/issues/43
     const isFirstSsrRender = useRef(options?.ssr).current === true && isFirstRender.current
     if (
         isFirstSsrRender &&
