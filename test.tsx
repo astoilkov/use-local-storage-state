@@ -559,6 +559,30 @@ describe('createLocalStorageStateHook()', () => {
         expect(JSON.parse(localStorage.getItem('todos2')!)).toEqual(['first', 'second'])
     })
 
+    // https://github.com/astoilkov/use-local-storage-state/issues/39
+    // https://github.com/astoilkov/use-local-storage-state/issues/43
+    // https://github.com/astoilkov/use-local-storage-state/pull/40
+    it(`when ssr: true — don't call useEffect() and useLayoutEffect() on first render`, () => {
+        let calls = 0
+
+        function Component() {
+            useLocalStorageState('color', {
+                ssr: true,
+                defaultValue: 'red',
+            })
+
+            useEffect(() => {
+                calls += 1
+            })
+
+            return null
+        }
+
+        render(<Component />)
+
+        expect(calls).toBe(1)
+    })
+
     // https://github.com/astoilkov/use-local-storage-state/issues/44
     it(`setState() shouldn't change between renders`, () => {
         function Component() {
