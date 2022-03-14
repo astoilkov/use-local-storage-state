@@ -1,8 +1,9 @@
 import storage from './src/storage'
 import useLocalStorageState from '.'
-import { createElement, useMemo } from 'react'
+import { render } from '@testing-library/react'
 import { renderToString } from 'react-dom/server'
 import { renderHook, act } from '@testing-library/react-hooks'
+import React, { createElement, useEffect, useMemo } from 'react'
 
 beforeEach(() => {
     localStorage.clear()
@@ -556,5 +557,24 @@ describe('createLocalStorageStateHook()', () => {
 
         expect(JSON.parse(localStorage.getItem('todos1')!)).toEqual(['first', 'second'])
         expect(JSON.parse(localStorage.getItem('todos2')!)).toEqual(['first', 'second'])
+    })
+
+    // https://github.com/astoilkov/use-local-storage-state/issues/44
+    it(`setState() shouldn't change between renders`, () => {
+        function Component() {
+            const [value, setValue] = useLocalStorageState('number', {
+                defaultValue: 1,
+            })
+
+            useEffect(() => {
+                setValue((value) => value + 1)
+            }, [setValue])
+
+            return <div>{value}</div>
+        }
+
+        const { queryByText } = render(<Component />)
+
+        expect(queryByText(/^2$/u)).toBeTruthy()
     })
 })

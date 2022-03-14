@@ -10,5 +10,5 @@ module.exports = {
             '$1'
         ]
     },
-    testMatch: ['<rootDir>/test.ts'],
+    testMatch: ['<rootDir>/test.tsx'],
 }

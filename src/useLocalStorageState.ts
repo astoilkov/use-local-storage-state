@@ -1,6 +1,14 @@
 import storage from './storage'
 import { unstable_batchedUpdates } from 'react-dom'
-import { Dispatch, SetStateAction, useEffect, useMemo, useReducer, useRef } from 'react'
+import {
+    Dispatch,
+    SetStateAction,
+    useCallback,
+    useEffect,
+    useMemo,
+    useReducer,
+    useRef,
+} from 'react'
 
 // `activeHooks` holds all active hooks. we use the array to update all hooks with the same key —
 // calling `setValue` of one hook triggers an update for all other hooks with the same key
@@ -57,6 +65,26 @@ function useClientLocalStorageState<T>(
     const defaultValue = useRef(options?.defaultValue).current
     // `id` changes every time a change in the `localStorage` occurs
     const [id, forceUpdate] = useReducer((number) => number + 1, 0)
+    const setState = useCallback(
+        (newValue: SetStateAction<T | undefined>): void => {
+            const isCallable = (value: unknown): value is (value: T | undefined) => T | undefined =>
+                typeof value === 'function'
+            const newUnwrappedValue = isCallable(newValue)
+                ? newValue(storage.get(key, defaultValue))
+                : newValue
+
+            storage.set(key, newUnwrappedValue)
+
+            unstable_batchedUpdates(() => {
+                for (const update of activeHooks) {
+                    if (update.key === key) {
+                        update.forceUpdate()
+                    }
+                }
+            })
+        },
+        [key, defaultValue],
+    )
 
     // - syncs change across tabs, windows, iframe's
     // - the `storage` event is called only in all tabs, windows, iframe's except the one that
@@ -111,24 +139,7 @@ function useClientLocalStorageState<T>(
     return useMemo(
         () => [
             isFirstSsrRender ? defaultValue : storage.get(key, defaultValue),
-            (newValue: SetStateAction<T | undefined>): void => {
-                const isCallable = (
-                    value: unknown,
-                ): value is (value: T | undefined) => T | undefined => typeof value === 'function'
-                const newUnwrappedValue = isCallable(newValue)
-                    ? newValue(storage.get(key, defaultValue))
-                    : newValue
-
-                storage.set(key, newUnwrappedValue)
-
-                unstable_batchedUpdates(() => {
-                    for (const update of activeHooks) {
-                        if (update.key === key) {
-                            update.forceUpdate()
-                        }
-                    }
-                })
-            },
+            setState,
             {
                 isPersistent: isFirstSsrRender || !storage.data.has(key),
                 removeItem(): void {
@@ -148,6 +159,7 @@ function useClientLocalStorageState<T>(
         //   changed and we need to update the returned value. However, the eslint rule wants us to
         //   remove the `id` from the dependencies array.
         // - `defaultValue` never changes so we can skip it and reduce package size
+        // - `setState` changes when `key` changes so we can skip it and reduce package size
         // eslint-disable-next-line react-hooks/exhaustive-deps
         [id, key],
     )
