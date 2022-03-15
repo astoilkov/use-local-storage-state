@@ -116,9 +116,9 @@ function useClientLocalStorageState<T>(
     // - inspired by: https://github.com/astoilkov/use-local-storage-state/pull/40
     // - related: https://github.com/astoilkov/use-local-storage-state/issues/39
     // - related: https://github.com/astoilkov/use-local-storage-state/issues/43
-    const isFirstRender = useRef(true)
-    const isFirstSsrRender = useRef(options?.ssr).current === true && isFirstRender.current
-    isFirstRender.current = false
+    const isFirstRenderRef = useRef(true)
+    const isFirstSsrRender = useRef(options?.ssr).current === true && isFirstRenderRef.current
+    isFirstRenderRef.current = false
     if (
         isFirstSsrRender &&
         (storage.data.has(key) || defaultValue !== storage.get(key, defaultValue))
