@@ -61,7 +61,6 @@ function useClientLocalStorageState<T>(
     key: string,
     options?: { defaultValue?: T; ssr?: boolean },
 ): LocalStorageState<T | undefined> {
-    const isFirstRender = useRef(true)
     const defaultValue = useRef(options?.defaultValue).current
     // `id` changes every time a change in the `localStorage` occurs
     const [id, forceUpdate] = useReducer((number) => number + 1, 0)
@@ -117,13 +116,14 @@ function useClientLocalStorageState<T>(
     // - inspired by: https://github.com/astoilkov/use-local-storage-state/pull/40
     // - related: https://github.com/astoilkov/use-local-storage-state/issues/39
     // - related: https://github.com/astoilkov/use-local-storage-state/issues/43
+    const isFirstRender = useRef(true)
     const isFirstSsrRender = useRef(options?.ssr).current === true && isFirstRender.current
+    isFirstRender.current = false
     if (
         isFirstSsrRender &&
         (storage.data.has(key) || defaultValue !== storage.get(key, defaultValue))
     ) {
         forceUpdate()
-        isFirstRender.current = false
     }
 
     // initial issue: https://github.com/astoilkov/use-local-storage-state/issues/26
