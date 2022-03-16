@@ -75,6 +75,10 @@ function useClientLocalStorageState<T>(
             storage.set(key, newUnwrappedValue)
 
             unstable_batchedUpdates(() => {
+                // 🐛 `setValue()` during render doesn't work
+                // https://github.com/astoilkov/use-local-storage-state/issues/43
+                forceUpdate()
+
                 for (const update of activeHooks) {
                     if (update.key === key) {
                         update.forceUpdate()

@@ -601,4 +601,23 @@ describe('createLocalStorageStateHook()', () => {
 
         expect(queryByText(/^2$/u)).toBeTruthy()
     })
+
+    // https://github.com/astoilkov/use-local-storage-state/issues/43
+    it(`setState() during render should work`, () => {
+        function Component() {
+            const [value, setValue] = useLocalStorageState('number', {
+                defaultValue: 0,
+            })
+
+            if (value === 0) {
+                setValue(1)
+            }
+
+            return <div>{value}</div>
+        }
+
+        const { queryByText } = render(<Component />)
+
+        expect(queryByText(/^1$/u)).toBeTruthy()
+    })
 })
