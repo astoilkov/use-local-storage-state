@@ -603,7 +603,7 @@ describe('createLocalStorageStateHook()', () => {
     })
 
     // https://github.com/astoilkov/use-local-storage-state/issues/43
-    it(`setState() during render should work`, () => {
+    it(`setState() during render`, () => {
         function Component() {
             const [value, setValue] = useLocalStorageState('number', {
                 defaultValue: 0,
