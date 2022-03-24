@@ -5,7 +5,7 @@ import React, { useEffect, useMemo } from 'react'
 import { renderHook, act } from '@testing-library/react-hooks'
 import { renderHook as renderHookOnServer } from '@testing-library/react-hooks/server'
 
-beforeEach(() => {
+afterEach(() => {
     localStorage.clear()
     storage.data.clear()
 })
