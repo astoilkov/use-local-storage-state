@@ -1,9 +1,9 @@
 import storage from './src/storage'
 import useLocalStorageState from '.'
 import { render } from '@testing-library/react'
-import { renderToString } from 'react-dom/server'
+import React, { useEffect, useMemo } from 'react'
 import { renderHook, act } from '@testing-library/react-hooks'
-import React, { createElement, useEffect, useMemo } from 'react'
+import { renderHook as renderHookOnServer } from '@testing-library/react-hooks/server'
 
 beforeEach(() => {
     localStorage.clear()
@@ -238,24 +238,6 @@ describe('createLocalStorageStateHook()', () => {
         const [todos, , { isPersistent }] = result.current
         expect(todos).toEqual(['second', 'third'])
         expect(isPersistent).toBe(false)
-    })
-
-    it('isPersistent returns true on the server', () => {
-        const windowSpy = jest.spyOn(global, 'window' as any, 'get')
-        windowSpy.mockImplementation(() => {
-            return undefined
-        })
-
-        function Component() {
-            const [, , { isPersistent }] = useLocalStorageState('todos', {
-                defaultValue: ['first', 'second'],
-            })
-            expect(isPersistent).toBe(true)
-            return null
-        }
-        renderToString(createElement(Component))
-
-        windowSpy.mockRestore()
     })
 
     it('isPersistent returns true after "storage" event', () => {
@@ -497,53 +479,6 @@ describe('createLocalStorageStateHook()', () => {
         expect(todos).toEqual([4, 5, 6])
     })
 
-    it('turns server rendering when `window` object is `undefined`', () => {
-        const windowSpy = jest.spyOn(global, 'window' as any, 'get')
-        windowSpy.mockImplementation(() => {
-            return undefined
-        })
-
-        function Component() {
-            const [todos] = useLocalStorageState('todos', {
-                ssr: true,
-                defaultValue: ['first', 'second'],
-            })
-            expect(todos).toEqual(['first', 'second'])
-            return null
-        }
-        renderToString(createElement(Component))
-
-        windowSpy.mockRestore()
-    })
-
-    it(`test server-side rendering where window and localStorage aren't available`, () => {
-        const localStorageSpy = jest.spyOn(global, 'localStorage' as any, 'get')
-        const windowSpy = jest.spyOn(global, 'window' as any, 'get')
-        windowSpy.mockImplementation(() => {
-            return undefined
-        })
-        localStorageSpy.mockImplementation(() => {
-            return undefined
-        })
-
-        function Component() {
-            const [value, setValue, { isPersistent, removeItem }] = useLocalStorageState('todos', {
-                defaultValue: ['first', 'second'],
-            })
-            const [value2] = useLocalStorageState('todos2')
-            expect(isPersistent).toBe(true)
-            expect(setValue).not.toThrow()
-            expect(removeItem).not.toThrow()
-            expect(value).toEqual(['first', 'second'])
-            expect(value2).toEqual(undefined)
-            return null
-        }
-        renderToString(createElement(Component))
-
-        windowSpy.mockRestore()
-        localStorageSpy.mockRestore()
-    })
-
     it('supports changing the key', () => {
         let key = 'todos1'
 
@@ -619,5 +554,64 @@ describe('createLocalStorageStateHook()', () => {
         const { queryByText } = render(<Component />)
 
         expect(queryByText(/^1$/u)).toBeTruthy()
+    })
+
+    describe('SSR support', () => {
+        beforeEach(() => {
+            const windowSpy = jest.spyOn(global, 'window' as any, 'get')
+            windowSpy.mockImplementation(() => {
+                return undefined
+            })
+        })
+
+        it('returns default value on the server', () => {
+            localStorage.setItem('todos', JSON.stringify(['third', 'forth']))
+
+            const { result } = renderHookOnServer(() =>
+                useLocalStorageState('todos', {
+                    defaultValue: ['first', 'second'],
+                }),
+            )
+
+            expect(result.current[0]).toEqual(['first', 'second'])
+        })
+
+        it('returns default value on the server', () => {
+            const { result } = renderHookOnServer(() => useLocalStorageState('todos'))
+
+            expect(result.current[0]).toEqual(undefined)
+        })
+
+        it('isPersistent returns true on the server', () => {
+            const { result } = renderHookOnServer(() =>
+                useLocalStorageState('number', {
+                    defaultValue: 0,
+                }),
+            )
+
+            expect(result.current[2].isPersistent).toBe(true)
+        })
+
+        it(`setValue() on server doesn't throw`, () => {
+            const { result } = renderHookOnServer(() =>
+                useLocalStorageState('number', {
+                    defaultValue: 0,
+                }),
+            )
+
+            const setValue = result.current[1]
+            expect(setValue).not.toThrow()
+        })
+
+        it(`removeItem() on server doesn't throw`, () => {
+            const { result } = renderHookOnServer(() =>
+                useLocalStorageState('number', {
+                    defaultValue: 0,
+                }),
+            )
+
+            const removeItem = result.current[2].removeItem
+            expect(removeItem).not.toThrow()
+        })
     })
 })
