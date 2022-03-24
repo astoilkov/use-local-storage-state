@@ -8,6 +8,7 @@ import { renderHook as renderHookOnServer } from '@testing-library/react-hooks/s
 afterEach(() => {
     localStorage.clear()
     storage.data.clear()
+    jest.clearAllMocks()
 })
 
 describe('createLocalStorageStateHook()', () => {
