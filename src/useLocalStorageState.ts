@@ -1,14 +1,7 @@
 import storage from './storage'
 import { unstable_batchedUpdates } from 'react-dom'
-import {
-    Dispatch,
-    SetStateAction,
-    useCallback,
-    useEffect,
-    useMemo,
-    useReducer,
-    useRef,
-} from 'react'
+import { useRef, useMemo, useEffect, useReducer, useCallback } from 'react'
+import type { Dispatch, SetStateAction } from 'react'
 
 // `activeHooks` holds all active hooks. we use the array to update all hooks with the same key —
 // calling `setValue` of one hook triggers an update for all other hooks with the same key
