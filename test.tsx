@@ -1,9 +1,30 @@
+import util from 'node:util'
 import storage from './src/storage'
 import useLocalStorageState from '.'
 import { render } from '@testing-library/react'
 import React, { useEffect, useMemo } from 'react'
 import { renderHook, act } from '@testing-library/react-hooks'
 import { renderHook as renderHookOnServer } from '@testing-library/react-hooks/server'
+
+beforeEach(() => {
+    // Throw an error when `console.error()` is called. This is especially useful in a React tests
+    // because React uses it to show warnings and discourage you from shooting yourself in the foot.
+    // Here are a few example warnings React throws:
+    // - "Warning: useLayoutEffect does nothing on the server, because its effect cannot be encoded
+    //   into the server renderer's output format. This will lead to a mismatch between the initial,
+    //   non-hydrated UI and the intended UI. To avoid this, useLayoutEffect should only be used in
+    //   components that render exclusively on the client. See
+    //   https://reactjs.org/link/uselayouteffect-ssr for common fixes."
+    // - "Warning: Can't perform a React state update on an unmounted component. This is a no-op,
+    //   but it indicates a memory leak in your application. To fix, cancel all subscriptions and
+    //   asynchronous tasks in a useEffect cleanup function."
+    // - "Warning: Cannot update a component (`Component`) while rendering a different component
+    //   (`Component`). To locate the bad setState() call inside `Component`, follow the stack trace
+    //   as described in https://reactjs.org/link/setstate-in-render"
+    jest.spyOn(console, 'error').mockImplementation((format: string, ...args: any[]) => {
+        throw new Error(util.format(format, ...args))
+    })
+})
 
 afterEach(() => {
     localStorage.clear()
@@ -563,25 +584,6 @@ describe('createLocalStorageStateHook()', () => {
             windowSpy.mockImplementation(() => {
                 return undefined
             })
-        })
-
-        it(`should not call useLayoutEffect() on the server`, () => {
-            // When you call `useLayoutEffect()` on the server React calls `console.error` with the
-            // following message:
-            // "Warning: useLayoutEffect does nothing on the server, because its effect cannot be
-            // encoded into the server renderer's output format. This will lead to a mismatch between
-            // the initial, non-hydrated UI and the intended UI. To avoid this, useLayoutEffect should
-            // only be used in components that render exclusively on the client. See
-            // https://reactjs.org/link/uselayouteffect-ssr for common fixes."
-            const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {})
-
-            renderHookOnServer(() =>
-                useLocalStorageState('number', {
-                    defaultValue: 0,
-                }),
-            )
-
-            expect(errorSpy).not.toHaveBeenCalled()
         })
 
         it('returns default value on the server', () => {
