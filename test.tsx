@@ -2,8 +2,8 @@ import util from 'node:util'
 import storage from './src/storage'
 import useLocalStorageState from '.'
 import { render } from '@testing-library/react'
-import React, { useEffect, useMemo } from 'react'
 import { renderHook, act } from '@testing-library/react-hooks'
+import React, { useEffect, useLayoutEffect, useMemo } from 'react'
 import { renderHook as renderHookOnServer } from '@testing-library/react-hooks/server'
 
 beforeEach(() => {
@@ -576,6 +576,60 @@ describe('createLocalStorageStateHook()', () => {
         const { queryByText } = render(<Component />)
 
         expect(queryByText(/^1$/u)).toBeTruthy()
+    })
+
+    it(`calling setValue() during render when there are two instances of useLocalStorageState() with the same key should throw an error`, () => {
+        function App() {
+            return (
+                <>
+                    <Component update={false} />
+                    <Component update={true} />
+                </>
+            )
+        }
+
+        function Component({ update }: { update: boolean }) {
+            const [value, setValue] = useLocalStorageState('number', {
+                defaultValue: 0,
+            })
+
+            if (update && value === 0) {
+                setValue(1)
+            }
+
+            return <div>{value}</div>
+        }
+
+        expect(() => render(<App />)).toThrow()
+    })
+
+    it(`calling setValue() from useLayoutEffect() should update all useLocalStorageState() instances`, () => {
+        function App() {
+            return (
+                <>
+                    <Component update={false} />
+                    <Component update={true} />
+                </>
+            )
+        }
+
+        function Component({ update }: { update: boolean }) {
+            const [value, setValue] = useLocalStorageState('number', {
+                defaultValue: 0,
+            })
+
+            useLayoutEffect(() => {
+                if (update) {
+                    setValue(1)
+                }
+            }, [])
+
+            return <div>{value}</div>
+        }
+
+        const { queryAllByText } = render(<App />)
+
+        expect(queryAllByText(/^1$/u)).toHaveLength(2)
     })
 
     describe('SSR support', () => {

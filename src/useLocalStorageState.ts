@@ -1,14 +1,14 @@
 import storage from './storage'
 import { unstable_batchedUpdates } from 'react-dom'
-import { useRef, useMemo, useEffect, useReducer, useCallback } from 'react'
 import type { Dispatch, SetStateAction } from 'react'
+import { useRef, useMemo, useEffect, useReducer, useCallback } from 'react'
 
 // `activeHooks` holds all active hooks. we use the array to update all hooks with the same key —
 // calling `setValue` of one hook triggers an update for all other hooks with the same key
-const activeHooks: {
+const activeHooks = new Set<{
     key: string
     forceUpdate: () => void
-}[] = []
+}>()
 
 // - `useLocalStorageState()` return type
 // - first two values are the same as `useState`
@@ -68,13 +68,9 @@ function useClientLocalStorageState<T>(
             storage.set(key, newUnwrappedValue)
 
             unstable_batchedUpdates(() => {
-                // 🐛 `setValue()` during render doesn't work
-                // https://github.com/astoilkov/use-local-storage-state/issues/43
-                forceUpdate()
-
-                for (const update of activeHooks) {
-                    if (update.key === key) {
-                        update.forceUpdate()
+                for (const hook of activeHooks) {
+                    if (hook.key === key) {
+                        hook.forceUpdate()
                     }
                 }
             })
@@ -97,15 +93,19 @@ function useClientLocalStorageState<T>(
         return (): void => window.removeEventListener('storage', onStorage)
     }, [key])
 
-    // add this hook to the `activeHooks` array. see the `activeHooks` declaration above for a
-    // more detailed explanation
-    useEffect(() => {
-        const entry = { key, forceUpdate }
-        activeHooks.push(entry)
-        return (): void => {
-            activeHooks.splice(activeHooks.indexOf(entry), 1)
-        }
-    }, [key])
+    // - adds this hook to the `activeHooks` array. see the `activeHooks` declaration above for a
+    //   more detailed explanation
+    // - not inside a React effect because:
+    //   - it fixes "🐛 `setValue()` during render doesn't work":
+    //     https://github.com/astoilkov/use-local-storage-state/issues/43
+    //   - if you call `setValue()` during render and you have two localStorage instances with the
+    //     same key — React throws an error. we want this behavior because otherwise it will just
+    //     silently fail
+    const activeHookRef = useRef({ key, forceUpdate })
+    activeHooks.delete(activeHookRef.current)
+    activeHookRef.current = { key, forceUpdate }
+    activeHooks.add(activeHookRef.current)
+    useEffect(() => () => void activeHooks.delete(activeHookRef.current), [])
 
     // - SSR support
     // - not inside a `useLayoutEffect` because this way we skip the calls to `useEffect()` and
