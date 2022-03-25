@@ -1,4 +1,4 @@
-import util from 'node:util'
+import util from 'util'
 import storage from './src/storage'
 import useLocalStorageState from '.'
 import { render } from '@testing-library/react'
