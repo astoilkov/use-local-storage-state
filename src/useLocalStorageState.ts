@@ -103,8 +103,6 @@ function useClientLocalStorageState<T>(
     //     same key — React throws an error. we want this behavior because otherwise it will just
     //     silently fail
     const activeHookRef = useRef({ key, forceUpdate })
-    activeHooks.delete(activeHookRef.current)
-    activeHookRef.current = { key, forceUpdate }
     activeHooks.add(activeHookRef.current)
     useEffect(
         () => () => {
