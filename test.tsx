@@ -32,7 +32,7 @@ afterEach(() => {
     jest.clearAllMocks()
 })
 
-describe('createLocalStorageStateHook()', () => {
+describe('useLocalStorageState()', () => {
     it('initial state is written into the state', () => {
         const { result } = renderHook(() =>
             useLocalStorageState('todos', { defaultValue: ['first', 'second'] }),
