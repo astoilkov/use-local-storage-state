@@ -634,7 +634,8 @@ describe('useLocalStorageState()', () => {
 
     describe('SSR support', () => {
         beforeEach(() => {
-            const windowSpy = jest.spyOn(global, 'window' as any, 'get')
+            const windowSpy = jest.spyOn(global, 'window', 'get')
+            // @ts-ignore
             windowSpy.mockImplementation(() => {
                 return undefined
             })
