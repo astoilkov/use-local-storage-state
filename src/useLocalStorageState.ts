@@ -57,6 +57,15 @@ function useClientLocalStorageState<T>(
     const defaultValue = useRef(options?.defaultValue).current
     // `id` changes every time a change in the `localStorage` occurs
     const [id, forceUpdate] = useReducer((number) => number + 1, 0)
+    const updateHooks = useCallback(() => {
+        unstable_batchedUpdates(() => {
+            for (const hook of activeHooks) {
+                if (hook.key === key) {
+                    hook.forceUpdate()
+                }
+            }
+        })
+    }, [key])
     const setState = useCallback(
         (newValue: SetStateAction<T | undefined>): void => {
             const isCallable = (value: unknown): value is (value: T | undefined) => T | undefined =>
@@ -67,15 +76,9 @@ function useClientLocalStorageState<T>(
 
             storage.set(key, newUnwrappedValue)
 
-            unstable_batchedUpdates(() => {
-                for (const hook of activeHooks) {
-                    if (hook.key === key) {
-                        hook.forceUpdate()
-                    }
-                }
-            })
+            updateHooks()
         },
-        [key, defaultValue],
+        [key, updateHooks, defaultValue],
     )
 
     // - syncs change across tabs, windows, iframe's
@@ -144,11 +147,7 @@ function useClientLocalStorageState<T>(
                 removeItem(): void {
                     storage.remove(key)
 
-                    for (const update of activeHooks) {
-                        if (update.key === key) {
-                            update.forceUpdate()
-                        }
-                    }
+                    updateHooks()
                 },
             },
         ],
