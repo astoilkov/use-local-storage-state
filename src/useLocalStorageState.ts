@@ -105,7 +105,12 @@ function useClientLocalStorageState<T>(
     activeHooks.delete(activeHookRef.current)
     activeHookRef.current = { key, forceUpdate }
     activeHooks.add(activeHookRef.current)
-    useEffect(() => () => void activeHooks.delete(activeHookRef.current), [])
+    useEffect(
+        () => () => {
+            activeHooks.delete(activeHookRef.current)
+        },
+        [],
+    )
 
     // - SSR support
     // - not inside a `useLayoutEffect` because this way we skip the calls to `useEffect()` and
