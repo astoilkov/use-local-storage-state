@@ -68,13 +68,10 @@ function useClientLocalStorageState<T>(
     }, [key])
     const setState = useCallback(
         (newValue: SetStateAction<T | undefined>): void => {
-            const isCallable = (value: unknown): value is (value: T | undefined) => T | undefined =>
-                typeof value === 'function'
-            const newUnwrappedValue = isCallable(newValue)
-                ? newValue(storage.get(key, defaultValue))
-                : newValue
-
-            storage.set(key, newUnwrappedValue)
+            storage.set(
+                key,
+                newValue instanceof Function ? newValue(storage.get(key, defaultValue)) : newValue,
+            )
 
             updateHooks()
         },
