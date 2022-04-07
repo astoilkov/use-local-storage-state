@@ -1,10 +1,11 @@
 import util from 'util'
-import storage from './src/storage'
+import _Storage from './src/storage'
 import useLocalStorageState from '.'
 import { render } from '@testing-library/react'
 import { renderHook, act } from '@testing-library/react-hooks'
 import React, { useEffect, useLayoutEffect, useMemo } from 'react'
 import { renderHook as renderHookOnServer } from '@testing-library/react-hooks/server'
+import superjson from 'superjson'
 
 beforeEach(() => {
     // Throw an error when `console.error()` is called. This is especially useful in a React tests
@@ -28,7 +29,7 @@ beforeEach(() => {
 
 afterEach(() => {
     localStorage.clear()
-    storage.data.clear()
+    _Storage.data.clear()
     jest.clearAllMocks()
 })
 
@@ -41,7 +42,7 @@ describe('useLocalStorageState()', () => {
         const [todos] = result.current
         expect(todos).toEqual(['first', 'second'])
     })
-
+    
     it(`initial state isn't written into localStorage`, () => {
         renderHook(() => useLocalStorageState('todos', { defaultValue: ['first', 'second'] }))
 
@@ -605,6 +606,36 @@ describe('useLocalStorageState()', () => {
         const { queryAllByText } = render(<App />)
 
         expect(queryAllByText(/^1$/u)).toHaveLength(2)
+    })
+
+    describe('superjson support', () => {
+        it('Can serialize Date from initial value', () => {
+            const date = new Date()
+    
+            const { result } = renderHook(() =>
+                useLocalStorageState('date', { defaultValue: [date], serializer: superjson }),
+            )
+    
+            const [value, _] = result.current
+            expect(value).toEqual([date])
+        })
+    
+        it('Can serialize Date from setValue', () => {
+            const date = new Date()
+    
+            const { result } = renderHook(() => 
+                useLocalStorageState<(Date | null)[]>('date', { defaultValue: [null], serializer: superjson })
+            )
+    
+
+            act(() => {
+                const setValue = result.current[1]
+                setValue([date])
+            })
+    
+            const [value, _] = result.current
+            expect(value).toEqual([date])
+        })
     })
 
     describe('SSR support', () => {

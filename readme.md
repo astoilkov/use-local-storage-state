@@ -171,6 +171,14 @@ Default: `false`
 
 Enables SSR support and handles hydration mismatches. Not enabling this can cause the following error: `Warning: Expected server HTML to contain a matching ...`. This is the only library I'm aware of that handles this case. For more, see [discussion here](https://github.com/astoilkov/use-local-storage-state/issues/23).
 
+### `options.serializer`
+
+Type: `Pick<typeof JSON, 'stringify' | 'parse'>`
+
+Default: `JSON`
+
+JSON does not serialize `Date`, `Regex`, or `BigInt` data.  Can pass in [superjson](https://www.npmjs.com/package/superjson) or other `JSON`-compatible serialization classes for more advanced serialization.
+
 ## Alternatives
 
 These are the best alternatives to my repo I have found so far:

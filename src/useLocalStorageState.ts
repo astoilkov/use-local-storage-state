@@ -1,4 +1,4 @@
-import storage from './storage'
+import Storage, {Serializer} from './storage'
 import { unstable_batchedUpdates } from 'react-dom'
 import type { Dispatch, SetStateAction } from 'react'
 import { useRef, useMemo, useEffect, useReducer, useCallback, useLayoutEffect } from 'react'
@@ -23,21 +23,22 @@ export type LocalStorageState<T> = [
 
 export default function useLocalStorageState(
     key: string,
-    options?: { ssr: boolean },
+    options?: { ssr: boolean, serializer?: Serializer },
 ): LocalStorageState<unknown>
 export default function useLocalStorageState<T>(
     key: string,
-    options?: { ssr: boolean },
+    options?: { ssr: boolean, serializer?: Serializer },
 ): LocalStorageState<T | undefined>
 export default function useLocalStorageState<T>(
     key: string,
-    options?: { defaultValue?: T; ssr?: boolean },
+    options?: { defaultValue?: T; ssr?: boolean, serializer?: Serializer },
 ): LocalStorageState<T>
 export default function useLocalStorageState<T = undefined>(
     key: string,
-    options?: { defaultValue?: T; ssr?: boolean },
+    options?: { defaultValue?: T; ssr?: boolean, serializer?: Serializer },
 ): LocalStorageState<T | undefined> {
     const defaultValue = options?.defaultValue
+    const serializer: Serializer = options?.serializer ?? JSON
 
     // SSR support
     if (typeof window === 'undefined') {
@@ -45,14 +46,17 @@ export default function useLocalStorageState<T = undefined>(
     }
 
     // eslint-disable-next-line react-hooks/rules-of-hooks
-    return useClientLocalStorageState(key, defaultValue, options?.ssr === true)
+    return useClientLocalStorageState(key, defaultValue, options?.ssr === true, serializer)
 }
 
 function useClientLocalStorageState<T>(
     key: string,
     defaultValue: T | undefined,
     ssr: boolean,
+    serializer: Serializer
 ): LocalStorageState<T | undefined> {
+    const storage = useMemo(() => new Storage(serializer), [serializer])
+
     const initialDefaultValue = useRef(defaultValue).current
     // `id` changes every time a change in the `localStorage` occurs
     const [id, forceUpdate] = useReducer((number) => number + 1, 0)
@@ -69,6 +73,7 @@ function useClientLocalStorageState<T>(
             }
         })
     }, [key])
+    
     const setState = useCallback(
         (newValue: SetStateAction<T | undefined>): void => {
             storage.set(
@@ -80,7 +85,7 @@ function useClientLocalStorageState<T>(
 
             updateHooks()
         },
-        [key, updateHooks, initialDefaultValue],
+        [key, updateHooks, initialDefaultValue, storage],
     )
 
     // - syncs change across tabs, windows, iframe's
@@ -119,7 +124,7 @@ function useClientLocalStorageState<T>(
     isFirstRenderRef.current = false
     if (
         isPossiblyHydrating &&
-        (storage.data.has(key) || initialDefaultValue !== storage.get(key, initialDefaultValue))
+        (Storage.data.has(key) || initialDefaultValue !== storage.get(key, initialDefaultValue))
     ) {
         forceUpdate()
     }
@@ -130,7 +135,7 @@ function useClientLocalStorageState<T>(
     // - https://github.com/astoilkov/use-local-storage-state/issues/33
     if (
         initialDefaultValue !== undefined &&
-        !storage.data.has(key) &&
+        !Storage.data.has(key) &&
         localStorage.getItem(key) === null
     ) {
         storage.set(key, initialDefaultValue)
@@ -141,7 +146,7 @@ function useClientLocalStorageState<T>(
             isPossiblyHydrating ? initialDefaultValue : storage.get(key, initialDefaultValue),
             setState,
             {
-                isPersistent: isPossiblyHydrating || !storage.data.has(key),
+                isPersistent: isPossiblyHydrating || !Storage.data.has(key),
                 removeItem(): void {
                     storage.remove(key)
 
