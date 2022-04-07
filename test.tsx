@@ -578,31 +578,6 @@ describe('useLocalStorageState()', () => {
         expect(queryByText(/^1$/u)).toBeTruthy()
     })
 
-    it(`calling setValue() during render when there are two instances of useLocalStorageState() with the same key should throw an error`, () => {
-        function App() {
-            return (
-                <>
-                    <Component update={false} />
-                    <Component update={true} />
-                </>
-            )
-        }
-
-        function Component({ update }: { update: boolean }) {
-            const [value, setValue] = useLocalStorageState('number', {
-                defaultValue: 0,
-            })
-
-            if (update && value === 0) {
-                setValue(1)
-            }
-
-            return <div>{value}</div>
-        }
-
-        expect(() => render(<App />)).toThrow()
-    })
-
     it(`calling setValue() from useLayoutEffect() should update all useLocalStorageState() instances`, () => {
         function App() {
             return (

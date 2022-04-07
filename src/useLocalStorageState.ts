@@ -1,7 +1,7 @@
 import storage from './storage'
 import { unstable_batchedUpdates } from 'react-dom'
 import type { Dispatch, SetStateAction } from 'react'
-import { useRef, useMemo, useEffect, useReducer, useCallback } from 'react'
+import { useRef, useMemo, useEffect, useReducer, useCallback, useLayoutEffect } from 'react'
 
 // `activeHooks` holds all active hooks. we use the array to update all hooks with the same key —
 // calling `setValue` of one hook triggers an update for all other hooks with the same key
@@ -58,6 +58,10 @@ function useClientLocalStorageState<T>(
     const [id, forceUpdate] = useReducer((number) => number + 1, 0)
     const updateHooks = useCallback(() => {
         unstable_batchedUpdates(() => {
+            // - it fixes "🐛 `setValue()` during render doesn't work":
+            //   https://github.com/astoilkov/use-local-storage-state/issues/43
+            forceUpdate()
+
             for (const hook of activeHooks) {
                 if (hook.key === key) {
                     hook.forceUpdate()
@@ -96,20 +100,13 @@ function useClientLocalStorageState<T>(
 
     // - adds this hook to the `activeHooks` array. see the `activeHooks` declaration above for a
     //   more detailed explanation
-    // - not inside a React effect because:
-    //   - it fixes "🐛 `setValue()` during render doesn't work":
-    //     https://github.com/astoilkov/use-local-storage-state/issues/43
-    //   - if you call `setValue()` during render and you have two localStorage instances with the
-    //     same key — React throws an error. we want this behavior because otherwise it will just
-    //     silently fail
-    const activeHookRef = useRef({ key, forceUpdate })
-    activeHooks.add(activeHookRef.current)
-    useEffect(
-        () => () => {
-            activeHooks.delete(activeHookRef.current)
-        },
-        [],
-    )
+    useLayoutEffect(() => {
+        const hook = { key, forceUpdate }
+        activeHooks.add(hook)
+        return (): void => {
+            activeHooks.delete(hook)
+        }
+    }, [key])
 
     // - SSR support
     // - not inside a `useLayoutEffect` because this way we skip the calls to `useEffect()` and
