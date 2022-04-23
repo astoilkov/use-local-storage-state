@@ -29,7 +29,6 @@ beforeEach(() => {
 afterEach(() => {
     localStorage.clear()
     storage.data.clear()
-    jest.clearAllMocks()
 })
 
 describe('useLocalStorageState()', () => {
