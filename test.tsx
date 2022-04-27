@@ -1,5 +1,4 @@
 import util from 'util'
-import storage from './src/storage'
 import useLocalStorageState from '.'
 import { render } from '@testing-library/react'
 import { renderHook, act } from '@testing-library/react-hooks'
@@ -28,10 +27,35 @@ beforeEach(() => {
 
 afterEach(() => {
     localStorage.clear()
-    storage.data.clear()
 })
 
 describe('useLocalStorageState()', () => {
+    // it(`React.StrictMode`, () => {
+    //     function App() {
+    //         const [firstRender, setFirstRender] = useState(true)
+    //
+    //         return firstRender ? <ComponentA /> : <ComponentB />
+    //     }
+    //
+    //     function ComponentA() {
+    //         const [value] = useLocalStorageState('number', {
+    //             defaultValue: 0,
+    //         })
+    //
+    //         return <div>{value}</div>
+    //     }
+    //
+    //     const { queryByText, unmount } = render(
+    //         <React.StrictMode>
+    //             <App />
+    //         </React.StrictMode>,
+    //     )
+    //
+    //     unmount()
+    //
+    //     expect(queryByText(/^1$/u)).toBeTruthy()
+    // })
+
     it('initial state is written into the state', () => {
         const { result } = renderHook(() =>
             useLocalStorageState('todos', { defaultValue: ['first', 'second'] }),
@@ -175,7 +199,7 @@ describe('useLocalStorageState()', () => {
     })
 
     it('handles errors thrown by localStorage', () => {
-        const mock = jest.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+        jest.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
             throw new Error()
         })
 
@@ -183,105 +207,97 @@ describe('useLocalStorageState()', () => {
             useLocalStorageState('set-item-will-throw', { defaultValue: '' }),
         )
 
-        act(() => {
-            const setValue = result.current[1]
-            setValue('will-throw')
-        })
-
-        mock.mockRestore()
-
-        expect(result.current[0]).toBe('will-throw')
+        expect(() => {
+            act(() => {
+                const setValue = result.current[1]
+                setValue('will-throw')
+            })
+        }).not.toThrow()
     })
 
-    it('can retrieve data from in memory storage', () => {
-        const mock = jest.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
-            throw new Error()
-        })
+    // it('can retrieve data from in memory storage', () => {
+    //     const mock = jest.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+    //         throw new Error()
+    //     })
+    //
+    //     const { result: resultA } = renderHook(() =>
+    //         useLocalStorageState('todos', { defaultValue: ['first'] }),
+    //     )
+    //
+    //     act(() => {
+    //         const setValue = resultA.current[1]
+    //         setValue(['first', 'second'])
+    //     })
+    //
+    //     const { result: resultB } = renderHook(() =>
+    //         useLocalStorageState('todos', { defaultValue: ['first'] }),
+    //     )
+    //
+    //     const [value] = resultB.current
+    //     expect(value).toEqual(['first', 'second'])
+    // })
 
-        const { result: resultA } = renderHook(() =>
-            useLocalStorageState('todos', { defaultValue: ['first'] }),
-        )
-
-        act(() => {
-            const setValue = resultA.current[1]
-            setValue(['first', 'second'])
-        })
-
-        const { result: resultB } = renderHook(() =>
-            useLocalStorageState('todos', { defaultValue: ['first'] }),
-        )
-
-        mock.mockRestore()
-
-        const [value] = resultB.current
-        expect(value).toEqual(['first', 'second'])
-    })
-
-    it('isPersistent returns true by default', () => {
-        const { result } = renderHook(() =>
-            useLocalStorageState('todos', { defaultValue: ['first', 'second'] }),
-        )
-        const [, , { isPersistent }] = result.current
-        expect(isPersistent).toBe(true)
-    })
-
-    it('isPersistent returns false when localStorage.setItem() throws an error', () => {
-        const mock = jest.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
-            throw new Error()
-        })
-
-        const { result } = renderHook(() =>
-            useLocalStorageState('todos', { defaultValue: ['first', 'second'] }),
-        )
-
-        mock.mockRestore()
-
-        const [, , { isPersistent }] = result.current
-        expect(isPersistent).toBe(false)
-    })
-
-    it('isPersistent becomes false when localStorage.setItem() throws an error on consecutive updates', () => {
-        const { result } = renderHook(() =>
-            useLocalStorageState('todos', { defaultValue: ['first', 'second'] }),
-        )
-
-        const mock = jest.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
-            throw new Error()
-        })
-
-        act(() => {
-            const setTodos = result.current[1]
-            setTodos(['second', 'third'])
-        })
-
-        mock.mockRestore()
-
-        const [todos, , { isPersistent }] = result.current
-        expect(todos).toEqual(['second', 'third'])
-        expect(isPersistent).toBe(false)
-    })
-
-    it('isPersistent returns true after "storage" event', () => {
-        const { result } = renderHook(() =>
-            useLocalStorageState('todos', { defaultValue: ['first', 'second'] }),
-        )
-
-        // #WET 2020-03-19T8:55:25+02:00
-        act(() => {
-            localStorage.setItem('todos', JSON.stringify(['third', 'forth']))
-            window.dispatchEvent(
-                new StorageEvent('storage', {
-                    storageArea: localStorage,
-                    key: 'todos',
-                    oldValue: JSON.stringify(['first', 'second']),
-                    newValue: JSON.stringify(['third', 'forth']),
-                }),
-            )
-        })
-
-        const [, , { isPersistent }] = result.current
-        expect(isPersistent).toBe(true)
-    })
+    // it('isPersistent returns true by default', () => {
+    //     const { result } = renderHook(() =>
+    //         useLocalStorageState('todos', { defaultValue: ['first', 'second'] }),
+    //     )
+    //     const [, , { isPersistent }] = result.current
+    //     expect(isPersistent).toBe(true)
+    // })
+    //
+    // it('isPersistent returns false when localStorage.setItem() throws an error', () => {
+    //     const mock = jest.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+    //         throw new Error()
+    //     })
+    //
+    //     const { result } = renderHook(() =>
+    //         useLocalStorageState('todos', { defaultValue: ['first', 'second'] }),
+    //     )
+    //
+    //     const [, , { isPersistent }] = result.current
+    //     expect(isPersistent).toBe(false)
+    // })
+    //
+    // it('isPersistent becomes false when localStorage.setItem() throws an error on consecutive updates', () => {
+    //     const { result } = renderHook(() =>
+    //         useLocalStorageState('todos', { defaultValue: ['first', 'second'] }),
+    //     )
+    //
+    //     const mock = jest.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+    //         throw new Error()
+    //     })
+    //
+    //     act(() => {
+    //         const setTodos = result.current[1]
+    //         setTodos(['second', 'third'])
+    //     })
+    //
+    //     const [todos, , { isPersistent }] = result.current
+    //     expect(todos).toEqual(['second', 'third'])
+    //     expect(isPersistent).toBe(false)
+    // })
+    //
+    // it('isPersistent returns true after "storage" event', () => {
+    //     const { result } = renderHook(() =>
+    //         useLocalStorageState('todos', { defaultValue: ['first', 'second'] }),
+    //     )
+    //
+    //     // #WET 2020-03-19T8:55:25+02:00
+    //     act(() => {
+    //         localStorage.setItem('todos', JSON.stringify(['third', 'forth']))
+    //         window.dispatchEvent(
+    //             new StorageEvent('storage', {
+    //                 storageArea: localStorage,
+    //                 key: 'todos',
+    //                 oldValue: JSON.stringify(['first', 'second']),
+    //                 newValue: JSON.stringify(['third', 'forth']),
+    //             }),
+    //         )
+    //     })
+    //
+    //     const [, , { isPersistent }] = result.current
+    //     expect(isPersistent).toBe(true)
+    // })
 
     it('can set value to `undefined`', () => {
         const { result: resultA, unmount } = renderHook(() =>
@@ -633,15 +649,15 @@ describe('useLocalStorageState()', () => {
             expect(result.current[0]).toEqual(undefined)
         })
 
-        it('isPersistent returns true on the server', () => {
-            const { result } = renderHookOnServer(() =>
-                useLocalStorageState('number', {
-                    defaultValue: 0,
-                }),
-            )
-
-            expect(result.current[2].isPersistent).toBe(true)
-        })
+        // it('isPersistent returns true on the server', () => {
+        //     const { result } = renderHookOnServer(() =>
+        //         useLocalStorageState('number', {
+        //             defaultValue: 0,
+        //         }),
+        //     )
+        //
+        //     expect(result.current[2].isPersistent).toBe(true)
+        // })
 
         it(`setValue() on server doesn't throw`, () => {
             const { result } = renderHookOnServer(() =>
