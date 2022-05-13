@@ -144,11 +144,11 @@ Enables SSR support and handles hydration mismatches. Not enabling this can caus
 
 ### `options.storage`
 
-Type: [`Storage`](https://github.com/astoilkov/use-local-storage-state/blob/master/src/storage/Storage.ts)
+Type: [`Storage`](https://github.com/astoilkov/use-local-storage-state/blob/main/src/storage/Storage.ts)
 
-Default: [`localStorageJson`](https://github.com/astoilkov/use-local-storage-state/blob/master/src/storage/localStorageJson.ts)
+Default: [`localStorageJson`](https://github.com/astoilkov/use-local-storage-state/blob/main/src/storage/localStorageJson.ts)
 
-Allows using other storages for your date. This allows you to use [`sessionStorage`](https://developer.mozilla.org/en-US/docs/Web/API/Window/sessionStorage) and [`sessionStorageJson`](https://github.com/astoilkov/use-local-storage-state/blob/master/src/storage/sessionStorageJson.ts). You can also use a custom implementation, for example, `localStorage` implementation with in-memory fallback when `localStorage` throws an error.
+Allows using other storages for your date. This allows you to use [`sessionStorage`](https://developer.mozilla.org/en-US/docs/Web/API/Window/sessionStorage) and [`sessionStorageJson`](https://github.com/astoilkov/use-local-storage-state/blob/main/src/storage/sessionStorageJson.ts). You can also use a custom implementation, for example, `localStorage` implementation with in-memory fallback when `localStorage` throws an error.
 
 ## Alternatives
 
