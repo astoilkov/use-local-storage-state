@@ -18,7 +18,6 @@ npm install use-local-storage-state
 - Actively maintained for the past 2 years — see [contributions](https://github.com/astoilkov/use-local-storage-state/graphs/contributors) page.
 - SSR support with handling of [hydration mismatches](https://github.com/astoilkov/use-local-storage-state/issues/23).
 - Handles the `Window` [`storage`](https://developer.mozilla.org/en-US/docs/Web/API/Window/storage_event) event and updates changes across browser tabs, windows, and iframe's.
-- In-memory fallback when `localStorage` throws an error and can't store the data. Provides a `isPersistent` API to let you notify the user their data isn't currently being stored.
 - Aiming for high-quality with [my open-source principles](https://astoilkov.com/my-open-source-principles).
 
 ## Usage
@@ -91,33 +90,6 @@ export default function Todos() {
 </details>
 
 <details>
-<summary id="is-persistent">Notify the user when <code>localStorage</code> isn't saving the data using the <code>`isPersistent`</code> property</summary>
-<p></p>
-
-There are a few cases when `localStorage` [isn't available](https://github.com/astoilkov/use-local-storage-state/blob/7db8872397eae8b9d2421f068283286847f326ac/index.ts#L3-L11). The `isPersistent` property tells you if the data is persisted in `localStorage` or in-memory. Useful when you want to notify the user that their data won't be persisted.
-
-```tsx
-import React, { useState } from 'react'
-import useLocalStorageState from 'use-local-storage-state'
-
-export default function Todos() {
-    const [todos, setTodos, { isPersistent }] = useLocalStorageState('todos', {
-        defaultValue: ['buy avocado']
-    })
-
-    return (
-        <>
-            {todos.map(todo => (<div>{todo}</div>))}
-            {!isPersistent && <span>Changes aren't currently persisted.</span>}
-        </>
-    )
-}
-
-```
-
-</details>
-
-<details>
 <summary id="remove-item">Removing the data from <code>localStorage</code> and resetting to the default</summary>
 <p></p>
 
@@ -143,9 +115,8 @@ export default function Todos() {
 
 ### `useLocalStorageState(key, options?)`
 
-Returns `[value, setValue, { removeItem, isPersistent }]` when called. The first two values are the same as `useState()`. The third value contains two extra properties:
+Returns `[value, setValue, { removeItem }]` when called. The first two values are the same as `useState()`. The third value contains one extra property:
 - `removeItem()` — calls `localStorage.removeItem(key)` and resets the hook to it's default state
-- `isPersistent` — `boolean` property that returns `false` if `localStorage` is throwing an error and the data is stored only in-memory
 
 ### `key`
 
@@ -170,6 +141,14 @@ Type: `boolean`
 Default: `false`
 
 Enables SSR support and handles hydration mismatches. Not enabling this can cause the following error: `Warning: Expected server HTML to contain a matching ...`. This is the only library I'm aware of that handles this case. For more, see [discussion here](https://github.com/astoilkov/use-local-storage-state/issues/23).
+
+### `options.storage`
+
+Type: [`Storage`](https://github.com/astoilkov/use-local-storage-state/blob/master/src/storage/Storage.ts)
+
+Default: [`localStorageJson`](https://github.com/astoilkov/use-local-storage-state/blob/master/src/storage/localStorageJson.ts)
+
+Allows using other storages for your date. This allows you to use [`sessionStorage`](https://developer.mozilla.org/en-US/docs/Web/API/Window/sessionStorage) and [`sessionStorageJson`](https://github.com/astoilkov/use-local-storage-state/blob/master/src/storage/sessionStorageJson.ts). You can also use a custom implementation, for example, `localStorage` implementation with in-memory fallback when `localStorage` throws an error.
 
 ## Alternatives
 

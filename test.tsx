@@ -4,6 +4,7 @@ import { render } from '@testing-library/react'
 import { renderHook, act } from '@testing-library/react-hooks'
 import React, { useEffect, useLayoutEffect, useMemo } from 'react'
 import { renderHook as renderHookOnServer } from '@testing-library/react-hooks/server'
+import sessionStorageJson from './src/storage/sessionStorageJson'
 
 beforeEach(() => {
     // Throw an error when `console.error()` is called. This is especially useful in a React tests
@@ -27,35 +28,10 @@ beforeEach(() => {
 
 afterEach(() => {
     localStorage.clear()
+    sessionStorage.clear()
 })
 
 describe('useLocalStorageState()', () => {
-    // it(`React.StrictMode`, () => {
-    //     function App() {
-    //         const [firstRender, setFirstRender] = useState(true)
-    //
-    //         return firstRender ? <ComponentA /> : <ComponentB />
-    //     }
-    //
-    //     function ComponentA() {
-    //         const [value] = useLocalStorageState('number', {
-    //             defaultValue: 0,
-    //         })
-    //
-    //         return <div>{value}</div>
-    //     }
-    //
-    //     const { queryByText, unmount } = render(
-    //         <React.StrictMode>
-    //             <App />
-    //         </React.StrictMode>,
-    //     )
-    //
-    //     unmount()
-    //
-    //     expect(queryByText(/^1$/u)).toBeTruthy()
-    // })
-
     it('initial state is written into the state', () => {
         const { result } = renderHook(() =>
             useLocalStorageState('todos', { defaultValue: ['first', 'second'] }),
@@ -620,6 +596,39 @@ describe('useLocalStorageState()', () => {
         const { queryAllByText } = render(<App />)
 
         expect(queryAllByText(/^1$/u)).toHaveLength(2)
+    })
+
+    it('sessionStorageJson', () => {
+        const { result } = renderHook(() =>
+            useLocalStorageState('todos', {
+                storage: sessionStorageJson,
+                defaultValue: ['first', 'second'],
+            }),
+        )
+
+        const todos = result.current[0]
+        expect(todos).toEqual(['first', 'second'])
+        expect(localStorage.getItem('todos')).toBe(null)
+        expect(typeof sessionStorage.getItem('todos')).toBe('string')
+    })
+
+    it('sessionStorageJson.removeItem()', () => {
+        const { result } = renderHook(() =>
+            useLocalStorageState('todos', {
+                storage: sessionStorageJson,
+                defaultValue: ['first', 'second'],
+            }),
+        )
+
+        act(() => {
+            const setTodos = result.current[1]
+            setTodos(['third', 'forth'])
+
+            const removeItem = result.current[2].removeItem
+            removeItem()
+        })
+
+        expect(localStorage.getItem('todos')).toBe(null)
     })
 
     describe('SSR support', () => {
