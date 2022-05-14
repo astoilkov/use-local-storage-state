@@ -420,6 +420,34 @@ describe('useLocalStorageState()', () => {
         expect(todosB).toEqual(['third', 'forth'])
     })
 
+    it('crossSync: false disables "storage" event', () => {
+        const { result: resultA } = renderHook(() =>
+            useLocalStorageState('todos', { defaultValue: ['first', 'second'], crossSync: false }),
+        )
+        const { result: resultB } = renderHook(() =>
+            useLocalStorageState('todos', { defaultValue: ['first', 'second'] }),
+        )
+
+        // #WET 2020-03-19T8:55:25+02:00
+        act(() => {
+            localStorage.setItem('todos', JSON.stringify(['third', 'forth']))
+            window.dispatchEvent(
+                new StorageEvent('storage', {
+                    storageArea: localStorage,
+                    key: 'todos',
+                    oldValue: JSON.stringify(['first', 'second']),
+                    newValue: JSON.stringify(['third', 'forth']),
+                }),
+            )
+        })
+
+        const [todosA] = resultA.current
+        expect(todosA).toEqual(['first', 'second'])
+
+        const [todosB] = resultB.current
+        expect(todosB).toEqual(['third', 'forth'])
+    })
+
     it('calling update from one hook updates the other', () => {
         const { result: resultA } = renderHook(() =>
             useLocalStorageState('todos', { defaultValue: ['first', 'second'] }),

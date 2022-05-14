@@ -150,6 +150,14 @@ Default: [`localStorageJson`](https://github.com/astoilkov/use-local-storage-sta
 
 Allows using other storages for your date. This allows you to use [`sessionStorage`](https://developer.mozilla.org/en-US/docs/Web/API/Window/sessionStorage) and [`sessionStorageJson`](https://github.com/astoilkov/use-local-storage-state/blob/main/src/storage/sessionStorageJson.ts). You can also use a custom implementation, for example, `localStorage` implementation with in-memory fallback when `localStorage` throws an error.
 
+### `options.crossSync`
+
+Type: `boolean`
+
+Default: `true`
+
+Setting to `false` doesn't subscribe to the [Window storage event](https://developer.mozilla.org/en-US/docs/Web/API/Window/storage_event). If you set to `false`, updates won't be synchronized across tabs, windows and iframes.
+
 ## Alternatives
 
 These are the best alternatives to my repo I have found so far:
