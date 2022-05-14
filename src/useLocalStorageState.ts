@@ -1,7 +1,9 @@
-import storage from './storage'
+import type Storage from './storage/Storage'
 import { unstable_batchedUpdates } from 'react-dom'
 import type { Dispatch, SetStateAction } from 'react'
+import localStorageJson from './storage/localStorageJson'
 import { useRef, useMemo, useEffect, useReducer, useCallback, useLayoutEffect } from 'react'
+import nullValue from './storage/nullValue'
 
 // `activeHooks` holds all active hooks. we use the array to update all hooks with the same key —
 // calling `setValue` of one hook triggers an update for all other hooks with the same key
@@ -16,42 +18,42 @@ export type LocalStorageState<T> = [
     T,
     Dispatch<SetStateAction<T>>,
     {
-        isPersistent: boolean
         removeItem: () => void
     },
 ]
 
 export default function useLocalStorageState(
     key: string,
-    options?: { ssr: boolean },
+    options?: { ssr?: boolean; storage?: Storage },
 ): LocalStorageState<unknown>
 export default function useLocalStorageState<T>(
     key: string,
-    options?: { ssr: boolean },
+    options?: { ssr?: boolean; storage?: Storage },
 ): LocalStorageState<T | undefined>
 export default function useLocalStorageState<T>(
     key: string,
-    options?: { defaultValue?: T; ssr?: boolean },
+    options?: { defaultValue?: T; ssr?: boolean; storage?: Storage },
 ): LocalStorageState<T>
 export default function useLocalStorageState<T = undefined>(
     key: string,
-    options?: { defaultValue?: T; ssr?: boolean },
+    options?: { defaultValue?: T; ssr?: boolean; storage?: Storage },
 ): LocalStorageState<T | undefined> {
     const defaultValue = options?.defaultValue
 
     // SSR support
     if (typeof window === 'undefined') {
-        return [defaultValue, (): void => {}, { isPersistent: true, removeItem: (): void => {} }]
+        return [defaultValue, (): void => {}, { removeItem: (): void => {} }]
     }
 
     // eslint-disable-next-line react-hooks/rules-of-hooks
-    return useClientLocalStorageState(key, defaultValue, options?.ssr === true)
+    return useClientLocalStorageState(key, defaultValue, options?.ssr === true, options?.storage)
 }
 
 function useClientLocalStorageState<T>(
     key: string,
     defaultValue: T | undefined,
     ssr: boolean,
+    storage: Storage = localStorageJson,
 ): LocalStorageState<T | undefined> {
     const initialDefaultValue = useRef(defaultValue).current
     // `id` changes every time a change in the `localStorage` occurs
@@ -69,18 +71,30 @@ function useClientLocalStorageState<T>(
             }
         })
     }, [key])
+    const setStorageValue = useCallback(
+        (value) => {
+            try {
+                storage.setItem(key, value)
+            } catch {}
+        },
+        [key, storage],
+    )
+    const getStorageValue = useCallback(() => {
+        try {
+            const value = storage.getItem(key)
+            const result = value === nullValue ? null : value === null ? initialDefaultValue : value
+            return result as T
+        } catch {
+            return initialDefaultValue
+        }
+    }, [key, storage, initialDefaultValue])
     const setState = useCallback(
         (newValue: SetStateAction<T | undefined>): void => {
-            storage.set(
-                key,
-                newValue instanceof Function
-                    ? newValue(storage.get(key, initialDefaultValue))
-                    : newValue,
-            )
+            setStorageValue(newValue instanceof Function ? newValue(getStorageValue()) : newValue)
 
             updateHooks()
         },
-        [key, updateHooks, initialDefaultValue],
+        [updateHooks, getStorageValue, setStorageValue],
     )
 
     // - syncs change across tabs, windows, iframe's
@@ -117,10 +131,7 @@ function useClientLocalStorageState<T>(
     const isFirstRenderRef = useRef(true)
     const isPossiblyHydrating = ssr && isFirstRenderRef.current
     isFirstRenderRef.current = false
-    if (
-        isPossiblyHydrating &&
-        (storage.data.has(key) || initialDefaultValue !== storage.get(key, initialDefaultValue))
-    ) {
+    if (isPossiblyHydrating && initialDefaultValue !== getStorageValue()) {
         forceUpdate()
     }
 
@@ -128,22 +139,19 @@ function useClientLocalStorageState<T>(
     // issues that were caused by incorrect initial and secondary implementations:
     // - https://github.com/astoilkov/use-local-storage-state/issues/30
     // - https://github.com/astoilkov/use-local-storage-state/issues/33
-    if (
-        initialDefaultValue !== undefined &&
-        !storage.data.has(key) &&
-        localStorage.getItem(key) === null
-    ) {
-        storage.set(key, initialDefaultValue)
-    }
+    try {
+        if (initialDefaultValue !== undefined && storage.getItem(key) === null) {
+            setStorageValue(initialDefaultValue)
+        }
+    } catch {}
 
     return useMemo(
         () => [
-            isPossiblyHydrating ? initialDefaultValue : storage.get(key, initialDefaultValue),
+            isPossiblyHydrating ? initialDefaultValue : getStorageValue(),
             setState,
             {
-                isPersistent: isPossiblyHydrating || !storage.data.has(key),
                 removeItem(): void {
-                    storage.remove(key)
+                    storage.removeItem(key)
 
                     updateHooks()
                 },
@@ -157,6 +165,6 @@ function useClientLocalStorageState<T>(
         // - `defaultValue` never changes so we can skip it and reduce package size
         // - `setState` changes when `key` changes so we can skip it and reduce package size
         // eslint-disable-next-line react-hooks/exhaustive-deps
-        [id, key],
+        [id, key, storage],
     )
 }
