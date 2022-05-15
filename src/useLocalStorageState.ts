@@ -90,7 +90,9 @@ function useClientLocalStorageState<T>(
         (onStoreChange) => {
             store.callback = onStoreChange
             return (): void => {
-                store.callback = (): void => {}
+                store.callback =
+                    // istanbul ignore next
+                    (): void => {}
             }
         },
         // eslint-disable-next-line react-hooks/exhaustive-deps
