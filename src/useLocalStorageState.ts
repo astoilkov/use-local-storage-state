@@ -95,6 +95,9 @@ function useClientLocalStorageState<T>(
         },
         // eslint-disable-next-line react-hooks/exhaustive-deps
         () => store.value,
+
+        // istanbul ignore next
+        () => initialDefaultValue,
     )
     const setState = useCallback(
         (newValue: SetStateAction<T | undefined>): void => {
