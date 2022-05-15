@@ -3,8 +3,24 @@
  */
 
 import util from 'util'
+import ReactDOM from 'react-dom/server'
+import React, { MutableRefObject } from 'react'
 import useLocalStorageState from '../src/useLocalStorageState'
-import { renderHook as renderHookOnServer } from '@testing-library/react-hooks/server'
+
+function renderHookOnServer<T>(useHook: () => T): { result: MutableRefObject<T> } {
+    const result: MutableRefObject<T> = {
+        current: undefined!,
+    }
+
+    function Component() {
+        result.current = useHook()
+        return null
+    }
+
+    ReactDOM.renderToString(<Component />)
+
+    return { result }
+}
 
 beforeEach(() => {
     // Throw an error when `console.error()` is called. This is especially useful in a React tests

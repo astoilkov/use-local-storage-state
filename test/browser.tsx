@@ -1,8 +1,7 @@
 import util from 'util'
-import { render } from '@testing-library/react'
 import sessionStorageJson from '../sessionStorageJson'
-import { renderHook, act } from '@testing-library/react-hooks'
 import useLocalStorageState from '../src/useLocalStorageState'
+import { render, renderHook, act } from '@testing-library/react'
 import React, { useEffect, useLayoutEffect, useMemo } from 'react'
 
 beforeEach(() => {
@@ -412,7 +411,6 @@ describe('useLocalStorageState()', () => {
     it('basic setup with default value', () => {
         const { result } = renderHook(() =>
             useLocalStorageState('todos', {
-                ssr: true,
                 defaultValue: ['first', 'second'],
             }),
         )
@@ -426,7 +424,6 @@ describe('useLocalStorageState()', () => {
 
         const { result } = renderHook(() =>
             useLocalStorageState('todos', {
-                ssr: true,
                 defaultValue: ['first', 'second'],
             }),
         )
@@ -458,7 +455,6 @@ describe('useLocalStorageState()', () => {
 
         function Component() {
             useLocalStorageState('color', {
-                ssr: true,
                 defaultValue: 'red',
             })
 

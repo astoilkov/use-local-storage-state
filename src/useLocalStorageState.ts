@@ -1,20 +1,18 @@
+import nullValue from './storage/nullValue'
 import type Storage from './storage/Storage'
-import { unstable_batchedUpdates } from 'react-dom'
 import type { Dispatch, SetStateAction } from 'react'
 import localStorageJson from './storage/localStorageJson'
-import { useRef, useMemo, useEffect, useReducer, useCallback, useLayoutEffect } from 'react'
-import nullValue from './storage/nullValue'
-
-// `activeHooks` holds all active hooks. we use the array to update all hooks with the same key —
-// calling `setValue` of one hook triggers an update for all other hooks with the same key
-const activeHooks = new Set<{
-    key: string
-    forceUpdate: () => void
-}>()
+import {
+    useRef,
+    useMemo,
+    useEffect,
+    useCallback,
+    useSyncExternalStore,
+    useLayoutEffect,
+} from 'react'
 
 export type LocalStorageOptions<T> = {
     defaultValue?: T
-    ssr?: boolean
     storage?: Storage
     crossSync?: boolean
 }
@@ -28,6 +26,18 @@ export type LocalStorageState<T> = [
         removeItem: () => void
     },
 ]
+
+type Store<T> = {
+    value: T
+    callback: () => void
+}
+
+// `activeHooks` holds all active hooks. we use the array to update all hooks with the same key —
+// calling `setValue` of one hook triggers an update for all other hooks with the same key
+const activeHooks = new Set<{
+    key: string
+    store: Store<unknown>
+}>()
 
 export default function useLocalStorageState(
     key: string,
@@ -53,46 +63,16 @@ export default function useLocalStorageState<T = undefined>(
     }
 
     // eslint-disable-next-line react-hooks/rules-of-hooks
-    return useClientLocalStorageState(
-        key,
-        defaultValue,
-        options?.ssr === true,
-        options?.storage,
-        options?.crossSync,
-    )
+    return useClientLocalStorageState(key, defaultValue, options?.storage, options?.crossSync)
 }
 
 function useClientLocalStorageState<T>(
     key: string,
     defaultValue: T | undefined,
-    ssr: boolean,
     storage: Storage = localStorageJson,
     crossSync: boolean = true,
 ): LocalStorageState<T | undefined> {
     const initialDefaultValue = useRef(defaultValue).current
-    // `id` changes every time a change in the `localStorage` occurs
-    const [id, forceUpdate] = useReducer((number) => number + 1, 0)
-    const updateHooks = useCallback(() => {
-        unstable_batchedUpdates(() => {
-            // - it fixes "🐛 `setValue()` during render doesn't work":
-            //   https://github.com/astoilkov/use-local-storage-state/issues/43
-            forceUpdate()
-
-            for (const hook of activeHooks) {
-                if (hook.key === key) {
-                    hook.forceUpdate()
-                }
-            }
-        })
-    }, [key])
-    const setStorageValue = useCallback(
-        (value: T | undefined) => {
-            try {
-                storage.setItem(key, value)
-            } catch {}
-        },
-        [key, storage],
-    )
     const getStorageValue = useCallback(() => {
         try {
             const value = storage.getItem(key)
@@ -102,14 +82,62 @@ function useClientLocalStorageState<T>(
             return initialDefaultValue
         }
     }, [key, storage, initialDefaultValue])
+    const store = useRef<Store<T | undefined>>({
+        callback: () => {},
+        value: getStorageValue(),
+    }).current
+    const value = useSyncExternalStore(
+        (onStoreChange) => {
+            store.callback = onStoreChange
+            return (): void => {
+                store.callback = (): void => {}
+            }
+        },
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        () => store.value,
+    )
     const setState = useCallback(
         (newValue: SetStateAction<T | undefined>): void => {
-            setStorageValue(newValue instanceof Function ? newValue(getStorageValue()) : newValue)
+            try {
+                const value = newValue instanceof Function ? newValue(getStorageValue()) : newValue
 
-            updateHooks()
+                store.value = value
+                storage.setItem(key, value)
+
+                store.callback()
+
+                for (const hook of activeHooks) {
+                    if (hook.key === key) {
+                        hook.store.value = value
+
+                        hook.store.callback()
+                    }
+                }
+            } catch {}
         },
-        [updateHooks, getStorageValue, setStorageValue],
+        [key, store, storage, getStorageValue],
     )
+
+    // - adds this hook to the `activeHooks` array. see the `activeHooks` declaration above for a
+    //   more detailed explanation
+    useLayoutEffect(() => {
+        const hook = { key, store }
+        activeHooks.add(hook)
+        return (): void => {
+            activeHooks.delete(hook)
+        }
+    }, [key, store])
+
+    const isFirstRender = useRef(true)
+    useLayoutEffect(() => {
+        if (!isFirstRender.current) {
+            store.value = getStorageValue()
+
+            store.callback()
+        }
+
+        isFirstRender.current = false
+    }, [getStorageValue, key, store])
 
     // - syncs change across tabs, windows, iframes
     // - the `storage` event is called only in all tabs, windows, iframe's except the one that
@@ -121,7 +149,9 @@ function useClientLocalStorageState<T>(
 
         const onStorage = (e: StorageEvent): void => {
             if (e.storageArea === localStorage && e.key === key) {
-                forceUpdate()
+                store.value = getStorageValue()
+
+                store.callback()
             }
         }
 
@@ -130,30 +160,7 @@ function useClientLocalStorageState<T>(
         return (): void => {
             window.removeEventListener('storage', onStorage)
         }
-    }, [key, crossSync])
-
-    // - adds this hook to the `activeHooks` array. see the `activeHooks` declaration above for a
-    //   more detailed explanation
-    useLayoutEffect(() => {
-        const hook = { key, forceUpdate }
-        activeHooks.add(hook)
-        return (): void => {
-            activeHooks.delete(hook)
-        }
-    }, [key])
-
-    // - SSR support
-    // - not inside a `useLayoutEffect` because this way we skip the calls to `useEffect()` and
-    //   `useLayoutEffect()` for the first render (which also increases performance)
-    // - inspired by: https://github.com/astoilkov/use-local-storage-state/pull/40
-    // - related: https://github.com/astoilkov/use-local-storage-state/issues/39
-    // - related: https://github.com/astoilkov/use-local-storage-state/issues/43
-    const isFirstRenderRef = useRef(true)
-    const isPossiblyHydrating = ssr && isFirstRenderRef.current
-    isFirstRenderRef.current = false
-    if (isPossiblyHydrating && initialDefaultValue !== getStorageValue()) {
-        forceUpdate()
-    }
+    }, [key, store, getStorageValue, crossSync])
 
     // initial issue: https://github.com/astoilkov/use-local-storage-state/issues/26
     // issues that were caused by incorrect initial and secondary implementations:
@@ -161,30 +168,24 @@ function useClientLocalStorageState<T>(
     // - https://github.com/astoilkov/use-local-storage-state/issues/33
     try {
         if (initialDefaultValue !== undefined && storage.getItem(key) === null) {
-            setStorageValue(initialDefaultValue)
+            storage.setItem(key, initialDefaultValue)
         }
     } catch {}
 
     return useMemo(
         () => [
-            isPossiblyHydrating ? initialDefaultValue : getStorageValue(),
+            value,
             setState,
             {
                 removeItem(): void {
                     storage.removeItem(key)
 
-                    updateHooks()
+                    store.value = initialDefaultValue
+
+                    store.callback()
                 },
             },
         ],
-
-        // disabling eslint warning for the following reasons:
-        // - `id` is needed because when it changes that means the data in `localStorage` has
-        //   changed and we need to update the returned value. However, the eslint rule wants us to
-        //   remove the `id` from the dependencies array.
-        // - `defaultValue` never changes so we can skip it and reduce package size
-        // - `setState` changes when `key` changes so we can skip it and reduce package size
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-        [id, key, storage],
+        [initialDefaultValue, key, setState, storage, store, value],
     )
 }
