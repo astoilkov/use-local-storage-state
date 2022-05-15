@@ -6,7 +6,7 @@ module.exports = {
     moduleNameMapper: {
         '^(\\..*)$': ['$1/index.ts', '$1.ts', '$1'],
     },
-    testMatch: ['<rootDir>/test.tsx'],
+    testMatch: ['<rootDir>/test/**.ts?(x)'],
 
     // https://jestjs.io/docs/configuration#restoremocks-boolean
     restoreMocks: true,

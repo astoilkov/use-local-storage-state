@@ -86,7 +86,7 @@ function useClientLocalStorageState<T>(
         })
     }, [key])
     const setStorageValue = useCallback(
-        (value) => {
+        (value: T | undefined) => {
             try {
                 storage.setItem(key, value)
             } catch {}
