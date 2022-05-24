@@ -105,20 +105,6 @@ function useClientLocalStorageState<T>(
         }
     }, [key, crossSync])
 
-    // initial issue: https://github.com/astoilkov/use-local-storage-state/issues/26
-    // issues that were caused by incorrect initial and secondary implementations:
-    // - https://github.com/astoilkov/use-local-storage-state/issues/30
-    // - https://github.com/astoilkov/use-local-storage-state/issues/33
-    if (
-        initialDefaultValue !== undefined &&
-        !storage.data.has(key) &&
-        localStorage.getItem(key) === null
-    ) {
-        try {
-            localStorage.setItem(key, JSON.stringify(initialDefaultValue))
-        } catch {}
-    }
-
     return useMemo(
         () => [
             value,

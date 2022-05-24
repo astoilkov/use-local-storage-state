@@ -21,6 +21,21 @@ export default {
 
     get<T>(key: string, defaultValue: T): T | undefined {
         const item = this.data.get(key)
+
+        // initial issue: https://github.com/astoilkov/use-local-storage-state/issues/26
+        // issues that were caused by incorrect initial and secondary implementations:
+        // - https://github.com/astoilkov/use-local-storage-state/issues/30
+        // - https://github.com/astoilkov/use-local-storage-state/issues/33
+        if (
+            item === undefined &&
+            defaultValue !== undefined &&
+            localStorage.getItem(key) === null
+        ) {
+            try {
+                localStorage.setItem(key, JSON.stringify(defaultValue))
+            } catch {}
+        }
+
         const stringValue = localStorage.getItem(key)
 
         if (item === undefined || item.stringValue !== stringValue) {
