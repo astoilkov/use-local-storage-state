@@ -1,19 +1,9 @@
-import nullValue from './storage/nullValue'
-import type Storage from './storage/Storage'
+import storage from './storage'
 import type { Dispatch, SetStateAction } from 'react'
-import localStorageJson from './storage/localStorageJson'
-import {
-    useRef,
-    useMemo,
-    useEffect,
-    useCallback,
-    useSyncExternalStore,
-    useLayoutEffect,
-} from 'react'
+import { useRef, useMemo, useEffect, useCallback, useSyncExternalStore } from 'react'
 
 export type LocalStorageOptions<T> = {
     defaultValue?: T
-    storage?: Storage
     crossSync?: boolean
 }
 
@@ -26,18 +16,6 @@ export type LocalStorageState<T> = [
         removeItem: () => void
     },
 ]
-
-type Store<T> = {
-    value: T
-    callback: () => void
-}
-
-// `activeHooks` holds all active hooks. we use the array to update all hooks with the same key —
-// calling `setValue` of one hook triggers an update for all other hooks with the same key
-const activeHooks = new Set<{
-    key: string
-    store: Store<unknown>
-}>()
 
 export default function useLocalStorageState(
     key: string,
@@ -63,86 +41,48 @@ export default function useLocalStorageState<T = undefined>(
     }
 
     // eslint-disable-next-line react-hooks/rules-of-hooks
-    return useClientLocalStorageState(key, defaultValue, options?.storage, options?.crossSync)
+    return useClientLocalStorageState(key, defaultValue, options?.crossSync)
 }
 
 function useClientLocalStorageState<T>(
     key: string,
     defaultValue: T | undefined,
-    storage: Storage = localStorageJson,
     crossSync: boolean = true,
 ): LocalStorageState<T | undefined> {
     const initialDefaultValue = useRef(defaultValue).current
-    const getStorageValue = useCallback(() => {
-        try {
-            const value = storage.getItem(key)
-            const result = value === nullValue ? null : value === null ? initialDefaultValue : value
-            return result as T
-        } catch {
-            return initialDefaultValue
-        }
-    }, [key, storage, initialDefaultValue])
-    const store = useRef<Store<T | undefined>>({
-        callback: () => {},
-        value: getStorageValue(),
-    }).current
     const value = useSyncExternalStore(
-        (onStoreChange) => {
-            store.callback = onStoreChange
-            return (): void => {
-                store.callback =
-                    // istanbul ignore next
-                    (): void => {}
-            }
-        },
+        useCallback(
+            (onStoreChange) => {
+                const onChange = (localKey: string): void => {
+                    if (key === localKey) {
+                        onStoreChange()
+                    }
+                }
+                storage.onChange(onChange)
+                return (): void => {
+                    storage.offChange(onChange)
+                }
+            },
+            [key],
+        ),
+
         // eslint-disable-next-line react-hooks/exhaustive-deps
-        () => store.value,
+        () => storage.get(key, initialDefaultValue),
 
         // istanbul ignore next
         () => initialDefaultValue,
     )
     const setState = useCallback(
         (newValue: SetStateAction<T | undefined>): void => {
-            try {
-                const value = newValue instanceof Function ? newValue(getStorageValue()) : newValue
+            const value =
+                newValue instanceof Function
+                    ? newValue(storage.get(key, initialDefaultValue))
+                    : newValue
 
-                store.value = value
-                storage.setItem(key, value)
-
-                store.callback()
-
-                for (const hook of activeHooks) {
-                    if (hook.key === key) {
-                        hook.store.value = value
-
-                        hook.store.callback()
-                    }
-                }
-            } catch {}
+            storage.set(key, value)
         },
-        [key, store, storage, getStorageValue],
+        [key, initialDefaultValue],
     )
-
-    // - adds this hook to the `activeHooks` array. see the `activeHooks` declaration above for a
-    //   more detailed explanation
-    useLayoutEffect(() => {
-        const hook = { key, store }
-        activeHooks.add(hook)
-        return (): void => {
-            activeHooks.delete(hook)
-        }
-    }, [key, store])
-
-    const isFirstRender = useRef(true)
-    useLayoutEffect(() => {
-        if (!isFirstRender.current) {
-            store.value = getStorageValue()
-
-            store.callback()
-        }
-
-        isFirstRender.current = false
-    }, [getStorageValue, key, store])
 
     // - syncs change across tabs, windows, iframes
     // - the `storage` event is called only in all tabs, windows, iframe's except the one that
@@ -154,9 +94,7 @@ function useClientLocalStorageState<T>(
 
         const onStorage = (e: StorageEvent): void => {
             if (e.storageArea === localStorage && e.key === key) {
-                store.value = getStorageValue()
-
-                store.callback()
+                storage.triggerChange(key)
             }
         }
 
@@ -165,17 +103,21 @@ function useClientLocalStorageState<T>(
         return (): void => {
             window.removeEventListener('storage', onStorage)
         }
-    }, [key, store, getStorageValue, crossSync])
+    }, [key, crossSync])
 
     // initial issue: https://github.com/astoilkov/use-local-storage-state/issues/26
     // issues that were caused by incorrect initial and secondary implementations:
     // - https://github.com/astoilkov/use-local-storage-state/issues/30
     // - https://github.com/astoilkov/use-local-storage-state/issues/33
-    try {
-        if (initialDefaultValue !== undefined && storage.getItem(key) === null) {
-            storage.setItem(key, initialDefaultValue)
-        }
-    } catch {}
+    if (
+        initialDefaultValue !== undefined &&
+        !storage.data.has(key) &&
+        localStorage.getItem(key) === null
+    ) {
+        try {
+            localStorage.setItem(key, JSON.stringify(initialDefaultValue))
+        } catch {}
+    }
 
     return useMemo(
         () => [
@@ -183,14 +125,10 @@ function useClientLocalStorageState<T>(
             setState,
             {
                 removeItem(): void {
-                    storage.removeItem(key)
-
-                    store.value = initialDefaultValue
-
-                    store.callback()
+                    storage.remove(key)
                 },
             },
         ],
-        [initialDefaultValue, key, setState, storage, store, value],
+        [key, setState, value],
     )
 }

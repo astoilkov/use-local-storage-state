@@ -1,5 +1,5 @@
 import util from 'util'
-import sessionStorageJson from '../sessionStorageJson'
+import storage from '../src/storage'
 import useLocalStorageState from '../src/useLocalStorageState'
 import { render, renderHook, act } from '@testing-library/react'
 import React, { useEffect, useLayoutEffect, useMemo } from 'react'
@@ -25,6 +25,7 @@ beforeEach(() => {
 })
 
 afterEach(() => {
+    storage.data.clear()
     localStorage.clear()
     sessionStorage.clear()
 })
@@ -102,63 +103,6 @@ describe('useLocalStorageState()', () => {
         })
 
         expect(localStorage.getItem('todos')).toEqual(JSON.stringify(['third', 'forth']))
-    })
-
-    it('storage event updates state to default value', () => {
-        const { result } = renderHook(() =>
-            useLocalStorageState('todos', { defaultValue: ['first', 'second'] }),
-        )
-
-        act(() => {
-            const setTodos = result.current[1]
-            setTodos(['third', 'forth'])
-
-            localStorage.removeItem('todos')
-            window.dispatchEvent(
-                new StorageEvent('storage', {
-                    storageArea: localStorage,
-                    key: 'todos',
-                    oldValue: JSON.stringify(['first', 'second']),
-                    newValue: null,
-                }),
-            )
-        })
-
-        const [todosB] = result.current
-        expect(todosB).toEqual(['first', 'second'])
-    })
-
-    it(`unrelated storage update doesn't do anything`, () => {
-        const { result } = renderHook(() =>
-            useLocalStorageState('todos', { defaultValue: ['first', 'second'] }),
-        )
-
-        act(() => {
-            // trying with sessionStorage
-            sessionStorage.setItem('todos', JSON.stringify(['third', 'forth']))
-            window.dispatchEvent(
-                new StorageEvent('storage', {
-                    storageArea: sessionStorage,
-                    key: 'todos',
-                    oldValue: JSON.stringify(['first', 'second']),
-                    newValue: JSON.stringify(['third', 'forth']),
-                }),
-            )
-
-            // trying with a non-relevant key
-            localStorage.setItem('not-todos', JSON.stringify(['third', 'forth']))
-            window.dispatchEvent(
-                new StorageEvent('storage', {
-                    storageArea: localStorage,
-                    key: 'not-todos',
-                    oldValue: JSON.stringify(['first', 'second']),
-                    newValue: JSON.stringify(['third', 'forth']),
-                }),
-            )
-        })
-
-        const [todosA] = result.current
-        expect(todosA).toEqual(['first', 'second'])
     })
 
     it('initially gets value from local storage if there is a value', () => {
@@ -306,62 +250,6 @@ describe('useLocalStorageState()', () => {
         expect(localStorage.getItem('color')).toEqual('red')
     })
 
-    it('storage event updates state', () => {
-        const { result: resultA } = renderHook(() =>
-            useLocalStorageState('todos', { defaultValue: ['first', 'second'] }),
-        )
-        const { result: resultB } = renderHook(() =>
-            useLocalStorageState('todos', { defaultValue: ['first', 'second'] }),
-        )
-
-        // #WET 2020-03-19T8:55:25+02:00
-        act(() => {
-            localStorage.setItem('todos', JSON.stringify(['third', 'forth']))
-            window.dispatchEvent(
-                new StorageEvent('storage', {
-                    storageArea: localStorage,
-                    key: 'todos',
-                    oldValue: JSON.stringify(['first', 'second']),
-                    newValue: JSON.stringify(['third', 'forth']),
-                }),
-            )
-        })
-
-        const [todosA] = resultA.current
-        expect(todosA).toEqual(['third', 'forth'])
-
-        const [todosB] = resultB.current
-        expect(todosB).toEqual(['third', 'forth'])
-    })
-
-    it('crossSync: false disables "storage" event', () => {
-        const { result: resultA } = renderHook(() =>
-            useLocalStorageState('todos', { defaultValue: ['first', 'second'], crossSync: false }),
-        )
-        const { result: resultB } = renderHook(() =>
-            useLocalStorageState('todos', { defaultValue: ['first', 'second'] }),
-        )
-
-        // #WET 2020-03-19T8:55:25+02:00
-        act(() => {
-            localStorage.setItem('todos', JSON.stringify(['third', 'forth']))
-            window.dispatchEvent(
-                new StorageEvent('storage', {
-                    storageArea: localStorage,
-                    key: 'todos',
-                    oldValue: JSON.stringify(['first', 'second']),
-                    newValue: JSON.stringify(['third', 'forth']),
-                }),
-            )
-        })
-
-        const [todosA] = resultA.current
-        expect(todosA).toEqual(['first', 'second'])
-
-        const [todosB] = resultB.current
-        expect(todosB).toEqual(['third', 'forth'])
-    })
-
     it('calling update from one hook updates the other', () => {
         const { result: resultA } = renderHook(() =>
             useLocalStorageState('todos', { defaultValue: ['first', 'second'] }),
@@ -497,6 +385,7 @@ describe('useLocalStorageState()', () => {
             })
 
             if (value === 0) {
+                debugger
                 setValue(1)
             }
 
@@ -505,6 +394,7 @@ describe('useLocalStorageState()', () => {
 
         const { queryByText } = render(<Component />)
 
+        expect(queryByText(/^0$/u)).not.toBeTruthy()
         expect(queryByText(/^1$/u)).toBeTruthy()
     })
 
@@ -537,36 +427,92 @@ describe('useLocalStorageState()', () => {
         expect(queryAllByText(/^1$/u)).toHaveLength(2)
     })
 
-    it('sessionStorageJson', () => {
-        const { result } = renderHook(() =>
-            useLocalStorageState('todos', {
-                storage: sessionStorageJson,
-                defaultValue: ['first', 'second'],
-            }),
-        )
+    describe('"storage" event', () => {
+        const fireStorageEvent = (storageArea: Storage, key: string, newValue: unknown): void => {
+            const oldValue = localStorage.getItem(key)
 
-        const todos = result.current[0]
-        expect(todos).toEqual(['first', 'second'])
-        expect(localStorage.getItem('todos')).toBe(null)
-        expect(typeof sessionStorage.getItem('todos')).toBe('string')
-    })
+            if (newValue === null) {
+                localStorage.removeItem(key)
+            } else {
+                localStorage.setItem(key, JSON.stringify(newValue))
+            }
 
-    it('sessionStorageJson.removeItem()', () => {
-        const { result } = renderHook(() =>
-            useLocalStorageState('todos', {
-                storage: sessionStorageJson,
-                defaultValue: ['first', 'second'],
-            }),
-        )
+            window.dispatchEvent(
+                new StorageEvent('storage', {
+                    key,
+                    oldValue,
+                    storageArea,
+                    newValue: JSON.stringify(newValue),
+                }),
+            )
+        }
 
-        act(() => {
-            const setTodos = result.current[1]
-            setTodos(['third', 'forth'])
+        it('storage event updates state', () => {
+            const { result: resultA } = renderHook(() =>
+                useLocalStorageState('todos', { defaultValue: ['first', 'second'] }),
+            )
+            const { result: resultB } = renderHook(() =>
+                useLocalStorageState('todos', { defaultValue: ['first', 'second'] }),
+            )
 
-            const removeItem = result.current[2].removeItem
-            removeItem()
+            act(() => {
+                fireStorageEvent(localStorage, 'todos', ['third', 'forth'])
+            })
+
+            const [todosA] = resultA.current
+            expect(todosA).toEqual(['third', 'forth'])
+
+            const [todosB] = resultB.current
+            expect(todosB).toEqual(['third', 'forth'])
         })
 
-        expect(localStorage.getItem('todos')).toBe(null)
+        it('"storage" event updates state to default value', () => {
+            const { result } = renderHook(() =>
+                useLocalStorageState('todos', { defaultValue: ['first', 'second'] }),
+            )
+
+            act(() => {
+                const setTodos = result.current[1]
+                setTodos(['third', 'forth'])
+
+                fireStorageEvent(localStorage, 'todos', null)
+            })
+
+            const [todosB] = result.current
+            expect(todosB).toEqual(['first', 'second'])
+        })
+
+        it(`unrelated storage update doesn't do anything`, () => {
+            const { result } = renderHook(() =>
+                useLocalStorageState('todos', { defaultValue: ['first', 'second'] }),
+            )
+
+            act(() => {
+                // trying with sessionStorage
+                fireStorageEvent(sessionStorage, 'todos', ['third', 'forth'])
+
+                // trying with a non-relevant key
+                fireStorageEvent(localStorage, 'not-todos', ['third', 'forth'])
+            })
+
+            const [todosA] = result.current
+            expect(todosA).toEqual(['first', 'second'])
+        })
+
+        it('crossSync: false disables "storage" event', () => {
+            const { result } = renderHook(() =>
+                useLocalStorageState('todos', {
+                    defaultValue: ['first', 'second'],
+                    crossSync: false,
+                }),
+            )
+
+            act(() => {
+                fireStorageEvent(localStorage, 'todos', ['third', 'forth'])
+            })
+
+            const [todosA] = result.current
+            expect(todosA).toEqual(['first', 'second'])
+        })
     })
 })
