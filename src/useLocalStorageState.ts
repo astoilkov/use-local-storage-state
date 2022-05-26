@@ -86,12 +86,8 @@ function useClientLocalStorageState<T>(
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
         () => {
-            if (storage.data.has(key)) {
-                return storage.data.get(key) as T | undefined
-            }
-
             const item = localStorage.getItem(key)
-            if (item !== storageValue.current.item) {
+            if (storage.data.has(key) || item !== storageValue.current.item) {
                 storageValue.current = {
                     item,
                     parsed: storage.get(key, initialDefaultValue),
