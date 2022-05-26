@@ -1,5 +1,3 @@
-const callbacks = new Set<(key: string) => void>()
-
 /**
  * Abstraction for localStorage that uses an in-memory fallback when localStorage throws an error.
  * Reasons for throwing an error:
@@ -30,29 +28,11 @@ export default {
         } catch {
             this.data.set(key, value)
         }
-
-        this.triggerChange(key)
     },
 
     remove(key: string): void {
         this.data.delete(key)
         localStorage.removeItem(key)
-
-        this.triggerChange(key)
-    },
-
-    triggerChange(key: string): void {
-        for (const callback of [...callbacks]) {
-            callback(key)
-        }
-    },
-
-    onChange(callback: (key: string) => void): void {
-        callbacks.add(callback)
-    },
-
-    offChange(callback: (key: string) => void): void {
-        callbacks.delete(callback)
     },
 }
 

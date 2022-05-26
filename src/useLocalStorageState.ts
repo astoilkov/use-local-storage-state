@@ -13,9 +13,17 @@ export type LocalStorageState<T> = [
     T,
     Dispatch<SetStateAction<T>>,
     {
+        isPersistent: boolean
         removeItem: () => void
     },
 ]
+
+const callbacks = new Set<(key: string) => void>()
+function triggerCallbacks(key: string): void {
+    for (const callback of [...callbacks]) {
+        callback(key)
+    }
+}
 
 export default function useLocalStorageState(
     key: string,
@@ -37,7 +45,14 @@ export default function useLocalStorageState<T = undefined>(
 
     // SSR support
     if (typeof window === 'undefined') {
-        return [defaultValue, (): void => {}, { removeItem: (): void => {} }]
+        return [
+            defaultValue,
+            (): void => {},
+            {
+                isPersistent: true,
+                removeItem: (): void => {},
+            },
+        ]
     }
 
     // eslint-disable-next-line react-hooks/rules-of-hooks
@@ -61,9 +76,7 @@ function useClientLocalStorageState<T>(
         initialDefaultValue !== undefined &&
         localStorage.getItem(key) === null
     ) {
-        try {
-            localStorage.setItem(key, JSON.stringify(initialDefaultValue))
-        } catch {}
+        storage.set(key, initialDefaultValue)
     }
 
     const storageValue = useRef<{ item: string | null; parsed: T | undefined }>({
@@ -78,8 +91,10 @@ function useClientLocalStorageState<T>(
                         onStoreChange()
                     }
                 }
-                storage.onChange(onChange)
-                return (): void => storage.offChange(onChange)
+                callbacks.add(onChange)
+                return (): void => {
+                    callbacks.delete(onChange)
+                }
             },
             [key],
         ),
@@ -87,7 +102,7 @@ function useClientLocalStorageState<T>(
         // eslint-disable-next-line react-hooks/exhaustive-deps
         () => {
             const item = localStorage.getItem(key)
-            if (storage.data.has(key) || item !== storageValue.current.item) {
+            if (item !== storageValue.current.item || storage.data.has(key)) {
                 storageValue.current = {
                     item,
                     parsed: storage.get(key, initialDefaultValue),
@@ -108,6 +123,8 @@ function useClientLocalStorageState<T>(
                     : newValue
 
             storage.set(key, value)
+
+            triggerCallbacks(key)
         },
         [key, initialDefaultValue],
     )
@@ -122,7 +139,7 @@ function useClientLocalStorageState<T>(
 
         const onStorage = (e: StorageEvent): void => {
             if (e.storageArea === localStorage && e.key === key) {
-                storage.triggerChange(key)
+                triggerCallbacks(key)
             }
         }
 
@@ -136,11 +153,14 @@ function useClientLocalStorageState<T>(
             value,
             setState,
             {
+                isPersistent: value === initialDefaultValue || !storage.data.has(key),
                 removeItem(): void {
                     storage.remove(key)
+
+                    triggerCallbacks(key)
                 },
             },
         ],
-        [key, setState, value],
+        [key, setState, value, initialDefaultValue],
     )
 }

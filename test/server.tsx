@@ -81,5 +81,15 @@ describe('useLocalStorageState()', () => {
             const removeItem = result.current[2].removeItem
             expect(removeItem).not.toThrow()
         })
+
+        it('isPersistent returns true on the server', () => {
+            const { result } = renderHookOnServer(() =>
+                useLocalStorageState('number', {
+                    defaultValue: 0,
+                }),
+            )
+
+            expect(result.current[2].isPersistent).toBe(true)
+        })
     })
 })

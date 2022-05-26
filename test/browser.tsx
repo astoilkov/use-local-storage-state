@@ -515,4 +515,109 @@ describe('useLocalStorageState()', () => {
             expect(todosA).toEqual(['first', 'second'])
         })
     })
+
+    describe('in memory fallback', () => {
+        it('can retrieve data from in memory storage', () => {
+            jest.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+                throw new Error()
+            })
+
+            const { result: resultA } = renderHook(() =>
+                useLocalStorageState('todos', { defaultValue: ['first'] }),
+            )
+
+            act(() => {
+                const setValue = resultA.current[1]
+                setValue(['first', 'second'])
+            })
+
+            const { result: resultB } = renderHook(() =>
+                useLocalStorageState('todos', { defaultValue: ['first'] }),
+            )
+
+            const [value] = resultB.current
+            expect(value).toEqual(['first', 'second'])
+        })
+
+        it('isPersistent returns true by default', () => {
+            const { result } = renderHook(() =>
+                useLocalStorageState('todos', { defaultValue: ['first', 'second'] }),
+            )
+            const [, , { isPersistent }] = result.current
+            expect(isPersistent).toBe(true)
+        })
+
+        it('isPersistent returns true when localStorage.setItem() throws an error but the value is the default value', () => {
+            jest.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+                throw new Error()
+            })
+
+            const { result } = renderHook(() =>
+                useLocalStorageState('todos', { defaultValue: ['first', 'second'] }),
+            )
+
+            const [, , { isPersistent }] = result.current
+            expect(isPersistent).toBe(true)
+        })
+
+        it('isPersistent returns false when localStorage.setItem() throws an error', () => {
+            jest.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+                throw new Error()
+            })
+
+            const { result } = renderHook(() =>
+                useLocalStorageState('todos', { defaultValue: ['first', 'second'] }),
+            )
+
+            act(() => {
+                const [, setTodos] = result.current
+                setTodos(['third', 'forth'])
+            })
+
+            const [todos, , { isPersistent }] = result.current
+            expect(isPersistent).toBe(false)
+            expect(todos).toEqual(['third', 'forth'])
+        })
+
+        it('isPersistent becomes false when localStorage.setItem() throws an error on consecutive updates', () => {
+            const { result } = renderHook(() =>
+                useLocalStorageState('todos', { defaultValue: ['first', 'second'] }),
+            )
+
+            jest.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+                throw new Error()
+            })
+
+            act(() => {
+                const setTodos = result.current[1]
+                setTodos(['second', 'third'])
+            })
+
+            const [todos, , { isPersistent }] = result.current
+            expect(todos).toEqual(['second', 'third'])
+            expect(isPersistent).toBe(false)
+        })
+
+        it('isPersistent returns true after "storage" event', () => {
+            const { result } = renderHook(() =>
+                useLocalStorageState('todos', { defaultValue: ['first', 'second'] }),
+            )
+
+            // #WET 2020-03-19T8:55:25+02:00
+            act(() => {
+                localStorage.setItem('todos', JSON.stringify(['third', 'forth']))
+                window.dispatchEvent(
+                    new StorageEvent('storage', {
+                        storageArea: localStorage,
+                        key: 'todos',
+                        oldValue: JSON.stringify(['first', 'second']),
+                        newValue: JSON.stringify(['third', 'forth']),
+                    }),
+                )
+            })
+
+            const [, , { isPersistent }] = result.current
+            expect(isPersistent).toBe(true)
+        })
+    })
 })
