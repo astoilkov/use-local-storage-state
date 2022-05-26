@@ -50,6 +50,25 @@ function useClientLocalStorageState<T>(
     crossSync: boolean = true,
 ): LocalStorageState<T | undefined> {
     const initialDefaultValue = useRef(defaultValue).current
+
+    // initial issue: https://github.com/astoilkov/use-local-storage-state/issues/26
+    // issues that were caused by incorrect initial and secondary implementations:
+    // - https://github.com/astoilkov/use-local-storage-state/issues/30
+    // - https://github.com/astoilkov/use-local-storage-state/issues/33
+    if (
+        !storage.data.has(key) &&
+        initialDefaultValue !== undefined &&
+        localStorage.getItem(key) === null
+    ) {
+        try {
+            localStorage.setItem(key, JSON.stringify(initialDefaultValue))
+        } catch {}
+    }
+
+    const storageValue = useRef<{ item: string | null; parsed: T | undefined }>({
+        item: null,
+        parsed: initialDefaultValue,
+    })
     const value = useSyncExternalStore(
         useCallback(
             (onStoreChange) => {
@@ -59,15 +78,27 @@ function useClientLocalStorageState<T>(
                     }
                 }
                 storage.onChange(onChange)
-                return (): void => {
-                    storage.offChange(onChange)
-                }
+                return (): void => storage.offChange(onChange)
             },
             [key],
         ),
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
-        () => storage.get(key, initialDefaultValue),
+        () => {
+            if (storage.data.has(key)) {
+                return storage.data.get(key) as T | undefined
+            }
+
+            const item = localStorage.getItem(key)
+            if (item !== storageValue.current.item) {
+                storageValue.current = {
+                    item,
+                    parsed: storage.get(key, initialDefaultValue),
+                }
+            }
+
+            return storageValue.current.parsed
+        },
 
         // istanbul ignore next
         () => initialDefaultValue,
@@ -100,9 +131,7 @@ function useClientLocalStorageState<T>(
 
         window.addEventListener('storage', onStorage)
 
-        return (): void => {
-            window.removeEventListener('storage', onStorage)
-        }
+        return (): void => window.removeEventListener('storage', onStorage)
     }, [key, crossSync])
 
     return useMemo(
