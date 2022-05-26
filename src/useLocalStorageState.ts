@@ -51,10 +51,11 @@ function useClientLocalStorageState<T>(
 ): LocalStorageState<T | undefined> {
     const initialDefaultValue = useRef(defaultValue).current
 
-    // initial issue: https://github.com/astoilkov/use-local-storage-state/issues/26
-    // issues that were caused by incorrect initial and secondary implementations:
-    // - https://github.com/astoilkov/use-local-storage-state/issues/30
-    // - https://github.com/astoilkov/use-local-storage-state/issues/33
+    // store default value in localStorage:
+    // - initial issue: https://github.com/astoilkov/use-local-storage-state/issues/26
+    //   issues that were caused by incorrect initial and secondary implementations:
+    //   - https://github.com/astoilkov/use-local-storage-state/issues/30
+    //   - https://github.com/astoilkov/use-local-storage-state/issues/33
     if (
         !storage.data.has(key) &&
         initialDefaultValue !== undefined &&
