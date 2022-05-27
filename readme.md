@@ -9,9 +9,12 @@
 
 ## Install
 
-```shell
+React 18 and above:
+```bash
 npm install use-local-storage-state
 ```
+
+⚠️ For React 17 installation and docs, [go to the react-17 branch](https://github.com/astoilkov/use-local-storage-state/tree/react-17).
 
 ## Why
 
@@ -71,20 +74,28 @@ export default function Todos() {
 </details>
 
 <details>
-<summary>SSR support</summary>
+<summary id="is-persistent">Notify the user when <code>localStorage</code> isn't saving the data using the <code>`isPersistent`</code> property</summary>
 <p></p>
 
-SSR supports includes handling of hydration mismatches. This prevents the following error:  `Warning: Expected server HTML to contain a matching ...`. This is the only library I'm aware of that handles this case. For more, see [discussion here](https://github.com/astoilkov/use-local-storage-state/issues/23).
+There are a few cases when `localStorage` [isn't available](https://github.com/astoilkov/use-local-storage-state/blob/7db8872397eae8b9d2421f068283286847f326ac/index.ts#L3-L11). The `isPersistent` property tells you if the data is persisted in `localStorage` or in-memory. Useful when you want to notify the user that their data won't be persisted.
 
 ```tsx
+import React, { useState } from 'react'
 import useLocalStorageState from 'use-local-storage-state'
 
 export default function Todos() {
-    const [todos, setTodos] = useLocalStorageState('todos', {
-        ssr: true,
-        defaultValue: ['buy avocado', 'do 50 push-ups']
+    const [todos, setTodos, { isPersistent }] = useLocalStorageState('todos', {
+        defaultValue: ['buy avocado']
     })
+
+    return (
+        <>
+            {todos.map(todo => (<div>{todo}</div>))}
+            {!isPersistent && <span>Changes aren't currently persisted.</span>}
+        </>
+    )
 }
+
 ```
 
 </details>
@@ -113,10 +124,11 @@ export default function Todos() {
 
 ## API
 
-### `useLocalStorageState(key, options?)`
+### `useLocalStorageState(key: string, options?: LocalStorageOptions)`
 
-Returns `[value, setValue, { removeItem }]` when called. The first two values are the same as `useState()`. The third value contains one extra property:
+Returns `[value, setValue, { removeItem, isPersistent }]` when called. The first two values are the same as `useState()`. The third value contains two extra properties:
 - `removeItem()` — calls `localStorage.removeItem(key)` and resets the hook to it's default state
+- `isPersistent` — `boolean` property that returns `false` if `localStorage` is throwing an error and the data is stored only in-memory
 
 ### `key`
 
@@ -133,22 +145,6 @@ Type: `any`
 Default: `undefined`
 
 The default value. You can think of it as the same as `useState(defaultValue)`.
-
-### `options.ssr`
-
-Type: `boolean`
-
-Default: `false`
-
-Enables SSR support and handles hydration mismatches. Not enabling this can cause the following error: `Warning: Expected server HTML to contain a matching ...`. This is the only library I'm aware of that handles this case. For more, see [discussion here](https://github.com/astoilkov/use-local-storage-state/issues/23).
-
-### `options.storage`
-
-Type: [`Storage`](https://github.com/astoilkov/use-local-storage-state/blob/main/src/storage/Storage.ts)
-
-Default: [`localStorageJson`](https://github.com/astoilkov/use-local-storage-state/blob/main/src/storage/localStorageJson.ts)
-
-Allows using other storages for your date. This allows you to use [`sessionStorage`](https://developer.mozilla.org/en-US/docs/Web/API/Window/sessionStorage) and [`sessionStorageJson`](https://github.com/astoilkov/use-local-storage-state/blob/main/src/storage/sessionStorageJson.ts). You can also use a custom implementation, for example, `localStorage` implementation with in-memory fallback when `localStorage` throws an error.
 
 ### `options.crossSync`
 
