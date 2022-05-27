@@ -163,6 +163,30 @@ describe('useLocalStorageState()', () => {
         expect(todosA).toEqual(['first', 'second'])
     })
 
+    it('crossSync: false disables "storage" event', () => {
+        const { result } = renderHook(() =>
+            useLocalStorageState('todos', {
+                defaultValue: ['first', 'second'],
+                crossSync: false,
+            }),
+        )
+
+        act(() => {
+            localStorage.setItem('todos', JSON.stringify(['third', 'forth']))
+            window.dispatchEvent(
+                new StorageEvent('storage', {
+                    storageArea: localStorage,
+                    key: 'todos',
+                    oldValue: JSON.stringify(['first', 'second']),
+                    newValue: JSON.stringify(['third', 'forth']),
+                }),
+            )
+        })
+
+        const [todosA] = result.current
+        expect(todosA).toEqual(['first', 'second'])
+    })
+
     it('initially gets value from local storage if there is a value', () => {
         localStorage.setItem('todos', JSON.stringify(['third', 'forth']))
 

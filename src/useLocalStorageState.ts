@@ -10,6 +10,12 @@ const activeHooks = new Set<{
     forceUpdate: () => void
 }>()
 
+export type LocalStorageOptions<T> = {
+    ssr?: boolean
+    defaultValue?: T
+    crossSync?: boolean
+}
+
 // - `useLocalStorageState()` return type
 // - first two values are the same as `useState`
 export type LocalStorageState<T> = [
@@ -23,19 +29,19 @@ export type LocalStorageState<T> = [
 
 export default function useLocalStorageState(
     key: string,
-    options?: { ssr: boolean },
+    options?: Omit<LocalStorageOptions<unknown>, 'defaultValue'>,
 ): LocalStorageState<unknown>
 export default function useLocalStorageState<T>(
     key: string,
-    options?: { ssr: boolean },
+    options?: Omit<LocalStorageOptions<T | undefined>, 'defaultValue'>,
 ): LocalStorageState<T | undefined>
 export default function useLocalStorageState<T>(
     key: string,
-    options?: { defaultValue?: T; ssr?: boolean },
+    options?: LocalStorageOptions<T>,
 ): LocalStorageState<T>
 export default function useLocalStorageState<T = undefined>(
     key: string,
-    options?: { defaultValue?: T; ssr?: boolean },
+    options?: LocalStorageOptions<T | undefined>,
 ): LocalStorageState<T | undefined> {
     const defaultValue = options?.defaultValue
 
@@ -45,13 +51,19 @@ export default function useLocalStorageState<T = undefined>(
     }
 
     // eslint-disable-next-line react-hooks/rules-of-hooks
-    return useClientLocalStorageState(key, defaultValue, options?.ssr === true)
+    return useClientLocalStorageState(
+        key,
+        defaultValue,
+        options?.ssr === true,
+        options?.crossSync !== false,
+    )
 }
 
 function useClientLocalStorageState<T>(
     key: string,
     defaultValue: T | undefined,
     ssr: boolean,
+    crossSync: boolean,
 ): LocalStorageState<T | undefined> {
     const initialDefaultValue = useRef(defaultValue).current
     // `id` changes every time a change in the `localStorage` occurs
@@ -87,6 +99,10 @@ function useClientLocalStorageState<T>(
     // - the `storage` event is called only in all tabs, windows, iframe's except the one that
     //   triggered the change
     useEffect(() => {
+        if (!crossSync) {
+            return undefined
+        }
+
         const onStorage = (e: StorageEvent): void => {
             if (e.storageArea === localStorage && e.key === key) {
                 forceUpdate()
@@ -96,7 +112,7 @@ function useClientLocalStorageState<T>(
         window.addEventListener('storage', onStorage)
 
         return (): void => window.removeEventListener('storage', onStorage)
-    }, [key])
+    }, [key, crossSync])
 
     // - adds this hook to the `activeHooks` array. see the `activeHooks` declaration above for a
     //   more detailed explanation
