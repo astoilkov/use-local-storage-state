@@ -14,7 +14,7 @@ React 18 and above:
 npm install use-local-storage-state
 ```
 
-⚠️ React 17 and below. For docs, [go to the react-17 branch](https://github.com/astoilkov/use-local-storage-state/tree/react-17).
+⚠️ React 17 and below. For docs, go to the [react-17 branch](https://github.com/astoilkov/use-local-storage-state/tree/react-17).
 ```bash
 npm install use-local-storage-state@17
 ```
