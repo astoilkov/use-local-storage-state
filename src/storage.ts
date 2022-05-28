@@ -9,6 +9,7 @@
  */
 export default {
     data: new Map<string, unknown>(),
+
     get<T>(key: string, defaultValue: T): T | undefined {
         try {
             return this.data.has(key)
@@ -18,6 +19,7 @@ export default {
             return defaultValue
         }
     },
+
     set<T>(key: string, value: T): void {
         try {
             localStorage.setItem(key, JSON.stringify(value))
@@ -27,6 +29,7 @@ export default {
             this.data.set(key, value)
         }
     },
+
     remove(key: string): void {
         this.data.delete(key)
         localStorage.removeItem(key)

@@ -9,15 +9,22 @@
 
 ## Install
 
-```shell
+React 18 and above:
+```bash
 npm install use-local-storage-state
+```
+
+⚠️ React 17 and below. For docs, go to the [react-17 branch](https://github.com/astoilkov/use-local-storage-state/tree/react-17).
+```bash
+npm install use-local-storage-state@17
 ```
 
 ## Why
 
 - Actively maintained for the past 2 years — see [contributions](https://github.com/astoilkov/use-local-storage-state/graphs/contributors) page.
-- SSR support with handling of [hydration mismatches](https://github.com/astoilkov/use-local-storage-state/issues/23).
-- Handles the `Window` [`storage`](https://developer.mozilla.org/en-US/docs/Web/API/Window/storage_event) event and updates changes across browser tabs, windows, and iframe's.
+- React 18 concurrent rendering support.
+- SSR support.
+- Handles the `Window` [`storage`](https://developer.mozilla.org/en-US/docs/Web/API/Window/storage_event) event and updates changes across browser tabs, windows, and iframe's. Disable with `storageSync: false`.
 - In-memory fallback when `localStorage` throws an error and can't store the data. Provides a `isPersistent` API to let you notify the user their data isn't currently being stored.
 - Aiming for high-quality with [my open-source principles](https://astoilkov.com/my-open-source-principles).
 
@@ -67,25 +74,6 @@ export default function Todos() {
     )
 }
 
-```
-
-</details>
-
-<details>
-<summary>SSR support</summary>
-<p></p>
-
-SSR supports includes handling of hydration mismatches. This prevents the following error:  `Warning: Expected server HTML to contain a matching ...`. This is the only library I'm aware of that handles this case. For more, see [discussion here](https://github.com/astoilkov/use-local-storage-state/issues/23).
-
-```tsx
-import useLocalStorageState from 'use-local-storage-state'
-
-export default function Todos() {
-    const [todos, setTodos] = useLocalStorageState('todos', {
-        ssr: true,
-        defaultValue: ['buy avocado', 'do 50 push-ups']
-    })
-}
 ```
 
 </details>
@@ -141,7 +129,7 @@ export default function Todos() {
 
 ## API
 
-### `useLocalStorageState(key, options?)`
+### `useLocalStorageState(key: string, options?: LocalStorageOptions)`
 
 Returns `[value, setValue, { removeItem, isPersistent }]` when called. The first two values are the same as `useState()`. The third value contains two extra properties:
 - `removeItem()` — calls `localStorage.removeItem(key)` and resets the hook to it's default state
@@ -163,13 +151,13 @@ Default: `undefined`
 
 The default value. You can think of it as the same as `useState(defaultValue)`.
 
-### `options.ssr`
+### `options.storageSync`
 
 Type: `boolean`
 
-Default: `false`
+Default: `true`
 
-Enables SSR support and handles hydration mismatches. Not enabling this can cause the following error: `Warning: Expected server HTML to contain a matching ...`. This is the only library I'm aware of that handles this case. For more, see [discussion here](https://github.com/astoilkov/use-local-storage-state/issues/23).
+Setting to `false` doesn't subscribe to the [Window storage event](https://developer.mozilla.org/en-US/docs/Web/API/Window/storage_event). If you set to `false`, updates won't be synchronized across tabs, windows and iframes.
 
 ## Alternatives
 
