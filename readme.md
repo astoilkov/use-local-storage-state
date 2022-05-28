@@ -151,7 +151,7 @@ Default: `undefined`
 
 The default value. You can think of it as the same as `useState(defaultValue)`.
 
-### `options.crossSync`
+### `options.storageSync`
 
 Type: `boolean`
 

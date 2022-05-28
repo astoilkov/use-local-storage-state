@@ -499,11 +499,11 @@ describe('useLocalStorageState()', () => {
             expect(todosA).toEqual(['first', 'second'])
         })
 
-        it('crossSync: false disables "storage" event', () => {
+        it('`storageSync: false` disables "storage" event', () => {
             const { result } = renderHook(() =>
                 useLocalStorageState('todos', {
                     defaultValue: ['first', 'second'],
-                    crossSync: false,
+                    storageSync: false,
                 }),
             )
 

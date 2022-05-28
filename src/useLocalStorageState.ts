@@ -4,7 +4,7 @@ import { useRef, useMemo, useEffect, useCallback, useSyncExternalStore } from 'r
 
 export type LocalStorageOptions<T> = {
     defaultValue?: T
-    crossSync?: boolean
+    storageSync?: boolean
 }
 
 // - `useLocalStorageState()` return type
@@ -56,13 +56,13 @@ export default function useLocalStorageState<T = undefined>(
     }
 
     // eslint-disable-next-line react-hooks/rules-of-hooks
-    return useClientLocalStorageState(key, defaultValue, options?.crossSync)
+    return useClientLocalStorageState(key, defaultValue, options?.storageSync)
 }
 
 function useClientLocalStorageState<T>(
     key: string,
     defaultValue: T | undefined,
-    crossSync: boolean = true,
+    storageSync: boolean = true,
 ): LocalStorageState<T | undefined> {
     const initialDefaultValue = useRef(defaultValue).current
 
@@ -133,7 +133,7 @@ function useClientLocalStorageState<T>(
     // - the `storage` event is called only in all tabs, windows, iframe's except the one that
     //   triggered the change
     useEffect(() => {
-        if (!crossSync) {
+        if (!storageSync) {
             return undefined
         }
 
@@ -146,7 +146,7 @@ function useClientLocalStorageState<T>(
         window.addEventListener('storage', onStorage)
 
         return (): void => window.removeEventListener('storage', onStorage)
-    }, [key, crossSync])
+    }, [key, storageSync])
 
     return useMemo(
         () => [
