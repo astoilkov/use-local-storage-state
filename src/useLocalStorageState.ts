@@ -13,7 +13,7 @@ const activeHooks = new Set<{
 export type LocalStorageOptions<T> = {
     ssr?: boolean
     defaultValue?: T
-    crossSync?: boolean
+    storageSync?: boolean
 }
 
 // - `useLocalStorageState()` return type
@@ -55,7 +55,7 @@ export default function useLocalStorageState<T = undefined>(
         key,
         defaultValue,
         options?.ssr === true,
-        options?.crossSync !== false,
+        options?.storageSync !== false,
     )
 }
 
@@ -63,7 +63,7 @@ function useClientLocalStorageState<T>(
     key: string,
     defaultValue: T | undefined,
     ssr: boolean,
-    crossSync: boolean,
+    storageSync: boolean,
 ): LocalStorageState<T | undefined> {
     const initialDefaultValue = useRef(defaultValue).current
     // `id` changes every time a change in the `localStorage` occurs
@@ -99,7 +99,7 @@ function useClientLocalStorageState<T>(
     // - the `storage` event is called only in all tabs, windows, iframe's except the one that
     //   triggered the change
     useEffect(() => {
-        if (!crossSync) {
+        if (!storageSync) {
             return undefined
         }
 
@@ -112,7 +112,7 @@ function useClientLocalStorageState<T>(
         window.addEventListener('storage', onStorage)
 
         return (): void => window.removeEventListener('storage', onStorage)
-    }, [key, crossSync])
+    }, [key, storageSync])
 
     // - adds this hook to the `activeHooks` array. see the `activeHooks` declaration above for a
     //   more detailed explanation
