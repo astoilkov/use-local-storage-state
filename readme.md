@@ -171,7 +171,7 @@ Default: `false`
 
 Enables SSR support and handles hydration mismatches. Not enabling this can cause the following error: `Warning: Expected server HTML to contain a matching ...`. This is the only library I'm aware of that handles this case. For more, see [discussion here](https://github.com/astoilkov/use-local-storage-state/issues/23).
 
-### `options.crossSync`
+### `options.storageSync`
 
 Type: `boolean`
 
