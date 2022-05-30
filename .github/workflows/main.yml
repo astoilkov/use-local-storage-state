@@ -24,14 +24,9 @@ jobs:
             - run: yarn test
     coverage:
         needs: [test]
-        name: coverage
+        name: Code Coverage
         runs-on: ubuntu-latest
         steps:
-            - uses: actions/checkout@master
-            - uses: actions/setup-node@master
-              with:
-                  node-version: 16
-            - run: yarn install
             - uses: paambaati/codeclimate-action@v2.2.4
               env:
                   CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
