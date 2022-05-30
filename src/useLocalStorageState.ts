@@ -1,10 +1,15 @@
-import storage from './storage'
 import type { Dispatch, SetStateAction } from 'react'
 import { useRef, useMemo, useEffect, useCallback, useSyncExternalStore } from 'react'
+
+export const inMemoryData = new Map<string, unknown>()
 
 export type LocalStorageOptions<T> = {
     defaultValue?: T
     storageSync?: boolean
+    serializer?: {
+        stringify: (value: unknown) => string
+        parse: (value: string) => unknown
+    }
 }
 
 // - `useLocalStorageState()` return type
@@ -17,13 +22,6 @@ export type LocalStorageState<T> = [
         removeItem: () => void
     },
 ]
-
-const callbacks = new Set<(key: string) => void>()
-function triggerCallbacks(key: string): void {
-    for (const callback of [...callbacks]) {
-        callback(key)
-    }
-}
 
 export default function useLocalStorageState(
     key: string,
@@ -55,14 +53,23 @@ export default function useLocalStorageState<T = undefined>(
         ]
     }
 
+    const serializer = options?.serializer
     // eslint-disable-next-line react-hooks/rules-of-hooks
-    return useClientLocalStorageState(key, defaultValue, options?.storageSync)
+    return useClientLocalStorageState(
+        key,
+        defaultValue,
+        options?.storageSync,
+        serializer?.parse,
+        serializer?.stringify,
+    )
 }
 
 function useClientLocalStorageState<T>(
     key: string,
     defaultValue: T | undefined,
     storageSync: boolean = true,
+    parse: (value: string) => unknown = parseJSON,
+    stringify: (value: unknown) => string = JSON.stringify,
 ): LocalStorageState<T | undefined> {
     const initialDefaultValue = useRef(defaultValue).current
 
@@ -72,11 +79,19 @@ function useClientLocalStorageState<T>(
     //   - https://github.com/astoilkov/use-local-storage-state/issues/30
     //   - https://github.com/astoilkov/use-local-storage-state/issues/33
     if (
-        !storage.data.has(key) &&
+        !inMemoryData.has(key) &&
         initialDefaultValue !== undefined &&
         localStorage.getItem(key) === null
     ) {
-        storage.set(key, initialDefaultValue)
+        // reasons for `localStorage` to throw an error:
+        // - maximum quota is exceeded
+        // - under Mobile Safari (since iOS 5) when the user enters private mode
+        //   `localStorage.setItem()` will throw
+        // - trying to access localStorage object when cookies are disabled in Safari throws
+        //   "SecurityError: The operation is insecure."
+        try {
+            localStorage.setItem(key, stringify(initialDefaultValue))
+        } catch {}
     }
 
     const storageValue = useRef<{ item: string | null; parsed: T | undefined }>({
@@ -102,10 +117,24 @@ function useClientLocalStorageState<T>(
         // eslint-disable-next-line react-hooks/exhaustive-deps
         () => {
             const item = localStorage.getItem(key)
-            if (item !== storageValue.current.item || storage.data.has(key)) {
+
+            if (inMemoryData.has(key)) {
                 storageValue.current = {
                     item,
-                    parsed: storage.get(key, initialDefaultValue),
+                    parsed: inMemoryData.get(key) as T | undefined,
+                }
+            } else if (item !== storageValue.current.item) {
+                let parsed: T | undefined
+
+                try {
+                    parsed = item === null ? initialDefaultValue : (parse(item) as T)
+                } catch {
+                    parsed = initialDefaultValue
+                }
+
+                storageValue.current = {
+                    item,
+                    parsed,
                 }
             }
 
@@ -118,15 +147,25 @@ function useClientLocalStorageState<T>(
     const setState = useCallback(
         (newValue: SetStateAction<T | undefined>): void => {
             const value =
-                newValue instanceof Function
-                    ? newValue(storage.get(key, initialDefaultValue))
-                    : newValue
+                newValue instanceof Function ? newValue(storageValue.current.parsed) : newValue
 
-            storage.set(key, value)
+            // reasons for `localStorage` to throw an error:
+            // - maximum quota is exceeded
+            // - under Mobile Safari (since iOS 5) when the user enters private mode
+            //   `localStorage.setItem()` will throw
+            // - trying to access localStorage object when cookies are disabled in Safari throws
+            //   "SecurityError: The operation is insecure."
+            try {
+                localStorage.setItem(key, stringify(value))
+
+                inMemoryData.delete(key)
+            } catch {
+                inMemoryData.set(key, value)
+            }
 
             triggerCallbacks(key)
         },
-        [key, initialDefaultValue],
+        [key, stringify],
     )
 
     // - syncs change across tabs, windows, iframes
@@ -153,9 +192,10 @@ function useClientLocalStorageState<T>(
             value,
             setState,
             {
-                isPersistent: value === initialDefaultValue || !storage.data.has(key),
+                isPersistent: value === initialDefaultValue || !inMemoryData.has(key),
                 removeItem(): void {
-                    storage.remove(key)
+                    inMemoryData.delete(key)
+                    localStorage.removeItem(key)
 
                     triggerCallbacks(key)
                 },
@@ -163,4 +203,19 @@ function useClientLocalStorageState<T>(
         ],
         [key, setState, value, initialDefaultValue],
     )
+}
+
+const callbacks = new Set<(key: string) => void>()
+function triggerCallbacks(key: string): void {
+    for (const callback of [...callbacks]) {
+        callback(key)
+    }
+}
+
+/**
+ * A wrapper for `JSON.parse()` which supports the return value of `JSON.stringify(undefined)`
+ * which returns the string `"undefined"` and this method returns the value `undefined`.
+ */
+function parseJSON(value: string): unknown {
+    return value === 'undefined' ? undefined : JSON.parse(value)
 }

@@ -1,6 +1,5 @@
 import util from 'util'
-import storage from '../src/storage'
-import useLocalStorageState from '../src/useLocalStorageState'
+import useLocalStorageState, { inMemoryData } from '../src/useLocalStorageState'
 import { render, renderHook, act } from '@testing-library/react'
 import React, { useEffect, useLayoutEffect, useMemo } from 'react'
 
@@ -25,7 +24,7 @@ beforeEach(() => {
 })
 
 afterEach(() => {
-    storage.data.clear()
+    inMemoryData.clear()
     localStorage.clear()
     sessionStorage.clear()
 })
