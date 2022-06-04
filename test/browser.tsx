@@ -384,7 +384,6 @@ describe('useLocalStorageState()', () => {
             })
 
             if (value === 0) {
-                debugger
                 setValue(1)
             }
 
