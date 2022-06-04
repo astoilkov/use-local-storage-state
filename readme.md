@@ -165,7 +165,7 @@ Type: `{ stringify, parse }`
 
 Default: `JSON`
 
-JSON does not serialize `Date`, `Regex`, or `BigInt` data.  Can pass in [superjson](https://github.com/blitz-js/superjson) or other `JSON`-compatible serialization library for more advanced serialization.
+JSON does not serialize `Date`, `Regex`, or `BigInt` data.  You can pass in [superjson](https://github.com/blitz-js/superjson) or other `JSON`-compatible serialization library for more advanced serialization.
 
 ## Alternatives
 
