@@ -144,6 +144,7 @@ function useClientLocalStorageState<T>(
         // istanbul ignore next
         () => initialDefaultValue,
     )
+
     const setState = useCallback(
         (newValue: SetStateAction<T | undefined>): void => {
             const value =
