@@ -44,7 +44,7 @@ beforeEach(() => {
 
 describe('useLocalStorageState()', () => {
     describe('SSR support', () => {
-        it('returns default value on the server', () => {
+        test('returns default value on the server', () => {
             const { result } = renderHookOnServer(() =>
                 useLocalStorageState('todos', {
                     defaultValue: ['first', 'second'],
@@ -54,13 +54,13 @@ describe('useLocalStorageState()', () => {
             expect(result.current[0]).toEqual(['first', 'second'])
         })
 
-        it('returns default value on the server', () => {
+        test('returns default value on the server', () => {
             const { result } = renderHookOnServer(() => useLocalStorageState('todos'))
 
             expect(result.current[0]).toEqual(undefined)
         })
 
-        it(`setValue() on server doesn't throw`, () => {
+        test(`setValue() on server doesn't throw`, () => {
             const { result } = renderHookOnServer(() =>
                 useLocalStorageState('number', {
                     defaultValue: 0,
@@ -71,7 +71,7 @@ describe('useLocalStorageState()', () => {
             expect(setValue).not.toThrow()
         })
 
-        it(`removeItem() on server doesn't throw`, () => {
+        test(`removeItem() on server doesn't throw`, () => {
             const { result } = renderHookOnServer(() =>
                 useLocalStorageState('number', {
                     defaultValue: 0,
@@ -82,7 +82,7 @@ describe('useLocalStorageState()', () => {
             expect(removeItem).not.toThrow()
         })
 
-        it('isPersistent returns true on the server', () => {
+        test('isPersistent returns true on the server', () => {
             const { result } = renderHookOnServer(() =>
                 useLocalStorageState('number', {
                     defaultValue: 0,
