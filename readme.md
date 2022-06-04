@@ -159,6 +159,14 @@ Default: `true`
 
 Setting to `false` doesn't subscribe to the [Window storage event](https://developer.mozilla.org/en-US/docs/Web/API/Window/storage_event). If you set to `false`, updates won't be synchronized across tabs, windows and iframes.
 
+### `options.serializer`
+
+Type: `{ stringify, parse }`
+
+Default: `JSON`
+
+JSON does not serialize `Date`, `Regex`, or `BigInt` data.  Can pass in [superjson](https://github.com/blitz-js/superjson) or other `JSON`-compatible serialization library for more advanced serialization.
+
 ## Alternatives
 
 These are the best alternatives to my repo I have found so far:
