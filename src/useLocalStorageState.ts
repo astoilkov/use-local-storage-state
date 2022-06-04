@@ -1,6 +1,7 @@
 import type { Dispatch, SetStateAction } from 'react'
 import { useRef, useMemo, useEffect, useCallback, useSyncExternalStore } from 'react'
 
+// in memory fallback used then `localStorage` throws an error
 export const inMemoryData = new Map<string, unknown>()
 
 export type LocalStorageOptions<T> = {
@@ -42,6 +43,9 @@ export default function useLocalStorageState<T = undefined>(
     const defaultValue = options?.defaultValue
 
     // SSR support
+    // - on the server, return a constant value
+    // - this makes the implementation simpler and smaller the `localStorage` object is `undefined`
+    //   on the server
     if (typeof window === 'undefined') {
         return [
             defaultValue,
@@ -54,6 +58,8 @@ export default function useLocalStorageState<T = undefined>(
     }
 
     const serializer = options?.serializer
+    // disabling ESLint because the above if statement can be executed only on the server. the value
+    // of `window` can't change between calls.
     // eslint-disable-next-line react-hooks/rules-of-hooks
     return useClientLocalStorageState(
         key,
@@ -94,6 +100,7 @@ function useClientLocalStorageState<T>(
         } catch {}
     }
 
+    // we keep the `parsed` value in a ref because `useSyncExternalStore` requires a cached version
     const storageValue = useRef<{ item: string | null; parsed: T | undefined }>({
         item: null,
         parsed: initialDefaultValue,
@@ -205,6 +212,7 @@ function useClientLocalStorageState<T>(
     )
 }
 
+// notifies all instances using the same `key` to update
 const callbacks = new Set<(key: string) => void>()
 function triggerCallbacks(key: string): void {
     for (const callback of [...callbacks]) {
@@ -212,10 +220,8 @@ function triggerCallbacks(key: string): void {
     }
 }
 
-/**
- * A wrapper for `JSON.parse()` which supports the return value of `JSON.stringify(undefined)`
- * which returns the string `"undefined"` and this method returns the value `undefined`.
- */
+// a wrapper for `JSON.parse()` that supports "undefined" value. otherwise,
+// `JSON.parse(JSON.stringify(undefined))` returns the string "undefined" not the value `undefined`
 function parseJSON(value: string): unknown {
     return value === 'undefined' ? undefined : JSON.parse(value)
 }
