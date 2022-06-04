@@ -1,7 +1,8 @@
 import util from 'util'
-import useLocalStorageState, { inMemoryData } from '../src/useLocalStorageState'
+import superjson from 'superjson'
 import { render, renderHook, act } from '@testing-library/react'
 import React, { useEffect, useLayoutEffect, useMemo } from 'react'
+import useLocalStorageState, { inMemoryData } from '../src/useLocalStorageState'
 
 beforeEach(() => {
     // Throw an error when `console.error()` is called. This is especially useful in a React tests
@@ -616,6 +617,64 @@ describe('useLocalStorageState()', () => {
 
             const [, , { isPersistent }] = result.current
             expect(isPersistent).toBe(true)
+        })
+    })
+
+    describe('"serializer" option', () => {
+        it('can serialize Date from initial value', () => {
+            const date = new Date()
+
+            const { result } = renderHook(() =>
+                useLocalStorageState('date', {
+                    defaultValue: [date],
+                    serializer: superjson,
+                }),
+            )
+
+            const [value] = result.current
+            expect(value).toEqual([date])
+        })
+
+        it('can serialize Date (in array) from setValue', () => {
+            const date = new Date()
+
+            const { result } = renderHook(() =>
+                useLocalStorageState<(Date | null)[]>('date', {
+                    defaultValue: [null],
+                    serializer: superjson,
+                }),
+            )
+
+            act(() => {
+                const setValue = result.current[1]
+                setValue([date])
+            })
+
+            const [value, _] = result.current
+            expect(value).toEqual([date])
+        })
+
+        it(`JSON as serializer can't handle undefined as value`, () => {
+            const { result: resultA, unmount } = renderHook(() =>
+                useLocalStorageState<string[] | undefined>('todos', {
+                    defaultValue: ['first', 'second'],
+                    serializer: JSON,
+                }),
+            )
+            act(() => {
+                const [, setValue] = resultA.current
+                setValue(undefined)
+            })
+            unmount()
+
+            const { result: resultB } = renderHook(() =>
+                useLocalStorageState<string[] | undefined>('todos', {
+                    defaultValue: ['first', 'second'],
+                    serializer: JSON,
+                }),
+            )
+            const [value] = resultB.current
+            expect(value).not.toBe(undefined)
         })
     })
 })
