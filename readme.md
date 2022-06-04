@@ -167,14 +167,6 @@ Default: `JSON`
 
 JSON does not serialize `Date`, `Regex`, or `BigInt` data.  You can pass in [superjson](https://github.com/blitz-js/superjson) or other `JSON`-compatible serialization library for more advanced serialization.
 
-### `options.serializer`
-
-Type: `Pick<typeof JSON, 'stringify' | 'parse'>`
-
-Default: `JSON`
-
-JSON does not serialize `Date`, `Regex`, or `BigInt` data.  Can pass in [superjson](https://www.npmjs.com/package/superjson) or other `JSON`-compatible serialization classes for more advanced serialization.
-
 ## Alternatives
 
 These are the best alternatives to my repo I have found so far:
