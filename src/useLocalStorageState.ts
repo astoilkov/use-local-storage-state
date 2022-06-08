@@ -61,7 +61,7 @@ export default function useLocalStorageState<T = undefined>(
     // disabling ESLint because the above if statement can be executed only on the server. the value
     // of `window` can't change between calls.
     // eslint-disable-next-line react-hooks/rules-of-hooks
-    return useClientLocalStorageState(
+    return useBrowserLocalStorageState(
         key,
         defaultValue,
         options?.storageSync,
@@ -70,7 +70,7 @@ export default function useLocalStorageState<T = undefined>(
     )
 }
 
-function useClientLocalStorageState<T>(
+function useBrowserLocalStorageState<T>(
     key: string,
     defaultValue: T | undefined,
     storageSync: boolean = true,
