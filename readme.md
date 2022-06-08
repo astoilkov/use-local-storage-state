@@ -166,10 +166,3 @@ Type: `{ stringify, parse }`
 Default: `JSON`
 
 JSON does not serialize `Date`, `Regex`, or `BigInt` data.  You can pass in [superjson](https://github.com/blitz-js/superjson) or other `JSON`-compatible serialization library for more advanced serialization.
-
-## Alternatives
-
-These are the best alternatives to my repo I have found so far:
-- [donavon/use-persisted-state](https://github.com/donavon/use-persisted-state)
-- [imbhargav5/rooks](https://github.com/imbhargav5/rooks/blob/master/packages/localstorage-state/README.md)
-- [dance2die/react-use-localstorage](https://github.com/dance2die/react-use-localstorage)
