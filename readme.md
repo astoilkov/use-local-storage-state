@@ -179,9 +179,6 @@ Default: `true`
 
 Setting to `false` doesn't subscribe to the [Window storage event](https://developer.mozilla.org/en-US/docs/Web/API/Window/storage_event). If you set to `false`, updates won't be synchronized across tabs, windows and iframes.
 
-## Alternatives
+## Related
 
-These are the best alternatives to my repo I have found so far:
-- [donavon/use-persisted-state](https://github.com/donavon/use-persisted-state)
-- [imbhargav5/rooks](https://github.com/imbhargav5/rooks/blob/master/packages/localstorage-state/README.md)
-- [dance2die/react-use-localstorage](https://github.com/dance2die/react-use-localstorage)
+- [`use-session-storage-state`](https://github.com/astoilkov/use-session-storage-state) — A clone of this library but for `sessionStorage`.
