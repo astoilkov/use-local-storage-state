@@ -38,7 +38,7 @@ export default function Todos() {
 <summary>Todo list example + CodeSandbox link</summary>
 <p></p>
 
-You can experiment with the example [here](https://codesandbox.io/s/todos-example-use-local-storage-state-pewbql?file=/src/App.tsx).
+You can experiment with the example [here](https://codesandbox.io/s/todos-example-use-local-storage-state-e5jd21?file=/src/App.tsx).
 
 ```tsx
 import React, { useState } from 'react'
