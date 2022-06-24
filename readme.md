@@ -21,7 +21,7 @@ npm install use-local-storage-state@17
 
 ## Why
 
-- Actively maintained for the past 2 years — see [contributions](https://github.com/astoilkov/use-local-storage-state/graphs/contributors) page.
+- Actively maintained for the past 2 years — see [contributors](https://github.com/astoilkov/use-local-storage-state/graphs/contributors) page.
 - React 18 concurrent rendering support.
 - SSR support.
 - Handles the `Window` [`storage`](https://developer.mozilla.org/en-US/docs/Web/API/Window/storage_event) event and updates changes across browser tabs, windows, and iframe's. Disable with `storageSync: false`.
@@ -128,13 +128,13 @@ export default function Todos() {
 
 ## API
 
-### `useLocalStorageState(key: string, options?: LocalStorageOptions)`
+#### `useLocalStorageState(key: string, options?: LocalStorageOptions)`
 
 Returns `[value, setValue, { removeItem, isPersistent }]` when called. The first two values are the same as `useState()`. The third value contains two extra properties:
 - `removeItem()` — calls `localStorage.removeItem(key)` and resets the hook to it's default state
 - `isPersistent` — `boolean` property that returns `false` if `localStorage` is throwing an error and the data is stored only in-memory
 
-### `key`
+#### `key`
 
 Type: `string`
 
@@ -142,7 +142,7 @@ The key used when calling `localStorage.setItem(key)` and `localStorage.getItem(
 
 ⚠️ Be careful with name conflicts as it is possible to access a property which is already in `localStorage` that was created from another place in the codebase or in an old version of the application.
 
-### `options.defaultValue`
+#### `options.defaultValue`
 
 Type: `any`
 
@@ -150,7 +150,7 @@ Default: `undefined`
 
 The default value. You can think of it as the same as `useState(defaultValue)`.
 
-### `options.storageSync`
+#### `options.storageSync`
 
 Type: `boolean`
 
@@ -158,7 +158,7 @@ Default: `true`
 
 Setting to `false` doesn't subscribe to the [Window storage event](https://developer.mozilla.org/en-US/docs/Web/API/Window/storage_event). If you set to `false`, updates won't be synchronized across tabs, windows and iframes.
 
-### `options.serializer`
+#### `options.serializer`
 
 Type: `{ stringify, parse }`
 
