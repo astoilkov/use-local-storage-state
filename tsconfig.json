@@ -28,5 +28,5 @@
         // - 😃 probably the future
         "isolatedModules": true
     },
-    "include": ["index.ts", "sessionStorageJson.ts"]
+    "include": ["index.ts"]
 }
