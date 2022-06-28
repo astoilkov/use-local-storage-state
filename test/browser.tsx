@@ -37,13 +37,13 @@ describe('useLocalStorageState()', () => {
         )
 
         const [todos] = result.current
-        expect(todos).toEqual(['first', 'second'])
+        expect(todos).toStrictEqual(['first', 'second'])
     })
 
     test(`initial state isn't written into localStorage`, () => {
         renderHook(() => useLocalStorageState('todos', { defaultValue: ['first', 'second'] }))
 
-        expect(localStorage.getItem('todos')).toEqual(JSON.stringify(['first', 'second']))
+        expect(localStorage.getItem('todos')).toStrictEqual(JSON.stringify(['first', 'second']))
     })
 
     test('updates state', () => {
@@ -58,8 +58,8 @@ describe('useLocalStorageState()', () => {
         })
 
         const [todos] = result.current
-        expect(todos).toEqual(['third', 'forth'])
-        expect(localStorage.getItem('todos')).toEqual(JSON.stringify(['third', 'forth']))
+        expect(todos).toStrictEqual(['third', 'forth'])
+        expect(localStorage.getItem('todos')).toStrictEqual(JSON.stringify(['third', 'forth']))
     })
 
     test('updates state with callback function', () => {
@@ -74,8 +74,8 @@ describe('useLocalStorageState()', () => {
         })
 
         const [todos] = result.current
-        expect(todos).toEqual(['first', 'second', 'third', 'forth'])
-        expect(localStorage.getItem('todos')).toEqual(
+        expect(todos).toStrictEqual(['first', 'second', 'third', 'forth'])
+        expect(localStorage.getItem('todos')).toStrictEqual(
             JSON.stringify(['first', 'second', 'third', 'forth']),
         )
     })
@@ -88,7 +88,7 @@ describe('useLocalStorageState()', () => {
         )
 
         const [todos] = result.current
-        expect(todos).toEqual(['first', 'second'])
+        expect(todos).toStrictEqual(['first', 'second'])
     })
 
     test('updating writes into localStorage', () => {
@@ -102,7 +102,7 @@ describe('useLocalStorageState()', () => {
             setTodos(['third', 'forth'])
         })
 
-        expect(localStorage.getItem('todos')).toEqual(JSON.stringify(['third', 'forth']))
+        expect(localStorage.getItem('todos')).toStrictEqual(JSON.stringify(['third', 'forth']))
     })
 
     test('initially gets value from local storage if there is a value', () => {
@@ -113,7 +113,7 @@ describe('useLocalStorageState()', () => {
         )
 
         const [todos] = result.current
-        expect(todos).toEqual(['third', 'forth'])
+        expect(todos).toStrictEqual(['third', 'forth'])
     })
 
     test('handles errors thrown by localStorage', () => {
@@ -198,7 +198,7 @@ describe('useLocalStorageState()', () => {
             useLocalStorageState('todos', { defaultValue: ['first', 'second'] }),
         )
         const [value] = resultC.current
-        expect(value).toEqual(['first', 'second'])
+        expect(value).toStrictEqual(['first', 'second'])
     })
 
     test('returns the same update function when the value is saved', () => {
@@ -212,7 +212,7 @@ describe('useLocalStorageState()', () => {
 
         rerender()
 
-        expect(functionMock.mock.calls.length).toEqual(1)
+        expect(functionMock.mock.calls.length).toStrictEqual(1)
     })
 
     test('changing the "key" property updates the value from local storage', () => {
@@ -231,14 +231,14 @@ describe('useLocalStorageState()', () => {
         rerender({ key: 'valueB' })
 
         const [value] = result.current
-        expect(value).toEqual('B')
+        expect(value).toStrictEqual('B')
     })
 
     // https://github.com/astoilkov/use-local-storage-state/issues/30
     test(`when defaultValue isn't provided — don't write to localStorage on initial render`, () => {
         renderHook(() => useLocalStorageState('todos'))
 
-        expect(localStorage.getItem('todos')).toEqual(null)
+        expect(localStorage.getItem('todos')).toStrictEqual(null)
     })
 
     // https://github.com/astoilkov/use-local-storage-state/issues/33
@@ -247,7 +247,7 @@ describe('useLocalStorageState()', () => {
 
         renderHook(() => useLocalStorageState('todos', { defaultValue: 'blue' }))
 
-        expect(localStorage.getItem('color')).toEqual('red')
+        expect(localStorage.getItem('color')).toStrictEqual('red')
     })
 
     test('calling update from one hook updates the other', () => {
@@ -265,7 +265,7 @@ describe('useLocalStorageState()', () => {
         })
 
         const [todos] = resultB.current
-        expect(todos).toEqual(['third', 'forth'])
+        expect(todos).toStrictEqual(['third', 'forth'])
     })
 
     test('can reset value to default', () => {
@@ -286,14 +286,14 @@ describe('useLocalStorageState()', () => {
         })
 
         const [todos] = resultB.current
-        expect(todos).toEqual(['first', 'second'])
+        expect(todos).toStrictEqual(['first', 'second'])
     })
 
     // https://github.com/astoilkov/use-local-storage-state/issues/30
     test("when defaultValue isn't provided — don't write to localStorage on initial render", () => {
         renderHook(() => useLocalStorageState('todos'))
 
-        expect(localStorage.getItem('todos')).toEqual(null)
+        expect(localStorage.getItem('todos')).toStrictEqual(null)
     })
 
     test('basic setup with default value', () => {
@@ -304,7 +304,7 @@ describe('useLocalStorageState()', () => {
         )
 
         const [todos] = result.current
-        expect(todos).toEqual(['first', 'second'])
+        expect(todos).toStrictEqual(['first', 'second'])
     })
 
     test('if there are already items in localStorage', () => {
@@ -317,7 +317,7 @@ describe('useLocalStorageState()', () => {
         )
 
         const [todos] = result.current
-        expect(todos).toEqual([4, 5, 6])
+        expect(todos).toStrictEqual([4, 5, 6])
     })
 
     test('supports changing the key', () => {
@@ -331,8 +331,8 @@ describe('useLocalStorageState()', () => {
 
         rerender()
 
-        expect(JSON.parse(localStorage.getItem('todos1')!)).toEqual(['first', 'second'])
-        expect(JSON.parse(localStorage.getItem('todos2')!)).toEqual(['first', 'second'])
+        expect(JSON.parse(localStorage.getItem('todos1')!)).toStrictEqual(['first', 'second'])
+        expect(JSON.parse(localStorage.getItem('todos2')!)).toStrictEqual(['first', 'second'])
     })
 
     // https://github.com/astoilkov/use-local-storage-state/issues/39
@@ -459,10 +459,10 @@ describe('useLocalStorageState()', () => {
             })
 
             const [todosA] = resultA.current
-            expect(todosA).toEqual(['third', 'forth'])
+            expect(todosA).toStrictEqual(['third', 'forth'])
 
             const [todosB] = resultB.current
-            expect(todosB).toEqual(['third', 'forth'])
+            expect(todosB).toStrictEqual(['third', 'forth'])
         })
 
         test('"storage" event updates state to default value', () => {
@@ -478,7 +478,7 @@ describe('useLocalStorageState()', () => {
             })
 
             const [todosB] = result.current
-            expect(todosB).toEqual(['first', 'second'])
+            expect(todosB).toStrictEqual(['first', 'second'])
         })
 
         test(`unrelated storage update doesn't do anything`, () => {
@@ -495,7 +495,7 @@ describe('useLocalStorageState()', () => {
             })
 
             const [todosA] = result.current
-            expect(todosA).toEqual(['first', 'second'])
+            expect(todosA).toStrictEqual(['first', 'second'])
         })
 
         test('`storageSync: false` disables "storage" event', () => {
@@ -511,7 +511,7 @@ describe('useLocalStorageState()', () => {
             })
 
             const [todosA] = result.current
-            expect(todosA).toEqual(['first', 'second'])
+            expect(todosA).toStrictEqual(['first', 'second'])
         })
     })
 
@@ -535,7 +535,7 @@ describe('useLocalStorageState()', () => {
             )
 
             const [value] = resultB.current
-            expect(value).toEqual(['first', 'second'])
+            expect(value).toStrictEqual(['first', 'second'])
         })
 
         test('isPersistent returns true by default', () => {
@@ -575,7 +575,7 @@ describe('useLocalStorageState()', () => {
 
             const [todos, , { isPersistent }] = result.current
             expect(isPersistent).toBe(false)
-            expect(todos).toEqual(['third', 'forth'])
+            expect(todos).toStrictEqual(['third', 'forth'])
         })
 
         test('isPersistent becomes false when localStorage.setItem() throws an error on consecutive updates', () => {
@@ -593,7 +593,7 @@ describe('useLocalStorageState()', () => {
             })
 
             const [todos, , { isPersistent }] = result.current
-            expect(todos).toEqual(['second', 'third'])
+            expect(todos).toStrictEqual(['second', 'third'])
             expect(isPersistent).toBe(false)
         })
 
@@ -632,7 +632,7 @@ describe('useLocalStorageState()', () => {
             )
 
             const [value] = result.current
-            expect(value).toEqual([date])
+            expect(value).toStrictEqual([date])
         })
 
         test('can serialize Date (in array) from setValue', () => {
@@ -651,7 +651,7 @@ describe('useLocalStorageState()', () => {
             })
 
             const [value, _] = result.current
-            expect(value).toEqual([date])
+            expect(value).toStrictEqual([date])
         })
 
         test(`JSON as serializer can't handle undefined as value`, () => {
