@@ -42,7 +42,7 @@ export default function useLocalStorageState<T = undefined>(
 ): LocalStorageState<T | undefined> {
     if (typeof useSyncExternalStore === 'undefined') {
         throw new TypeError(
-            `You are using React 17 or below. Install use-local-storage-state with "npm install use-local-storage-state@17".`,
+            `You are using React 17 or below. Install with "npm install use-local-storage-state@17".`,
         )
     }
 
