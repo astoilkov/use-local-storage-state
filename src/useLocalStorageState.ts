@@ -40,6 +40,12 @@ export default function useLocalStorageState<T = undefined>(
     key: string,
     options?: LocalStorageOptions<T | undefined>,
 ): LocalStorageState<T | undefined> {
+    if (typeof useSyncExternalStore === 'undefined') {
+        throw new TypeError(
+            `You are using React 17 or below. Install use-local-storage-state with "npm install use-local-storage-state@17".`,
+        )
+    }
+
     const defaultValue = options?.defaultValue
 
     // SSR support
