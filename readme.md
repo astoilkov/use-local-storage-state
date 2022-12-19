@@ -5,7 +5,7 @@
 [![Downloads](https://img.shields.io/npm/dm/use-local-storage-state)](https://www.npmjs.com/package/use-local-storage-state)
 [![Gzipped Size](https://img.shields.io/bundlephobia/minzip/use-local-storage-state)](https://bundlephobia.com/result?p=use-local-storage-state)
 [![Test Coverage](https://img.shields.io/codeclimate/coverage/astoilkov/use-local-storage-state)](https://codeclimate.com/github/astoilkov/use-local-storage-state/test_coverage)
-[![Build Status](https://img.shields.io/github/workflow/status/astoilkov/use-local-storage-state/CI)](https://github.com/astoilkov/use-local-storage-state/actions/workflows/main.yml)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/astoilkov/use-local-storage-state/main.yml?branch=main)](https://github.com/astoilkov/use-local-storage-state/actions/workflows/main.yml)
 
 ## Install
 
