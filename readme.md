@@ -125,6 +125,23 @@ export default function Todos() {
 
 </details>
 
+<details>
+<summary>Why does my component re-renders twice?</summary>
+<p></p>
+
+If you are hydrating your component (for example, if you are using Next.js), your component might re-render twice. This is behavior specific to React and not to this library. It's caused by the `useSyncExternalStore()` hook. There is no workaround. This has been discussed in the issues: https://github.com/astoilkov/use-local-storage-state/issues/56.
+
+If you want to know if you are currently rendering the server value you can use this helper function:
+```ts
+function useIsServerRender() {
+  return useSyncExternalStore(() => {
+    return () => {}
+  }, () => false, () => true)
+}
+```
+
+</details>
+
 ## API
 
 #### `useLocalStorageState(key: string, options?: LocalStorageOptions)`
