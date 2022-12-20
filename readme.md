@@ -185,13 +185,3 @@ JSON does not serialize `Date`, `Regex`, or `BigInt` data.  You can pass in [sup
 ## Related
 
 - [`use-session-storage-state`](https://github.com/astoilkov/use-session-storage-state) — A clone of this library but for `sessionStorage`.
-
-## 🫴 Help / 🪫 Recharge
-
-I earn 10x less money than if I was on a salary. Don't worry, that's a choice and I like it. If you want to help me continue building things and one of the below seems easy for you, go ahead and do it:
-- [Sponsor me through GitHub Sponsors](https://github.com/sponsors/astoilkov)
-- If you like [Nota](https://nota.md), buy a license
-- Join Toptal through my [referral link](https://www.toptal.com/BxORYv/worlds-top-talent) (up to $2500 dollars for both you and me)
-- Follow me on [Twitter]()
-
-If you want to learn more about me you can visit [my website](https://astoilkov.com/).
