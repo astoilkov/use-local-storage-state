@@ -2,6 +2,7 @@ import util from 'util'
 import superjson from 'superjson'
 import { render, renderHook, act } from '@testing-library/react'
 import React, { useEffect, useLayoutEffect, useMemo } from 'react'
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 import useLocalStorageState, { inMemoryData } from '../src/useLocalStorageState'
 
 beforeEach(() => {
@@ -19,7 +20,7 @@ beforeEach(() => {
     // - "Warning: Cannot update a component (`Component`) while rendering a different component
     //   (`Component`). To locate the bad setState() call inside `Component`, follow the stack trace
     //   as described in https://reactjs.org/link/setstate-in-render"
-    jest.spyOn(console, 'error').mockImplementation((format: string, ...args: any[]) => {
+    vi.spyOn(console, 'error').mockImplementation((format: string, ...args: any[]) => {
         throw new Error(util.format(format, ...args))
     })
 })
@@ -117,7 +118,7 @@ describe('useLocalStorageState()', () => {
     })
 
     test('handles errors thrown by localStorage', () => {
-        jest.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+        vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
             throw new Error()
         })
 
@@ -202,7 +203,7 @@ describe('useLocalStorageState()', () => {
     })
 
     test('returns the same update function when the value is saved', () => {
-        const functionMock = jest.fn()
+        const functionMock = vi.fn()
         const { rerender } = renderHook(() => {
             const [, setTodos] = useLocalStorageState('todos', {
                 defaultValue: ['first', 'second'],
@@ -517,7 +518,7 @@ describe('useLocalStorageState()', () => {
 
     describe('in memory fallback', () => {
         test('can retrieve data from in memory storage', () => {
-            jest.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+            vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
                 throw new Error()
             })
 
@@ -547,7 +548,7 @@ describe('useLocalStorageState()', () => {
         })
 
         test('isPersistent returns true when localStorage.setItem() throws an error but the value is the default value', () => {
-            jest.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+            vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
                 throw new Error()
             })
 
@@ -560,7 +561,7 @@ describe('useLocalStorageState()', () => {
         })
 
         test('isPersistent returns false when localStorage.setItem() throws an error', () => {
-            jest.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+            vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
                 throw new Error()
             })
 
@@ -583,7 +584,7 @@ describe('useLocalStorageState()', () => {
                 useLocalStorageState('todos', { defaultValue: ['first', 'second'] }),
             )
 
-            jest.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+            vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
                 throw new Error()
             })
 
