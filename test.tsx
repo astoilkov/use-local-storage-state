@@ -32,6 +32,16 @@ afterEach(() => {
 })
 
 describe('useLocalStorageState()', () => {
+    test('defaultValue accepts lazy initializer (like useState)', () => {
+        const { result } = renderHook(() =>
+            useLocalStorageState('todos', {
+                defaultValue: () => ['first', 'second'],
+            }),
+        )
+
+        const [todos] = result.current
+        expect(todos).toStrictEqual(['first', 'second'])
+    })
     it('initial state is written into the state', () => {
         const { result } = renderHook(() =>
             useLocalStorageState('todos', { defaultValue: ['first', 'second'] }),
@@ -637,6 +647,17 @@ describe('useLocalStorageState()', () => {
             windowSpy.mockImplementation(() => {
                 return undefined
             })
+        })
+
+        test('defaultValue accepts lazy initializer (like useState)', () => {
+            const { result } = renderHookOnServer(() =>
+                useLocalStorageState('todos', {
+                    defaultValue: () => ['first', 'second'],
+                }),
+            )
+
+            const [todos] = result.current
+            expect(todos).toStrictEqual(['first', 'second'])
         })
 
         it('returns default value on the server', () => {
