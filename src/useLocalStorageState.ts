@@ -1,5 +1,5 @@
 import type { Dispatch, SetStateAction } from 'react'
-import { useRef, useMemo, useEffect, useCallback, useSyncExternalStore } from 'react'
+import { useRef, useState, useMemo, useEffect, useCallback, useSyncExternalStore } from 'react'
 
 // in memory fallback used then `localStorage` throws an error
 export const inMemoryData = new Map<string, unknown>()
@@ -84,7 +84,7 @@ function useBrowserLocalStorageState<T>(
     parse: (value: string) => unknown = parseJSON,
     stringify: (value: unknown) => string = JSON.stringify,
 ): LocalStorageState<T | undefined> {
-    const initialDefaultValue = useRef(defaultValue).current
+    const [initialDefaultValue] = useState(defaultValue)
 
     // store default value in localStorage:
     // - initial issue: https://github.com/astoilkov/use-local-storage-state/issues/26
