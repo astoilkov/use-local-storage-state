@@ -44,6 +44,17 @@ beforeEach(() => {
 
 describe('useLocalStorageState()', () => {
     describe('SSR support', () => {
+        test('defaultValue accepts lazy initializer (like useState)', () => {
+            const { result } = renderHookOnServer(() =>
+                useLocalStorageState('todos', {
+                    defaultValue: () => ['first', 'second'],
+                }),
+            )
+
+            const [todos] = result.current
+            expect(todos).toStrictEqual(['first', 'second'])
+        })
+
         test('returns default value on the server', () => {
             const { result } = renderHookOnServer(() =>
                 useLocalStorageState('todos', {

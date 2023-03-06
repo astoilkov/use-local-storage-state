@@ -31,6 +31,17 @@ afterEach(() => {
 })
 
 describe('useLocalStorageState()', () => {
+    test('defaultValue accepts lazy initializer (like useState)', () => {
+        const { result } = renderHook(() =>
+            useLocalStorageState('todos', {
+                defaultValue: () => ['first', 'second'],
+            }),
+        )
+
+        const [todos] = result.current
+        expect(todos).toStrictEqual(['first', 'second'])
+    })
+
     test('initial state is written into the state', () => {
         const { result } = renderHook(() =>
             useLocalStorageState('todos', { defaultValue: ['first', 'second'] }),
@@ -40,7 +51,7 @@ describe('useLocalStorageState()', () => {
         expect(todos).toStrictEqual(['first', 'second'])
     })
 
-    test(`initial state isn't written into localStorage`, () => {
+    test(`initial state is written to localStorage`, () => {
         renderHook(() => useLocalStorageState('todos', { defaultValue: ['first', 'second'] }))
 
         expect(localStorage.getItem('todos')).toStrictEqual(JSON.stringify(['first', 'second']))

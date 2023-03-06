@@ -5,7 +5,7 @@ import { useRef, useState, useMemo, useEffect, useCallback, useSyncExternalStore
 export const inMemoryData = new Map<string, unknown>()
 
 export type LocalStorageOptions<T> = {
-    defaultValue?: T
+    defaultValue?: T | (() => T)
     storageSync?: boolean
     serializer?: {
         stringify: (value: unknown) => string
@@ -47,12 +47,12 @@ export default function useLocalStorageState<T = undefined>(
         )
     }
 
-    const defaultValue = options?.defaultValue
+    const [defaultValue] = useState(options?.defaultValue)
 
     // SSR support
     // - on the server, return a constant value
-    // - this makes the implementation simpler and smaller the `localStorage` object is `undefined`
-    //   on the server
+    // - this makes the implementation simpler and smaller because the `localStorage` object is
+    //   `undefined` on the server
     if (typeof window === 'undefined') {
         return [
             defaultValue,
@@ -84,8 +84,6 @@ function useBrowserLocalStorageState<T>(
     parse: (value: string) => unknown = parseJSON,
     stringify: (value: unknown) => string = JSON.stringify,
 ): LocalStorageState<T | undefined> {
-    const [initialDefaultValue] = useState(defaultValue)
-
     // store default value in localStorage:
     // - initial issue: https://github.com/astoilkov/use-local-storage-state/issues/26
     //   issues that were caused by incorrect initial and secondary implementations:
@@ -93,7 +91,7 @@ function useBrowserLocalStorageState<T>(
     //   - https://github.com/astoilkov/use-local-storage-state/issues/33
     if (
         !inMemoryData.has(key) &&
-        initialDefaultValue !== undefined &&
+        defaultValue !== undefined &&
         localStorage.getItem(key) === null
     ) {
         // reasons for `localStorage` to throw an error:
@@ -103,14 +101,14 @@ function useBrowserLocalStorageState<T>(
         // - trying to access localStorage object when cookies are disabled in Safari throws
         //   "SecurityError: The operation is insecure."
         try {
-            localStorage.setItem(key, stringify(initialDefaultValue))
+            localStorage.setItem(key, stringify(defaultValue))
         } catch {}
     }
 
     // we keep the `parsed` value in a ref because `useSyncExternalStore` requires a cached version
     const storageValue = useRef<{ item: string | null; parsed: T | undefined }>({
         item: null,
-        parsed: initialDefaultValue,
+        parsed: defaultValue,
     })
     const value = useSyncExternalStore(
         useCallback(
@@ -141,9 +139,9 @@ function useBrowserLocalStorageState<T>(
                 let parsed: T | undefined
 
                 try {
-                    parsed = item === null ? initialDefaultValue : (parse(item) as T)
+                    parsed = item === null ? defaultValue : (parse(item) as T)
                 } catch {
-                    parsed = initialDefaultValue
+                    parsed = defaultValue
                 }
 
                 storageValue.current = {
@@ -156,7 +154,7 @@ function useBrowserLocalStorageState<T>(
         },
 
         // istanbul ignore next
-        () => initialDefaultValue,
+        () => defaultValue,
     )
     const setState = useCallback(
         (newValue: SetStateAction<T | undefined>): void => {
@@ -206,7 +204,7 @@ function useBrowserLocalStorageState<T>(
             value,
             setState,
             {
-                isPersistent: value === initialDefaultValue || !inMemoryData.has(key),
+                isPersistent: value === defaultValue || !inMemoryData.has(key),
                 removeItem(): void {
                     inMemoryData.delete(key)
                     localStorage.removeItem(key)
@@ -215,7 +213,7 @@ function useBrowserLocalStorageState<T>(
                 },
             },
         ],
-        [key, setState, value, initialDefaultValue],
+        [key, setState, value, defaultValue],
     )
 }
 
