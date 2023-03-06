@@ -22,6 +22,8 @@
         "noFallthroughCasesInSwitch": true,
         "forceConsistentCasingInFileNames": true,
 
+        "types": ["node", "jest"],
+        
         // - ℹ️ https://www.typescriptlang.org/tsconfig#isolatedModules
         // - 😃 Deno requires "isolatedModules" to be set to `true`
         // - 😃 the stricter version - I always prefer the stricter version
