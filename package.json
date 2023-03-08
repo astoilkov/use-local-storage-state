@@ -24,7 +24,10 @@
     ],
     "module": "es/index.js",
     "jsnext:main": "es/index.js",
-    "exports": "./es/index.js",
+    "exports": {
+        "import": "./es/index.js",
+        "require": "./index.js"
+    },
     "sideEffects": false,
     "scripts": {
         "build": "tsc && tsc --project tsconfig.esm.json",
