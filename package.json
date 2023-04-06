@@ -22,8 +22,8 @@
         "local storage",
         "store"
     ],
-    "module": "es/index.js",
-    "jsnext:main": "es/index.js",
+    "module": "./es/index.js",
+    "jsnext:main": "./es/index.js",
     "exports": {
         "import": "./es/index.js",
         "require": "./index.js"
