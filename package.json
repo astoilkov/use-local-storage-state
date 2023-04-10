@@ -25,6 +25,9 @@
     "module": "es/index.js",
     "jsnext:main": "es/index.js",
     "sideEffects": false,
+    "np": {
+        "tag": "17"
+    },
     "scripts": {
         "build": "tsc && tsc --project tsconfig.esm.json",
         "size": "yarn run build && size-limit",
