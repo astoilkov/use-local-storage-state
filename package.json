@@ -42,10 +42,11 @@
     },
     "files": [
         "index.js",
-        "src/*.js",
         "index.d.ts",
-        "src/*.d.ts",
-        "es/**/*.js"
+        "src/**/*.js",
+        "src/**/*.d.ts",
+        "es/**/*.js",
+        "es/**/*.d.ts"
     ],
     "peerDependencies": {
         "react": ">=18",
