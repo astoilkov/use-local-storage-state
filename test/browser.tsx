@@ -1,6 +1,6 @@
 import util from 'util'
 import superjson from 'superjson'
-import { render, renderHook, act } from '@testing-library/react'
+import { act, render, renderHook } from '@testing-library/react'
 import React, { useEffect, useLayoutEffect, useMemo } from 'react'
 import useLocalStorageState, { inMemoryData } from '../src/useLocalStorageState'
 
@@ -26,8 +26,10 @@ beforeEach(() => {
 
 afterEach(() => {
     inMemoryData.clear()
-    localStorage.clear()
-    sessionStorage.clear()
+    try {
+        localStorage.clear()
+        sessionStorage.clear()
+    } catch {}
 })
 
 describe('useLocalStorageState()', () => {
@@ -129,6 +131,26 @@ describe('useLocalStorageState()', () => {
 
     test('handles errors thrown by localStorage', () => {
         jest.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+            throw new Error()
+        })
+
+        const { result } = renderHook(() =>
+            useLocalStorageState('set-item-will-throw', { defaultValue: '' }),
+        )
+
+        expect(() => {
+            act(() => {
+                const setValue = result.current[1]
+                setValue('will-throw')
+            })
+        }).not.toThrow()
+    })
+
+    // https://github.com/astoilkov/use-local-storage-state/issues/62
+    test('simulate blocking all the cookies in Safari', () => {
+        // in Safari, even just accessing `localStorage` throws "SecurityError: The operation is
+        // insecure."
+        jest.spyOn(window, 'localStorage', 'get').mockImplementation(() => {
             throw new Error()
         })
 

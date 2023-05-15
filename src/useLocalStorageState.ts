@@ -1,5 +1,5 @@
 import type { Dispatch, SetStateAction } from 'react'
-import { useRef, useState, useMemo, useEffect, useCallback, useSyncExternalStore } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react'
 
 // in memory fallback used then `localStorage` throws an error
 export const inMemoryData = new Map<string, unknown>()
@@ -92,7 +92,7 @@ function useBrowserLocalStorageState<T>(
     if (
         !inMemoryData.has(key) &&
         defaultValue !== undefined &&
-        localStorage.getItem(key) === null
+        goodTry(() => localStorage.getItem(key)) === null
     ) {
         // reasons for `localStorage` to throw an error:
         // - maximum quota is exceeded
@@ -100,9 +100,7 @@ function useBrowserLocalStorageState<T>(
         //   `localStorage.setItem()` will throw
         // - trying to access localStorage object when cookies are disabled in Safari throws
         //   "SecurityError: The operation is insecure."
-        try {
-            localStorage.setItem(key, stringify(defaultValue))
-        } catch {}
+        goodTry(() => localStorage.setItem(key, stringify(defaultValue)))
     }
 
     // we keep the `parsed` value in a ref because `useSyncExternalStore` requires a cached version
@@ -128,7 +126,7 @@ function useBrowserLocalStorageState<T>(
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
         () => {
-            const item = localStorage.getItem(key)
+            const item = goodTry(() => localStorage.getItem(key)) ?? null
 
             if (inMemoryData.has(key)) {
                 storageValue.current = {
@@ -165,7 +163,7 @@ function useBrowserLocalStorageState<T>(
             // - maximum quota is exceeded
             // - under Mobile Safari (since iOS 5) when the user enters private mode
             //   `localStorage.setItem()` will throw
-            // - trying to access localStorage object when cookies are disabled in Safari throws
+            // - trying to access `localStorage` object when cookies are disabled in Safari throws
             //   "SecurityError: The operation is insecure."
             try {
                 localStorage.setItem(key, stringify(value))
@@ -189,7 +187,7 @@ function useBrowserLocalStorageState<T>(
         }
 
         const onStorage = (e: StorageEvent): void => {
-            if (e.storageArea === localStorage && e.key === key) {
+            if (e.storageArea === goodTry(() => localStorage) && e.key === key) {
                 triggerCallbacks(key)
             }
         }
@@ -206,8 +204,9 @@ function useBrowserLocalStorageState<T>(
             {
                 isPersistent: value === defaultValue || !inMemoryData.has(key),
                 removeItem(): void {
+                    goodTry(() => localStorage.removeItem(key))
+
                     inMemoryData.delete(key)
-                    localStorage.removeItem(key)
 
                     triggerCallbacks(key)
                 },
@@ -229,4 +228,12 @@ function triggerCallbacks(key: string): void {
 // `JSON.parse(JSON.stringify(undefined))` returns the string "undefined" not the value `undefined`
 function parseJSON(value: string): unknown {
     return value === 'undefined' ? undefined : JSON.parse(value)
+}
+
+function goodTry<T>(tryFn: () => T): T | undefined {
+    try {
+        return tryFn()
+    } catch {
+        return undefined
+    }
 }
