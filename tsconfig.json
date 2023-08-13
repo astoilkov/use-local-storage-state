@@ -4,13 +4,7 @@
         "module": "ES2015",
         "jsx": "react",
         "esModuleInterop": true,
-        // From what I understand while reading the docs "classic" was introduced first and "classic" is by
-        // default(except when "module": "commonjs") because of backwards compatibility.
-        //
-        // From the docs: "node module resolution is the most-commonly used in the TypeScript community and is
-        // recommended for most projects."
-        "moduleResolution": "node",
-
+        "moduleResolution": "Node16",
         "declaration": true,
 
         // strict options ensuring more stable code
