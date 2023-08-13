@@ -23,9 +23,9 @@
         "store"
     ],
     "type": "module",
-    "main": "./index.js",
-    "exports": "./index.js",
-    "types": "./index.d.ts",
+    "main": "index.js",
+    "exports": "index.js",
+    "types": "index.d.ts",
     "sideEffects": false,
     "scripts": {
         "build": "tsc",
