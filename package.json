@@ -34,7 +34,7 @@
         "prettier": "prettier --write --config .prettierrc.yaml {*.ts,*.json}"
     },
     "engines": {
-        "node": ">=12"
+        "node": ">=14"
     },
     "files": [
         "index.js",
