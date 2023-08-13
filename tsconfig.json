@@ -1,7 +1,7 @@
 {
     "compilerOptions": {
         "target": "ES6",
-        "module": "CommonJS",
+        "module": "ES2015",
         "jsx": "react",
         "esModuleInterop": true,
         // From what I understand while reading the docs "classic" was introduced first and "classic" is by

@@ -22,11 +22,13 @@
         "local storage",
         "store"
     ],
-    "module": "./es/index.js",
-    "jsnext:main": "./es/index.js",
+    "type": "module",
+    "main": "./index.js",
+    "exports": "./index.js",
+    "types": "./index.d.ts",
     "sideEffects": false,
     "scripts": {
-        "build": "tsc && tsc --project tsconfig.esm.json",
+        "build": "tsc",
         "size": "yarn run build && size-limit",
         "lint": "eslint --cache --format=pretty --ext=.ts ./",
         "test": "yarn run build && yarn run lint && if [[ -z $CI ]]; then jest --coverage --coverageReporters=text; else jest --coverage; fi",
@@ -40,9 +42,7 @@
         "index.js",
         "index.d.ts",
         "src/**/*.js",
-        "src/**/*.d.ts",
-        "es/**/*.js",
-        "es/**/*.d.ts"
+        "src/**/*.d.ts"
     ],
     "peerDependencies": {
         "react": ">=18",
@@ -79,13 +79,13 @@
     "size-limit": [
         {
             "name": "import *",
-            "path": "es/index.js",
+            "path": "index.js",
             "limit": "1.75 kB",
             "gzip": false
         },
         {
             "name": "import *",
-            "path": "es/index.js",
+            "path": "index.js",
             "limit": "800 B"
         }
     ]
