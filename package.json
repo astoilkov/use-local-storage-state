@@ -32,7 +32,7 @@
         "build": "tsc",
         "size": "yarn run build && size-limit",
         "lint": "eslint --cache --format=pretty --ext=.ts ./",
-        "test": "yarn run build && yarn run lint && if [[ -z $CI ]]; then vitest --run --coverage.enabled --coverage.reporter=text --coverage.reporter=html --coverage.provider=istanbul; else vitest --run --coverage.enabled --coverage.provider=istanbul; fi",
+        "test": "yarn run build && yarn run lint && if [[ -z $CI ]]; then vitest --run --coverage.enabled --coverage.reporter=text --coverage.reporter=html --coverage.provider=istanbul; else vitest --run --coverage.enabled --coverage.reporter=clover --coverage.provider=istanbul; fi",
         "release": "yarn run build && np",
         "prettier": "prettier --write --config .prettierrc.yaml {*.ts,*.json}"
     },
