@@ -1,11 +1,11 @@
 {
     "compilerOptions": {
         "target": "ES6",
-        "module": "ES2015",
+        "module": "NodeNext",
         "jsx": "react",
         "esModuleInterop": true,
-        "moduleResolution": "Node16",
         "declaration": true,
+        "moduleResolution": "nodenext",
 
         // strict options ensuring more stable code
         "strict": true,
@@ -16,7 +16,7 @@
         "noFallthroughCasesInSwitch": true,
         "forceConsistentCasingInFileNames": true,
 
-        "types": ["node", "jest"],
+        "types": ["node"],
 
         // - ℹ️ https://www.typescriptlang.org/tsconfig#isolatedModules
         // - 😃 Deno requires "isolatedModules" to be set to `true`

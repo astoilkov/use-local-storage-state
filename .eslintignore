@@ -1,2 +1,3 @@
 /test
 *.d.ts
+vitest.config.ts

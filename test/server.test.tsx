@@ -1,11 +1,8 @@
-/**
- * @jest-environment node
- */
-
-import util from 'util'
+import util from 'node:util'
 import ReactDOM from 'react-dom/server'
 import React, { MutableRefObject } from 'react'
-import useLocalStorageState from '../src/useLocalStorageState'
+import useLocalStorageState from '../src/useLocalStorageState.js'
+import { beforeEach, describe, expect, test, vi } from 'vitest'
 
 function renderHookOnServer<T>(useHook: () => T): { result: MutableRefObject<T> } {
     const result: MutableRefObject<T> = {
@@ -37,7 +34,7 @@ beforeEach(() => {
     // - "Warning: Cannot update a component (`Component`) while rendering a different component
     //   (`Component`). To locate the bad setState() call inside `Component`, follow the stack trace
     //   as described in https://reactjs.org/link/setstate-in-render"
-    jest.spyOn(console, 'error').mockImplementation((format: string, ...args: any[]) => {
+    vi.spyOn(console, 'error').mockImplementation((format: string, ...args: any[]) => {
         throw new Error(util.format(format, ...args))
     })
 })

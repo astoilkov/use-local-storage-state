@@ -32,7 +32,7 @@
         "build": "tsc",
         "size": "yarn run build && size-limit",
         "lint": "eslint --cache --format=pretty --ext=.ts ./",
-        "test": "yarn run build && yarn run lint && if [[ -z $CI ]]; then jest --coverage --coverageReporters=text; else jest --coverage; fi",
+        "test": "yarn run build && yarn run lint && if [[ -z $CI ]]; then vitest --run --coverage.enabled --coverage.reporter=text --coverage.reporter=html --coverage.provider=istanbul; else vitest --run --coverage.enabled --coverage.provider=istanbul; fi",
         "release": "yarn run build && np",
         "prettier": "prettier --write --config .prettierrc.yaml {*.ts,*.json}"
     },
@@ -51,12 +51,12 @@
     },
     "devDependencies": {
         "@size-limit/preset-small-lib": "^8.0.0",
-        "@testing-library/react": "^13.3.0",
-        "@types/jest": "^28.1.6",
+        "@testing-library/react": "^14.0.0",
         "@types/react": "^18.0.17",
         "@types/react-dom": "^18.0.6",
         "@typescript-eslint/eslint-plugin": "^6.3.0",
         "@typescript-eslint/parser": "^6.3.0",
+        "@vitest/coverage-istanbul": "^0.34.4",
         "confusing-browser-globals": "^1.0.11",
         "eslint": "^8.21.0",
         "eslint-config-strictest": "^0.8.1",
@@ -65,8 +65,7 @@
         "eslint-plugin-react": "^7.29.4",
         "eslint-plugin-react-hooks": "^4.5.0",
         "eslint-plugin-unicorn": "^43.0.2",
-        "jest": "^29.4.1",
-        "jest-environment-jsdom": "^29.4.1",
+        "jsdom": "^22.1.0",
         "np": "^7.6.3",
         "prettier": "^2.6.2",
         "react": "^18.1.0",
@@ -74,8 +73,8 @@
         "react-test-renderer": "^18.1.0",
         "size-limit": "^8.0.0",
         "superjson": "^1.9.1",
-        "ts-jest": "^28.0.7",
-        "typescript": "^5.1.6"
+        "typescript": "^5.1.6",
+        "vitest": "^0.34.4"
     },
     "size-limit": [
         {
