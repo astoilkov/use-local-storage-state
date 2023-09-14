@@ -26,7 +26,7 @@ export type LocalStorageState<T> = [
 
 export default function useLocalStorageState(
     key: string,
-    options?: Omit<LocalStorageOptions<unknown>, 'defaultValue'>,
+    options?: LocalStorageOptions<undefined>,
 ): LocalStorageState<unknown>
 export default function useLocalStorageState<T>(
     key: string,
