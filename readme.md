@@ -185,3 +185,4 @@ JSON does not serialize `Date`, `Regex`, or `BigInt` data.  You can pass in [sup
 ## Related
 
 - [`use-session-storage-state`](https://github.com/astoilkov/use-session-storage-state) — A clone of this library but for `sessionStorage`.
+- [`local-db-storage`](https://github.com/astoilkov/local-db-storage) — Tiny wrapper around `IndexedDB` that mimics `localStorage` API.
