@@ -81,7 +81,7 @@
             "name": "import *",
             "path": "index.js",
             "limit": "1.75 kB",
-            "gzip": false
+            "brotli": false
         },
         {
             "name": "import *",
