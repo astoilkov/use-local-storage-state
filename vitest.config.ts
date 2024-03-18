@@ -5,5 +5,10 @@ export default defineConfig({
         restoreMocks: true,
         // otherwise @testing-library/react can't cleanup after tests
         globals: true,
+        coverage: {
+            enabled: true,
+            extension: 'js',
+            include: ['src/**/*'],
+        },
     },
 })

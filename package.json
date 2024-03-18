@@ -32,7 +32,7 @@
         "build": "tsc",
         "size": "yarn run build && size-limit",
         "lint": "eslint --cache --format=pretty --ext=.ts ./",
-        "test": "yarn run build && yarn run lint && if [[ -z $CI ]]; then vitest --run --coverage.enabled --coverage.reporter=text --coverage.reporter=html --coverage.reporter=clover --coverage.provider=istanbul; else vitest --run; fi",
+        "test": "yarn run build && yarn run lint && vitest --run",
         "release": "yarn run build && np",
         "prettier": "prettier --write --config .prettierrc.yaml {*.ts,*.json}"
     },
@@ -56,7 +56,7 @@
         "@types/react-dom": "^18.2.22",
         "@typescript-eslint/eslint-plugin": "^7.2.0",
         "@typescript-eslint/parser": "^7.2.0",
-        "@vitest/coverage-istanbul": "^0.34.4",
+        "@vitest/coverage-v8": "^1.4.0",
         "confusing-browser-globals": "^1.0.11",
         "eslint": "^8.21.0",
         "eslint-config-strictest": "^0.8.1",
@@ -74,7 +74,7 @@
         "size-limit": "^11.1.1",
         "superjson": "^2.2.1",
         "typescript": "^5.4.2",
-        "vitest": "^0.34.4"
+        "vitest": "^1.4.0"
     },
     "size-limit": [
         {
