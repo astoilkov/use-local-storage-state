@@ -30,10 +30,10 @@
     "sideEffects": false,
     "scripts": {
         "build": "tsc",
-        "size": "yarn run build && size-limit",
+        "size": "yarn build && size-limit",
         "lint": "eslint --cache --format=pretty --ext=.ts ./",
-        "test": "yarn run build && yarn run lint && vitest --run",
-        "release": "yarn run build && np",
+        "test": "yarn build && yarn lint && vitest --run",
+        "release": "yarn build && np",
         "prettier": "prettier --write --config .prettierrc.yaml {*.ts,*.json}"
     },
     "engines": {
