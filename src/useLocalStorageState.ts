@@ -143,7 +143,6 @@ function useBrowserLocalStorageState<T>(
             return storageValue.current.parsed
         },
 
-        // istanbul ignore next
         () => defaultValue,
     )
     const setState = useCallback(
