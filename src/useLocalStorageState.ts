@@ -117,7 +117,6 @@ function useBrowserLocalStorageState<T>(
             [key],
         ),
 
-        // eslint-disable-next-line react-hooks/exhaustive-deps
         () => {
             const item = goodTry(() => localStorage.getItem(key)) ?? null
 
