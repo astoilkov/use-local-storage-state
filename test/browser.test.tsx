@@ -192,6 +192,16 @@ describe('useLocalStorageState()', () => {
         expect(value).toBe(undefined)
     })
 
+    test('`defaultValue` can be set to `null`', () => {
+        const { result } = renderHook(() =>
+            useLocalStorageState<string[] | null>('todos', {
+                defaultValue: null,
+            }),
+        )
+        const [value] = result.current
+        expect(value).toBe(null)
+    })
+
     test('can set value to `null`', () => {
         const { result: resultA, unmount } = renderHook(() =>
             useLocalStorageState<string[] | null>('todos', {
