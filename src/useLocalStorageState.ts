@@ -1,5 +1,5 @@
 import type { Dispatch, SetStateAction } from 'react'
-import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react'
+import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 'react'
 
 // in memory fallback used then `localStorage` throws an error
 export const inMemoryData = new Map<string, unknown>()
@@ -96,11 +96,31 @@ function useBrowserLocalStorageState<T>(
         goodTry(() => localStorage.setItem(key, stringify(defaultValue)))
     }
 
+    const updateStorageItem = (storageItem: {
+        string: string | null
+        parsed: T | undefined
+    }): {
+        string: string | null
+        parsed: T | undefined
+    } => {
+        const string = goodTry(() => localStorage.getItem(key)) ?? null
+
+        if (inMemoryData.has(key)) {
+            storageItem.parsed = inMemoryData.get(key) as T | undefined
+        } else if (storageItem.string !== string) {
+            try {
+                storageItem.parsed = string === null ? defaultValue : (parse(string) as T)
+            } catch {
+                storageItem.parsed = defaultValue
+            }
+        }
+
+        storageItem.string = string
+
+        return storageItem
+    }
     // we keep the `parsed` value in a ref because `useSyncExternalStore` requires a cached version
-    const storageValue = useRef<{ item: string | null; parsed: T | undefined }>({
-        item: null,
-        parsed: defaultValue,
-    })
+    const [storageItem] = useState(() => updateStorageItem({ string: null, parsed: undefined }))
     const value = useSyncExternalStore(
         useCallback(
             (onStoreChange) => {
@@ -116,39 +136,12 @@ function useBrowserLocalStorageState<T>(
             },
             [key],
         ),
-
-        () => {
-            const item = goodTry(() => localStorage.getItem(key)) ?? null
-
-            if (inMemoryData.has(key)) {
-                storageValue.current = {
-                    item,
-                    parsed: inMemoryData.get(key) as T | undefined,
-                }
-            } else if (item !== storageValue.current.item) {
-                let parsed: T | undefined
-
-                try {
-                    parsed = item === null ? defaultValue : (parse(item) as T)
-                } catch {
-                    parsed = defaultValue
-                }
-
-                storageValue.current = {
-                    item,
-                    parsed,
-                }
-            }
-
-            return storageValue.current.parsed
-        },
-
+        () => updateStorageItem(storageItem).parsed,
         () => defaultValue,
     )
     const setState = useCallback(
         (newValue: SetStateAction<T | undefined>): void => {
-            const value =
-                newValue instanceof Function ? newValue(storageValue.current.parsed) : newValue
+            const value = newValue instanceof Function ? newValue(storageItem.parsed) : newValue
 
             // reasons for `localStorage` to throw an error:
             // - maximum quota is exceeded
@@ -166,7 +159,7 @@ function useBrowserLocalStorageState<T>(
 
             triggerCallbacks(key)
         },
-        [key, stringify],
+        [key, stringify, storageItem],
     )
 
     // - syncs change across tabs, windows, iframes
