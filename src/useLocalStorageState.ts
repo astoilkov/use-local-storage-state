@@ -117,6 +117,7 @@ function useBrowserLocalStorageState<T>(
             [key],
         ),
 
+        // useSyncExternalStore.getSnapshot
         () => {
             const string = goodTry(() => localStorage.getItem(key)) ?? null
 
@@ -139,6 +140,7 @@ function useBrowserLocalStorageState<T>(
             return storageItem.current.parsed
         },
 
+        // useSyncExternalStore.getServerSnapshot
         () => defaultValue,
     )
     const setState = useCallback(
