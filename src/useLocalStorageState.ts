@@ -97,7 +97,7 @@ function useBrowserLocalStorageState<T>(
     }
 
     // we keep the `parsed` value in a ref because `useSyncExternalStore` requires a cached version
-    const storageValue = useRef<{ string: string | null; parsed: T | undefined }>({
+    const storageItem = useRef<{ string: string | null; parsed: T | undefined }>({
         string: null,
         parsed: defaultValue,
     })
@@ -121,11 +121,11 @@ function useBrowserLocalStorageState<T>(
             const string = goodTry(() => localStorage.getItem(key)) ?? null
 
             if (inMemoryData.has(key)) {
-                storageValue.current = {
+                storageItem.current = {
                     string,
                     parsed: inMemoryData.get(key) as T | undefined,
                 }
-            } else if (string !== storageValue.current.string) {
+            } else if (string !== storageItem.current.string) {
                 let parsed: T | undefined
 
                 try {
@@ -134,13 +134,13 @@ function useBrowserLocalStorageState<T>(
                     parsed = defaultValue
                 }
 
-                storageValue.current = {
+                storageItem.current = {
                     string,
                     parsed,
                 }
             }
 
-            return storageValue.current.parsed
+            return storageItem.current.parsed
         },
 
         () => defaultValue,
@@ -148,7 +148,7 @@ function useBrowserLocalStorageState<T>(
     const setState = useCallback(
         (newValue: SetStateAction<T | undefined>): void => {
             const value =
-                newValue instanceof Function ? newValue(storageValue.current.parsed) : newValue
+                newValue instanceof Function ? newValue(storageItem.current.parsed) : newValue
 
             // reasons for `localStorage` to throw an error:
             // - maximum quota is exceeded
