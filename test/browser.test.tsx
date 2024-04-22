@@ -474,6 +474,21 @@ describe('useLocalStorageState()', () => {
         expect(queryAllByText(/^1$/u)).toHaveLength(2)
     })
 
+    describe('hydration', () => {
+        test(`non-primitive defaultValue to return the same value by reference`, () => {
+            const defaultValue = ['first', 'second']
+            const hook = renderHook(
+                () =>
+                    useLocalStorageState('todos', {
+                        defaultValue,
+                    }),
+                { hydrate: true },
+            )
+            const [todos] = hook.result.current
+            expect(todos).toBe(defaultValue)
+        })
+    })
+
     describe('"storage" event', () => {
         const fireStorageEvent = (storageArea: Storage, key: string, newValue: unknown): void => {
             const oldValue = localStorage.getItem(key)

@@ -77,6 +77,12 @@ function useBrowserLocalStorageState<T>(
     parse: (value: string) => unknown = parseJSON,
     stringify: (value: unknown) => string = JSON.stringify,
 ): LocalStorageState<T | undefined> {
+    // we keep the `parsed` value in a ref because `useSyncExternalStore` requires a cached version
+    const storageItem = useRef<{ string: string | null; parsed: T | undefined }>({
+        string: null,
+        parsed: undefined,
+    })
+
     // store default value in localStorage:
     // - initial issue: https://github.com/astoilkov/use-local-storage-state/issues/26
     //   issues that were caused by incorrect initial and secondary implementations:
@@ -94,14 +100,13 @@ function useBrowserLocalStorageState<T>(
         // - trying to access localStorage object when cookies are disabled in Safari throws
         //   "SecurityError: The operation is insecure."
         // eslint-disable-next-line no-console
-        goodTry(() => localStorage.setItem(key, stringify(defaultValue)))
+        goodTry(() => {
+            const string = stringify(defaultValue)
+            localStorage.setItem(key, string)
+            storageItem.current = { string, parsed: defaultValue }
+        })
     }
 
-    // we keep the `parsed` value in a ref because `useSyncExternalStore` requires a cached version
-    const storageItem = useRef<{ string: string | null; parsed: T | undefined }>({
-        string: null,
-        parsed: defaultValue,
-    })
     const value = useSyncExternalStore(
         useCallback(
             (onStoreChange) => {
