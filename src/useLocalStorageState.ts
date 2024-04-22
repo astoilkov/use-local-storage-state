@@ -83,30 +83,6 @@ function useBrowserLocalStorageState<T>(
         parsed: undefined,
     })
 
-    // store default value in localStorage:
-    // - initial issue: https://github.com/astoilkov/use-local-storage-state/issues/26
-    //   issues that were caused by incorrect initial and secondary implementations:
-    //   - https://github.com/astoilkov/use-local-storage-state/issues/30
-    //   - https://github.com/astoilkov/use-local-storage-state/issues/33
-    if (
-        !inMemoryData.has(key) &&
-        defaultValue !== undefined &&
-        goodTry(() => localStorage.getItem(key)) === null
-    ) {
-        // reasons for `localStorage` to throw an error:
-        // - maximum quota is exceeded
-        // - under Mobile Safari (since iOS 5) when the user enters private mode
-        //   `localStorage.setItem()` will throw
-        // - trying to access localStorage object when cookies are disabled in Safari throws
-        //   "SecurityError: The operation is insecure."
-        // eslint-disable-next-line no-console
-        goodTry(() => {
-            const string = stringify(defaultValue)
-            localStorage.setItem(key, string)
-            storageItem.current = { string, parsed: defaultValue }
-        })
-    }
-
     const value = useSyncExternalStore(
         useCallback(
             (onStoreChange) => {
@@ -142,6 +118,26 @@ function useBrowserLocalStorageState<T>(
             }
 
             storageItem.current.string = string
+
+            // store default value in localStorage:
+            // - initial issue: https://github.com/astoilkov/use-local-storage-state/issues/26
+            //   issues that were caused by incorrect initial and secondary implementations:
+            //   - https://github.com/astoilkov/use-local-storage-state/issues/30
+            //   - https://github.com/astoilkov/use-local-storage-state/issues/33
+            if (string === null && defaultValue !== undefined) {
+                // reasons for `localStorage` to throw an error:
+                // - maximum quota is exceeded
+                // - under Mobile Safari (since iOS 5) when the user enters private mode
+                //   `localStorage.setItem()` will throw
+                // - trying to access localStorage object when cookies are disabled in Safari throws
+                //   "SecurityError: The operation is insecure."
+                // eslint-disable-next-line no-console
+                goodTry(() => {
+                    const string = stringify(defaultValue)
+                    localStorage.setItem(key, string)
+                    storageItem.current = { string, parsed: defaultValue }
+                })
+            }
 
             return storageItem.current.parsed
         },
