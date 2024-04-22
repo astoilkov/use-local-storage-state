@@ -93,6 +93,7 @@ function useBrowserLocalStorageState<T>(
         //   `localStorage.setItem()` will throw
         // - trying to access localStorage object when cookies are disabled in Safari throws
         //   "SecurityError: The operation is insecure."
+        // eslint-disable-next-line no-console
         goodTry(() => localStorage.setItem(key, stringify(defaultValue)))
     }
 
@@ -121,8 +122,6 @@ function useBrowserLocalStorageState<T>(
         () => {
             const string = goodTry(() => localStorage.getItem(key)) ?? null
 
-            storageItem.current.string = string
-
             if (inMemoryData.has(key)) {
                 storageItem.current.parsed = inMemoryData.get(key) as T | undefined
             } else if (string !== storageItem.current.string) {
@@ -136,6 +135,8 @@ function useBrowserLocalStorageState<T>(
 
                 storageItem.current.parsed = parsed
             }
+
+            storageItem.current.string = string
 
             return storageItem.current.parsed
         },
