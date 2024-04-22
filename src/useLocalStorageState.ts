@@ -120,11 +120,10 @@ function useBrowserLocalStorageState<T>(
         () => {
             const string = goodTry(() => localStorage.getItem(key)) ?? null
 
+            storageItem.current.string = string
+
             if (inMemoryData.has(key)) {
-                storageItem.current = {
-                    string,
-                    parsed: inMemoryData.get(key) as T | undefined,
-                }
+                storageItem.current.parsed = inMemoryData.get(key) as T | undefined
             } else if (string !== storageItem.current.string) {
                 let parsed: T | undefined
 
@@ -134,10 +133,7 @@ function useBrowserLocalStorageState<T>(
                     parsed = defaultValue
                 }
 
-                storageItem.current = {
-                    string,
-                    parsed,
-                }
+                storageItem.current.parsed = parsed
             }
 
             return storageItem.current.parsed
