@@ -97,8 +97,8 @@ function useBrowserLocalStorageState<T>(
     }
 
     // we keep the `parsed` value in a ref because `useSyncExternalStore` requires a cached version
-    const storageValue = useRef<{ item: string | null; parsed: T | undefined }>({
-        item: null,
+    const storageValue = useRef<{ string: string | null; parsed: T | undefined }>({
+        string: null,
         parsed: defaultValue,
     })
     const value = useSyncExternalStore(
@@ -118,24 +118,24 @@ function useBrowserLocalStorageState<T>(
         ),
 
         () => {
-            const item = goodTry(() => localStorage.getItem(key)) ?? null
+            const string = goodTry(() => localStorage.getItem(key)) ?? null
 
             if (inMemoryData.has(key)) {
                 storageValue.current = {
-                    item,
+                    string,
                     parsed: inMemoryData.get(key) as T | undefined,
                 }
-            } else if (item !== storageValue.current.item) {
+            } else if (string !== storageValue.current.string) {
                 let parsed: T | undefined
 
                 try {
-                    parsed = item === null ? defaultValue : (parse(item) as T)
+                    parsed = string === null ? defaultValue : (parse(string) as T)
                 } catch {
                     parsed = defaultValue
                 }
 
                 storageValue.current = {
-                    item,
+                    string,
                     parsed,
                 }
             }
