@@ -40,27 +40,8 @@ export default function useLocalStorageState<T = undefined>(
     key: string,
     options?: LocalStorageOptions<T | undefined>,
 ): LocalStorageState<T | undefined> {
-    const [defaultValue] = useState(options?.defaultValue)
-
-    // SSR support
-    // - on the server, return a constant value
-    // - this makes the implementation simpler and smaller because the `localStorage` object is
-    //   `undefined` on the server
-    if (typeof window === 'undefined') {
-        return [
-            defaultValue,
-            (): void => {},
-            {
-                isPersistent: true,
-                removeItem: (): void => {},
-            },
-        ]
-    }
-
     const serializer = options?.serializer
-    // disabling ESLint because the above if statement can be executed only on the server. the value
-    // of `window` can't change between calls.
-    // eslint-disable-next-line react-hooks/rules-of-hooks
+    const [defaultValue] = useState(options?.defaultValue)
     return useBrowserLocalStorageState(
         key,
         defaultValue,
@@ -84,6 +65,7 @@ function useBrowserLocalStorageState<T>(
     })
 
     const value = useSyncExternalStore(
+        // useSyncExternalStore.subscribe
         useCallback(
             (onStoreChange) => {
                 const onChange = (localKey: string): void => {

@@ -99,5 +99,21 @@ describe('useLocalStorageState()', () => {
 
             expect(result.current[2].isPersistent).toBe(true)
         })
+
+        test('can call mutation methods without throwing and without actually mutating the data', () => {
+            const { result } = renderHookOnServer(() => {
+                const hook = useLocalStorageState('number', {
+                    defaultValue: 0,
+                })
+                const [, setValue, { removeItem }] = hook
+                setValue(1)
+                removeItem()
+                return hook
+            })
+            const hook = result.current
+
+            const [value] = hook
+            expect(value).toBe(0)
+        })
     })
 })
