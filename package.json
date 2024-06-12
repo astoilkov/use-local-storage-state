@@ -3,7 +3,10 @@
     "version": "19.3.0",
     "description": "React hook that persist data in localStorage",
     "license": "MIT",
-    "repository": "astoilkov/use-local-storage-state",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/astoilkov/use-local-storage-state.git"
+    },
     "funding": "https://github.com/sponsors/astoilkov",
     "homepage": "https://github.com/astoilkov/use-local-storage-state",
     "author": {
