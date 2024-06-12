@@ -22,7 +22,7 @@ npm install use-local-storage-state@17
 
 - Actively maintained for the past 4 years — see [contributors](https://github.com/astoilkov/use-local-storage-state/graphs/contributors) page.
 - Production ready.
-- 776 B (minified + gzipped).
+- 689 B (brotlied).
 - SSR support.
 - Works with React 18 concurrent rendering and React 19.
 - Handles the `Window` [`storage`](https://developer.mozilla.org/en-US/docs/Web/API/Window/storage_event) event and updates changes across browser tabs, windows, and iframe's. Disable with `storageSync: false`.
