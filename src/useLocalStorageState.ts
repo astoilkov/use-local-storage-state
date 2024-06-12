@@ -1,7 +1,7 @@
 import type { Dispatch, SetStateAction } from 'react'
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react'
 
-// in memory fallback used then `localStorage` throws an error
+// in memory fallback used when `localStorage` throws an error
 export const inMemoryData = new Map<string, unknown>()
 
 export type LocalStorageOptions<T> = {
