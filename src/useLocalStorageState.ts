@@ -42,7 +42,7 @@ export default function useLocalStorageState<T = undefined>(
 ): LocalStorageState<T | undefined> {
     const serializer = options?.serializer
     const [defaultValue] = useState(options?.defaultValue)
-    return useBrowserLocalStorageState(
+    return useLocalStorage(
         key,
         defaultValue,
         options?.storageSync,
@@ -51,7 +51,7 @@ export default function useLocalStorageState<T = undefined>(
     )
 }
 
-function useBrowserLocalStorageState<T>(
+function useLocalStorage<T>(
     key: string,
     defaultValue: T | undefined,
     storageSync: boolean = true,
