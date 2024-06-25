@@ -160,7 +160,7 @@ function useLocalStorage<T>(
         }
 
         const onStorage = (e: StorageEvent): void => {
-            if (e.storageArea === goodTry(() => localStorage) && e.key === key) {
+            if (e.key === key && e.storageArea === goodTry(() => localStorage)) {
                 triggerCallbacks(key)
             }
         }
