@@ -151,6 +151,14 @@ function useLocalStorage<T>(
         [key, stringify],
     )
 
+    const removeItem = useCallback(() => {
+        goodTry(() => localStorage.removeItem(key))
+
+        inMemoryData.delete(key)
+
+        triggerCallbacks(key)
+    }, [key])
+
     // - syncs change across tabs, windows, iframes
     // - the `storage` event is called only in all tabs, windows, iframe's except the one that
     //   triggered the change
@@ -176,16 +184,10 @@ function useLocalStorage<T>(
             setState,
             {
                 isPersistent: value === defaultValue || !inMemoryData.has(key),
-                removeItem(): void {
-                    goodTry(() => localStorage.removeItem(key))
-
-                    inMemoryData.delete(key)
-
-                    triggerCallbacks(key)
-                },
+                removeItem,
             },
         ],
-        [key, setState, value, defaultValue],
+        [key, setState, value, defaultValue, removeItem],
     )
 }
 
