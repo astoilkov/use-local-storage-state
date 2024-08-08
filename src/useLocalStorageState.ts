@@ -150,7 +150,6 @@ function useLocalStorage<T>(
         },
         [key, stringify],
     )
-
     const removeItem = useCallback(() => {
         goodTry(() => localStorage.removeItem(key))
 
