@@ -2,7 +2,7 @@
 
 > React hook that persist data in `localStorage`
 
-[![Downloads](https://img.shields.io/npm/dm/use-local-storage-state)](https://www.npmjs.com/package/use-local-storage-state)
+[![Downloads](https://img.shields.io/npm/dm/use-local-storage-state)](https://npm.chart.dev/use-local-storage-state)
 [![Gzipped Size](https://img.shields.io/bundlephobia/minzip/use-local-storage-state)](https://bundlephobia.com/result?p=use-local-storage-state)
 [![Build Status](https://img.shields.io/github/actions/workflow/status/astoilkov/use-local-storage-state/main.yml?branch=main)](https://github.com/astoilkov/use-local-storage-state/actions/workflows/main.yml)
 
