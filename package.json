@@ -1,6 +1,6 @@
 {
     "name": "use-local-storage-state",
-    "version": "19.4.0",
+    "version": "19.4.1",
     "description": "React hook that persist data in localStorage",
     "license": "MIT",
     "repository": {
