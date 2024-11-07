@@ -1,12 +1,13 @@
 {
     "compilerOptions": {
-        "target": "ES2020",
-        "module": "NodeNext",
+        "target": "ESNext",              // Set the JavaScript language level you want
+        "module": "CommonJS",         // Compile output as CommonJS
+        "moduleResolution": "Node10",   
         "jsx": "react",
-        "outDir": "dist/esm",
         "esModuleInterop": true,
         "declaration": true,
-        "moduleResolution": "nodenext",
+        "outDir": "dist/cjs",
+        
 
         // strict options ensuring more stable code
         "strict": true,

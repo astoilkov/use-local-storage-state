@@ -27,12 +27,16 @@
     ],
     "type": "module",
     "exports": {
-        "types": "./index.d.ts",
-        "default": "./index.js"
+        ".": {
+            "import": "./dist/esm/index.js",
+            "require": "./dist/cjs/index.js"
+        }
     },
     "sideEffects": false,
     "scripts": {
-        "build": "tsc",
+        "build:esm": "tsc",
+        "build:cjs": "tsc -p tsconfig.cjs.json",
+        "build": "rm -rf dist && npm run build:esm && npm run build:cjs",
         "size": "yarn build && size-limit",
         "lint": "eslint --cache --format=pretty --ext=.ts ./",
         "test": "yarn build && yarn lint && vitest --run",

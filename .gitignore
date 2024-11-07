@@ -1,8 +1,7 @@
 node_modules/
 coverage/
-
+dist/
 *.js
 *.d.ts
-yarn.lock
 yarn-error.log
 .eslintcache
