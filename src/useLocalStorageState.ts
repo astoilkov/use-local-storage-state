@@ -6,6 +6,7 @@ export const inMemoryData = new Map<string, unknown>()
 
 export type LocalStorageOptions<T> = {
     defaultValue?: T | (() => T)
+    defaultServerValue?: T | (() => T)
     storageSync?: boolean
     serializer?: {
         stringify: (value: unknown) => string
@@ -42,9 +43,11 @@ export default function useLocalStorageState<T = undefined>(
 ): LocalStorageState<T | undefined> {
     const serializer = options?.serializer
     const [defaultValue] = useState(options?.defaultValue)
+    const [defaultServerValue] = useState(options?.defaultServerValue)
     return useLocalStorage(
         key,
         defaultValue,
+        defaultServerValue,
         options?.storageSync,
         serializer?.parse,
         serializer?.stringify,
@@ -54,6 +57,7 @@ export default function useLocalStorageState<T = undefined>(
 function useLocalStorage<T>(
     key: string,
     defaultValue: T | undefined,
+    defaultServerValue: T | undefined,
     storageSync: boolean = true,
     parse: (value: string) => unknown = parseJSON,
     stringify: (value: unknown) => string = JSON.stringify,
@@ -125,7 +129,7 @@ function useLocalStorage<T>(
         },
 
         // useSyncExternalStore.getServerSnapshot
-        () => defaultValue,
+        () => defaultServerValue ?? defaultValue,
     )
     const setState = useCallback(
         (newValue: SetStateAction<T | undefined>): void => {

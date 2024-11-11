@@ -59,13 +59,38 @@ describe('useLocalStorageState()', () => {
                 }),
             )
 
-            expect(result.current[0]).toEqual(['first', 'second'])
+            const [todos] = result.current
+            expect(todos).toStrictEqual(['first', 'second'])
         })
 
         test('returns default value on the server', () => {
             const { result } = renderHookOnServer(() => useLocalStorageState('todos'))
 
-            expect(result.current[0]).toEqual(undefined)
+            const [todos] = result.current
+            expect(todos).toBe(undefined)
+        })
+
+        test('returns defaultServerValue on the server', () => {
+            const { result } = renderHookOnServer(() =>
+                useLocalStorageState('todos', {
+                    defaultServerValue: ['third', 'forth'],
+                }),
+            )
+
+            const [todos] = result.current
+            expect(todos).toStrictEqual(['third', 'forth'])
+        })
+
+        test('defaultServerValue should overwrite defaultValue on the server', () => {
+            const { result } = renderHookOnServer(() =>
+                useLocalStorageState('todos', {
+                    defaultValue: ['first', 'second'],
+                    defaultServerValue: ['third', 'forth'],
+                }),
+            )
+
+            const [todos] = result.current
+            expect(todos).toStrictEqual(['third', 'forth'])
         })
 
         test(`setValue() on server doesn't throw`, () => {
