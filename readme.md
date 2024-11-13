@@ -171,7 +171,7 @@ Type: `any`
 
 Default: `undefined`
 
-The default value for server-rendering and hydration. If not set, it will use `defaultValue` option instead. Set only if you want it to be different than the client value.
+The default value while server-rendering and hydrating. If not set, it will use `defaultValue` option instead. Set only if you want it to be different than the client value.
 
 #### `options.storageSync`
 
