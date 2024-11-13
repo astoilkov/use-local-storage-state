@@ -141,44 +141,6 @@ function useIsServerRender() {
 
 </details>
 
-<details>
-<summary>Preventing hydration errors when server default value should be different from client default value</summary>
-<p></p>
-
-Using the `defaultValue` property to differ between server and client default values will cause hydration errors. To prevent them you can use the `defaultServerValue` property.
-
-```tsx
-// this will throw hydration error
-const [state, setState] = useLocalStorageState(
-    'key',
-    {
-      defaultValue() {
-        if (isServer) {
-          return "server default value";
-        }
-        return "client default value";
-      },
-    },
-  );
-```
-
-`defaultServerValue` will overwrite `defaultValue` in the `useSyncExternalStore()` hook's `getSnapshot()` function.
-Difference is server's `getSnapshot()` will run on server and client's hydration, then `defaultValue` or local storage value will be used after that.
-
-```tsx
-const [state, setState] = useLocalStorageState(
-    'key',
-    {
-      defaultValue: "client default value",
-      defaultServerValue: "server default value",
-    },
-  );
-```
-
-> Example use cases: You want to show a modal when the user's first enter and you are persistently storing that data on `localStorage`. Using `defaultServerValue` will allow you to show the modal only on the server.
-
-</details>
-
 ## API
 
 #### `useLocalStorageState(key: string, options?: LocalStorageOptions)`
