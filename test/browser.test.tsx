@@ -58,10 +58,32 @@ describe('useLocalStorageState()', () => {
         expect(todos).toStrictEqual(['first', 'second'])
     })
 
-    test(`initial state is written to localStorage`, () => {
+    test('initial state is written to localStorage', () => {
         renderHook(() => useLocalStorageState('todos', { defaultValue: ['first', 'second'] }))
 
         expect(localStorage.getItem('todos')).toStrictEqual(JSON.stringify(['first', 'second']))
+    })
+
+    test('should return defaultValue instead of defaultServerValue on the browser', () => {
+        const { result } = renderHook(() =>
+            useLocalStorageState('todos', {
+                defaultValue: ['first', 'second'],
+                defaultServerValue: ['third', 'forth'],
+            }),
+        )
+
+        const [todos] = result.current
+        expect(todos).toStrictEqual(['first', 'second'])
+    })
+
+    test('defaultServerValue should not written to localStorage', () => {
+        renderHook(() =>
+            useLocalStorageState('todos', {
+                defaultServerValue: ['third', 'forth'],
+            }),
+        )
+
+        expect(localStorage.getItem('todos')).toStrictEqual(null)
     })
 
     test('updates state', () => {
