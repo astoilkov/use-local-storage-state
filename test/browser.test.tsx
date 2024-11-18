@@ -796,21 +796,37 @@ describe('useLocalStorageState()', () => {
 
             });        })
 
-        test("default behaviour is that if a parsing error occurs, it console.errors", async () => {
+
+            test("opt in for console.error", async () => {
+
+                localStorage.setItem("some-string", "xyz")
+                const { result: resultA, unmount } = renderHook(() =>
+                    useLocalStorageState<string>('some-string', {
+                        defaultValue: "abc",
+                        onError: (err) => {
+                            console.error(err);
+                            return "abc";
+                        }
+                    }),
+                )
+
+                expect(resultA.current[0]).toBe("abc")
+
+                const calls = vi.mocked(console.error).mock.calls;
+                expect(calls).toHaveLength(1);
+                expect(calls[0][0]).toBeInstanceOf(Error);
+                expect((calls[0][0] as Error).message).toBe("Unexpected token 'x', \"xyz\" is not valid JSON");
+            })
+
+        test("default behaviour is parsing errors will cause a runtime error", async () => {
 
             localStorage.setItem("some-string", "xyz")
-            const { result: resultA, unmount } = renderHook(() =>
+            expect(() => renderHook(() =>
                 useLocalStorageState<string>('some-string', {
                     defaultValue: "abc",
                 }),
-            )
+            )).toThrow();
 
-            expect(resultA.current[0]).toBe("abc")
-
-            const calls = vi.mocked(console.error).mock.calls;
-            expect(calls).toHaveLength(1);
-            expect(calls[0][0]).toBeInstanceOf(Error);
-            expect((calls[0][0] as Error).message).toBe("Unexpected token 'x', \"xyz\" is not valid JSON");
         })
 
         test("custom onError logic can be provided", async () => {
