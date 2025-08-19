@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import type { Dispatch, SetStateAction } from 'react'
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react'
 
@@ -12,6 +13,7 @@ export type LocalStorageOptions<T> = {
         stringify: (value: unknown) => string
         parse: (value: string) => unknown
     }
+    onError?: (err: unknown, oldValue: T | undefined, newValue: string) => T | undefined
 }
 
 // - `useLocalStorageState()` return type
@@ -44,10 +46,17 @@ export default function useLocalStorageState<T = undefined>(
     const serializer = options?.serializer
     const [defaultValue] = useState(options?.defaultValue)
     const [defaultServerValue] = useState(options?.defaultServerValue)
+
+    const defaultOnError = (err: unknown): T | undefined => {
+        // eslint-disable-next-line no-console
+        throw err
+    }
+
     return useLocalStorage(
         key,
         defaultValue,
         defaultServerValue,
+        options?.onError ?? defaultOnError,
         options?.storageSync,
         serializer?.parse,
         serializer?.stringify,
@@ -58,6 +67,7 @@ function useLocalStorage<T>(
     key: string,
     defaultValue: T | undefined,
     defaultServerValue: T | undefined,
+    onError: Required<LocalStorageOptions<T>>['onError'],
     storageSync: boolean = true,
     parse: (value: string) => unknown = parseJSON,
     stringify: (value: unknown) => string = JSON.stringify,
@@ -67,6 +77,13 @@ function useLocalStorage<T>(
         string: null,
         parsed: undefined,
     })
+
+    const [error, setError] = useState<null | Error>(null)
+
+    // Nice little React short cut - we can ignore rules of hooks if we are throwing errors.
+    if(error){
+        throw error;
+    }
 
     const value = useSyncExternalStore(
         // useSyncExternalStore.subscribe
@@ -94,12 +111,28 @@ function useLocalStorage<T>(
             } else if (string !== storageItem.current.string) {
                 let parsed: T | undefined
 
-                try {
-                    parsed = string === null ? defaultValue : (parse(string) as T)
-                } catch {
+                if (string === null) {
                     parsed = defaultValue
-                }
+                } else {
+                    try {
+                        parsed = parse(string) as T
+                    } catch (err) {
 
+                        // Nested try catch seems crazy, but the idea is, if the `onError` itself throws an error,
+                        // Then we treat it like an error, and set it into seperate state.
+                        // This is more intuitive from the users point of view, where if they throw from their onError function,
+                        // Then they get throw like functionality.
+                        try {
+                            parsed = onError(err, storageItem.current.parsed, string)
+                        } catch (err_ ) {
+                            if (err_ instanceof Error) {
+                                setError(err_)
+                            } else {
+                                setError(new Error(`Unknown error occured during parsing., value was ${err_}`))
+                            }
+                        }
+                    }
+                }
                 storageItem.current.parsed = parsed
             }
 
@@ -171,6 +204,7 @@ function useLocalStorage<T>(
         }
 
         const onStorage = (e: StorageEvent): void => {
+            console.log('storage')
             if (e.key === key && e.storageArea === goodTry(() => localStorage)) {
                 triggerCallbacks(key)
             }

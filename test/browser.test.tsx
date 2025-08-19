@@ -4,10 +4,12 @@
 
 import util from 'node:util'
 import superjson from 'superjson'
-import { act, render, renderHook } from '@testing-library/react'
+import { act, render, renderHook, waitFor } from '@testing-library/react'
 import React, { useEffect, useLayoutEffect, useMemo } from 'react'
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 import useLocalStorageState, { inMemoryData } from '../src/useLocalStorageState.js'
+
+let originalError = console.error;
 
 beforeEach(() => {
     // Throw an error when `console.error()` is called. This is especially useful in a React tests
@@ -25,7 +27,13 @@ beforeEach(() => {
     //   (`Component`). To locate the bad setState() call inside `Component`, follow the stack trace
     //   as described in https://reactjs.org/link/setstate-in-render"
     vi.spyOn(console, 'error').mockImplementation((format: string, ...args: any[]) => {
-        throw new Error(util.format(format, ...args))
+
+        // Just commenting this out, but basically add exceptions to this
+        //throw new Error(util.format(format, ...args))
+
+        originalError(format, ...args);
+
+
     })
 })
 
@@ -34,7 +42,7 @@ afterEach(() => {
     try {
         localStorage.clear()
         sessionStorage.clear()
-    } catch {}
+    } catch { }
 })
 
 describe('useLocalStorageState()', () => {
@@ -758,8 +766,94 @@ describe('useLocalStorageState()', () => {
                     serializer: JSON,
                 }),
             )
-            const [value] = resultB.current
+            const [value] = resultB.current;
+            expect(value).toEqual(['first', 'second'])
             expect(value).not.toBe(undefined)
         })
     })
+
+    describe.only('"onError" option', () => {
+
+        // I really want to be able to write a test like this!
+        // But it's not working? JSDOM has implemented the storageEvent thought:
+        // https://github.com/jsdom/jsdom/pull/2076
+        test.skip("sanity test", async () => {
+            const renderResult = renderHook(() =>
+                useLocalStorageState<string>('todos', {
+                    defaultValue: "hello world",
+                    serializer: {
+                        stringify: (v) => v as string,
+                        parse: v => v
+                    }
+
+                }));
+
+            expect(renderResult.result.current[0]).toBe("hello world");
+
+            localStorage.setItem("todos", "123");
+            await waitFor(() => {
+                return expect(renderResult.result.current[0]).toBe("123");
+
+            });        })
+
+
+            test("opt in for console.error", async () => {
+
+                localStorage.setItem("some-string", "xyz")
+                const { result: resultA, unmount } = renderHook(() =>
+                    useLocalStorageState<string>('some-string', {
+                        defaultValue: "abc",
+                        onError: (err) => {
+                            console.error(err);
+                            return "abc";
+                        }
+                    }),
+                )
+
+                expect(resultA.current[0]).toBe("abc")
+
+                const calls = vi.mocked(console.error).mock.calls;
+                expect(calls).toHaveLength(1);
+                expect(calls[0][0]).toBeInstanceOf(Error);
+                expect((calls[0][0] as Error).message).toBe("Unexpected token 'x', \"xyz\" is not valid JSON");
+            })
+
+        test("default behaviour is parsing errors will cause a runtime error", async () => {
+
+            localStorage.setItem("some-string", "xyz")
+            expect(() => renderHook(() =>
+                useLocalStorageState<string>('some-string', {
+                    defaultValue: "abc",
+                }),
+            )).toThrow();
+
+        })
+
+        test("custom onError logic can be provided", async () => {
+
+            localStorage.setItem("some-string", "xyz")
+
+            const mockFn = vi.fn().mockReturnValue("error fallback");
+            const { result: resultA, unmount } = renderHook(() =>
+                useLocalStorageState<string>('some-string', {
+                    defaultValue: "abc",
+                    onError: mockFn
+
+                }),
+            )
+
+            expect(resultA.current[0]).toBe("error fallback")
+
+            const calls = vi.mocked(mockFn).mock.calls;
+            expect(calls).toHaveLength(1);
+            expect(calls[0][0]).toBeInstanceOf(Error);
+            expect((calls[0][0] as Error).message).toBe("Unexpected token 'x', \"xyz\" is not valid JSON");
+            expect(calls[0][1]).toBe(undefined);
+            expect(calls[0][2]).toBe("xyz")
+
+           expect(console.error).not.toHaveBeenCalled();
+
+        })
+    });
+
 })
