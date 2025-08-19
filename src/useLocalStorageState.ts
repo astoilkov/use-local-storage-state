@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import type { Dispatch, SetStateAction } from 'react'
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react'
 
@@ -12,6 +13,7 @@ export type LocalStorageOptions<T> = {
         stringify: (value: unknown) => string
         parse: (value: string) => unknown
     }
+    onError?: (err: unknown, oldValue: T | undefined, newValue: string) => T | undefined
 }
 
 // - `useLocalStorageState()` return type
@@ -44,10 +46,20 @@ export default function useLocalStorageState<T = undefined>(
     const serializer = options?.serializer
     const [defaultValue] = useState(options?.defaultValue)
     const [defaultServerValue] = useState(options?.defaultServerValue)
+
+    const defaultOnError = (
+        err: unknown,
+    ): T | undefined => {
+        // eslint-disable-next-line no-console
+        console.error(err)
+        return defaultValue
+    }
+
     return useLocalStorage(
         key,
         defaultValue,
         defaultServerValue,
+        options?.onError ?? defaultOnError,
         options?.storageSync,
         serializer?.parse,
         serializer?.stringify,
@@ -58,6 +70,7 @@ function useLocalStorage<T>(
     key: string,
     defaultValue: T | undefined,
     defaultServerValue: T | undefined,
+    onError: Required<LocalStorageOptions<T>>['onError'],
     storageSync: boolean = true,
     parse: (value: string) => unknown = parseJSON,
     stringify: (value: unknown) => string = JSON.stringify,
@@ -94,12 +107,15 @@ function useLocalStorage<T>(
             } else if (string !== storageItem.current.string) {
                 let parsed: T | undefined
 
-                try {
-                    parsed = string === null ? defaultValue : (parse(string) as T)
-                } catch {
+                if (string === null) {
                     parsed = defaultValue
+                } else {
+                    try {
+                        parsed = parse(string) as T
+                    } catch (err) {
+                        parsed = onError(err, storageItem.current.parsed, string)
+                    }
                 }
-
                 storageItem.current.parsed = parsed
             }
 
@@ -171,6 +187,7 @@ function useLocalStorage<T>(
         }
 
         const onStorage = (e: StorageEvent): void => {
+            console.log("storage")
             if (e.key === key && e.storageArea === goodTry(() => localStorage)) {
                 triggerCallbacks(key)
             }
