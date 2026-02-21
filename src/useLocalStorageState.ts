@@ -87,7 +87,20 @@ function useLocalStorage<T>(
 
         // useSyncExternalStore.getSnapshot
         () => {
-            const string = goodTry(() => localStorage.getItem(key)) ?? null
+            const rawString = goodTry(() => localStorage.getItem(key))
+
+            // when `goodTry` returns `undefined`, it means localStorage threw an error
+            // (e.g., localStorage is `null` in Firefox when dom.storage.enabled is false).
+            // this is different from localStorage.getItem() returning `null` (key doesn't exist).
+            if (rawString === undefined && !inMemoryData.has(key)) {
+                if (defaultValue !== undefined) {
+                    inMemoryData.set(key, defaultValue)
+                }
+                storageItem.current = { string: null, parsed: defaultValue }
+                return storageItem.current.parsed
+            }
+
+            const string = rawString ?? null
 
             if (inMemoryData.has(key)) {
                 storageItem.current.parsed = inMemoryData.get(key) as T | undefined
@@ -117,7 +130,6 @@ function useLocalStorage<T>(
                 //   `localStorage.setItem()` will throw
                 // - trying to access localStorage object when cookies are disabled in Safari throws
                 //   "SecurityError: The operation is insecure."
-                // eslint-disable-next-line no-console
                 goodTry(() => {
                     const string = stringify(defaultValue)
                     localStorage.setItem(key, string)
