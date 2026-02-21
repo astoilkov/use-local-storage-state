@@ -63,8 +63,8 @@ function useLocalStorage<T>(
     stringify: (value: unknown) => string = JSON.stringify,
 ): LocalStorageState<T | undefined> {
     // we keep the `parsed` value in a ref because `useSyncExternalStore` requires a cached version
-    const storageItem = useRef<{ string: string | null; parsed: T | undefined }>({
-        string: null,
+    const storageItem = useRef<{ string: string | null | undefined; parsed: T | undefined }>({
+        string: undefined,
         parsed: undefined,
     })
 
@@ -110,19 +110,21 @@ function useLocalStorage<T>(
             //   issues that were caused by incorrect initial and secondary implementations:
             //   - https://github.com/astoilkov/use-local-storage-state/issues/30
             //   - https://github.com/astoilkov/use-local-storage-state/issues/33
-            if (defaultValue !== undefined && string === null) {
+            if (defaultValue !== undefined && string === null && !inMemoryData.has(key)) {
                 // reasons for `localStorage` to throw an error:
                 // - maximum quota is exceeded
                 // - under Mobile Safari (since iOS 5) when the user enters private mode
                 //   `localStorage.setItem()` will throw
                 // - trying to access localStorage object when cookies are disabled in Safari throws
                 //   "SecurityError: The operation is insecure."
-                // eslint-disable-next-line no-console
-                goodTry(() => {
+                // - localStorage is `null` in Firefox when `dom.storage.enabled` is `false`
+                try {
                     const string = stringify(defaultValue)
                     localStorage.setItem(key, string)
                     storageItem.current = { string, parsed: defaultValue }
-                })
+                } catch {
+                    inMemoryData.set(key, defaultValue)
+                }
             }
 
             return storageItem.current.parsed
@@ -158,6 +160,11 @@ function useLocalStorage<T>(
         goodTry(() => localStorage.removeItem(key))
 
         inMemoryData.delete(key)
+
+        // reset the sentinel so getSnapshot re-parses the value (important when localStorage
+        // is unavailable and the string stays `null` — without this, `null !== null` would be
+        // false and the parsing branch would be skipped)
+        storageItem.current.string = undefined
 
         triggerCallbacks(key)
     }, [key])

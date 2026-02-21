@@ -705,6 +705,111 @@ describe('useLocalStorageState()', () => {
         })
     })
 
+    describe('localStorage is null (Firefox with dom.storage.enabled: false)', () => {
+        test('returns defaultValue when localStorage is null', () => {
+            vi.spyOn(window, 'localStorage', 'get').mockReturnValue(null as any)
+
+            const { result } = renderHook(() =>
+                useLocalStorageState('todos', { defaultValue: ['first', 'second'] }),
+            )
+
+            const [todos] = result.current
+            expect(todos).toStrictEqual(['first', 'second'])
+        })
+
+        test('isPersistent is true when value equals defaultValue and localStorage is null', () => {
+            vi.spyOn(window, 'localStorage', 'get').mockReturnValue(null as any)
+
+            const { result } = renderHook(() =>
+                useLocalStorageState('todos', { defaultValue: ['first', 'second'] }),
+            )
+
+            const [, , { isPersistent }] = result.current
+            expect(isPersistent).toBe(true)
+        })
+
+        test('isPersistent is false when value is changed and localStorage is null', () => {
+            vi.spyOn(window, 'localStorage', 'get').mockReturnValue(null as any)
+
+            const { result } = renderHook(() =>
+                useLocalStorageState('todos', { defaultValue: ['first', 'second'] }),
+            )
+
+            act(() => {
+                const setTodos = result.current[1]
+                setTodos(['third', 'forth'])
+            })
+
+            const [todos, , { isPersistent }] = result.current
+            expect(todos).toStrictEqual(['third', 'forth'])
+            expect(isPersistent).toBe(false)
+        })
+
+        test('setValue works when localStorage is null', () => {
+            vi.spyOn(window, 'localStorage', 'get').mockReturnValue(null as any)
+
+            const { result } = renderHook(() =>
+                useLocalStorageState('todos', { defaultValue: ['first', 'second'] }),
+            )
+
+            act(() => {
+                const setTodos = result.current[1]
+                setTodos(['third', 'forth'])
+            })
+
+            const [todos] = result.current
+            expect(todos).toStrictEqual(['third', 'forth'])
+        })
+
+        test('setValue with callback works when localStorage is null', () => {
+            vi.spyOn(window, 'localStorage', 'get').mockReturnValue(null as any)
+
+            const { result } = renderHook(() =>
+                useLocalStorageState('todos', { defaultValue: ['first', 'second'] }),
+            )
+
+            act(() => {
+                const setTodos = result.current[1]
+                setTodos((value) => [...value, 'third'])
+            })
+
+            const [todos] = result.current
+            expect(todos).toStrictEqual(['first', 'second', 'third'])
+        })
+
+        test('removeItem works when localStorage is null', () => {
+            vi.spyOn(window, 'localStorage', 'get').mockReturnValue(null as any)
+
+            const { result } = renderHook(() =>
+                useLocalStorageState('todos', { defaultValue: ['first', 'second'] }),
+            )
+
+            act(() => {
+                const setTodos = result.current[1]
+                setTodos(['third', 'forth'])
+            })
+
+            act(() => {
+                const removeItem = result.current[2].removeItem
+                removeItem()
+            })
+
+            const [todos] = result.current
+            expect(todos).toStrictEqual(['first', 'second'])
+        })
+
+        test('returns undefined when no defaultValue and localStorage is null', () => {
+            vi.spyOn(window, 'localStorage', 'get').mockReturnValue(null as any)
+
+            const { result } = renderHook(() =>
+                useLocalStorageState('todos'),
+            )
+
+            const [todos] = result.current
+            expect(todos).toBe(undefined)
+        })
+    })
+
     describe('"serializer" option', () => {
         test('can serialize Date from initial value', () => {
             const date = new Date()
