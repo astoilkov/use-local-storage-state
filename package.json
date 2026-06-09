@@ -7,6 +7,9 @@
         "type": "git",
         "url": "git+https://github.com/astoilkov/use-local-storage-state.git"
     },
+    "bugs": {
+        "url": "https://github.com/astoilkov/use-local-storage-state/issues"
+    },
     "funding": "https://github.com/sponsors/astoilkov",
     "homepage": "https://github.com/astoilkov/use-local-storage-state",
     "author": {
