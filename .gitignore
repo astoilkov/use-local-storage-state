@@ -3,6 +3,5 @@ coverage/
 
 *.js
 *.d.ts
-yarn.lock
-yarn-error.log
+bun.lock
 .eslintcache

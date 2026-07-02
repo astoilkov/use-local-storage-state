@@ -18,5 +18,7 @@ jobs:
             - uses: actions/setup-node@v4
               with:
                   node-version: ${{ matrix.node-version }}
-            - run: yarn install
-            - run: yarn test
+            - uses: oven-sh/setup-bun@v2
+            - run: bun install
+            # vitest respects its node shebang, so it runs under the matrix Node version
+            - run: bun run test
