@@ -682,6 +682,48 @@ describe('useLocalStorageState()', () => {
             expect(isPersistent).toBe(false)
         })
 
+        // https://github.com/astoilkov/use-local-storage-state/issues/80
+        test('isPersistent returns false when localStorage is unavailable (Firefox with dom.storage.enabled set to false)', () => {
+            // in Firefox, `localStorage` is `null`, so all accesses throw a `TypeError`
+            vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
+                throw new TypeError(`can't access property "getItem", localStorage is null`)
+            })
+            vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+                throw new TypeError(`can't access property "setItem", localStorage is null`)
+            })
+
+            const { result } = renderHook(() =>
+                useLocalStorageState('todos', { defaultValue: ['first', 'second'] }),
+            )
+
+            const [todos, , { isPersistent }] = result.current
+            expect(todos).toStrictEqual(['first', 'second'])
+            expect(isPersistent).toBe(false)
+        })
+
+        // https://github.com/astoilkov/use-local-storage-state/issues/80
+        test('setValue falls back to in memory storage when localStorage is unavailable', () => {
+            vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
+                throw new TypeError(`can't access property "getItem", localStorage is null`)
+            })
+            vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+                throw new TypeError(`can't access property "setItem", localStorage is null`)
+            })
+
+            const { result } = renderHook(() =>
+                useLocalStorageState('todos', { defaultValue: ['first', 'second'] }),
+            )
+
+            act(() => {
+                const setTodos = result.current[1]
+                setTodos(['third'])
+            })
+
+            const [todos, , { isPersistent }] = result.current
+            expect(todos).toStrictEqual(['third'])
+            expect(isPersistent).toBe(false)
+        })
+
         test('isPersistent returns true after "storage" event', () => {
             const { result } = renderHook(() =>
                 useLocalStorageState('todos', { defaultValue: ['first', 'second'] }),

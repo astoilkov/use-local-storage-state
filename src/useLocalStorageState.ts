@@ -69,7 +69,21 @@ export default function useLocalStorageState<T = undefined>(
         // useSyncExternalStore.getSnapshot
         () => {
             const item = storageItem.current
-            const string = goodTry(() => localStorage.getItem(key)) ?? null
+
+            let string: string | null = null
+            try {
+                string = localStorage.getItem(key)
+            } catch {
+                // reading from `localStorage` can throw:
+                // - in Firefox, `localStorage` is `null` when `dom.storage.enabled` is set to
+                //   `false` in `about:config`:
+                //   https://github.com/astoilkov/use-local-storage-state/issues/80
+                // - in Safari, accessing `localStorage` throws "SecurityError: The operation is
+                //   insecure." when cookies are disabled
+                if (!inMemoryData.has(key)) {
+                    inMemoryData.set(key, defaultValue)
+                }
+            }
 
             if (inMemoryData.has(key)) {
                 item.parsed = inMemoryData.get(key) as T | undefined
@@ -164,11 +178,11 @@ export default function useLocalStorageState<T = undefined>(
             value,
             setState,
             {
-                isPersistent: value === defaultValue || !inMemoryData.has(key),
+                isPersistent: !inMemoryData.has(key),
                 removeItem,
             },
         ],
-        [key, setState, value, defaultValue, removeItem],
+        [key, setState, value, removeItem],
     )
 }
 
