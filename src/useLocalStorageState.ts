@@ -42,31 +42,14 @@ export default function useLocalStorageState<T = undefined>(
     options?: LocalStorageOptions<T | undefined>,
 ): LocalStorageState<T | undefined> {
     const serializer = options?.serializer
+    const storageSync = options?.storageSync ?? true
+    const parse = serializer?.parse ?? parseJSON
+    const stringify = serializer?.stringify ?? JSON.stringify
     const [defaultValue] = useState(options?.defaultValue)
     const [defaultServerValue] = useState(options?.defaultServerValue)
-    return useLocalStorage(
-        key,
-        defaultValue,
-        defaultServerValue,
-        options?.storageSync,
-        serializer?.parse,
-        serializer?.stringify,
-    )
-}
 
-function useLocalStorage<T>(
-    key: string,
-    defaultValue: T | undefined,
-    defaultServerValue: T | undefined,
-    storageSync: boolean = true,
-    parse: (value: string) => unknown = parseJSON,
-    stringify: (value: unknown) => string = JSON.stringify,
-): LocalStorageState<T | undefined> {
     // we keep the `parsed` value in a ref because `useSyncExternalStore` requires a cached version
-    const storageItem = useRef<{ string: string | null; parsed: T | undefined }>({
-        string: null,
-        parsed: undefined,
-    })
+    const storageItem = useRef<{ string?: string | null; parsed?: T }>({})
 
     const value = useSyncExternalStore(
         // useSyncExternalStore.subscribe
@@ -78,32 +61,27 @@ function useLocalStorage<T>(
                     }
                 }
                 callbacks.add(onChange)
-                return (): void => {
-                    callbacks.delete(onChange)
-                }
+                return (): boolean => callbacks.delete(onChange)
             },
             [key],
         ),
 
         // useSyncExternalStore.getSnapshot
         () => {
+            const item = storageItem.current
             const string = goodTry(() => localStorage.getItem(key)) ?? null
 
             if (inMemoryData.has(key)) {
-                storageItem.current.parsed = inMemoryData.get(key) as T | undefined
-            } else if (string !== storageItem.current.string) {
-                let parsed: T | undefined
-
+                item.parsed = inMemoryData.get(key) as T | undefined
+            } else if (string !== item.string) {
                 try {
-                    parsed = string === null ? defaultValue : (parse(string) as T)
+                    item.parsed = string === null ? defaultValue : (parse(string) as T)
                 } catch {
-                    parsed = defaultValue
+                    item.parsed = defaultValue
                 }
-
-                storageItem.current.parsed = parsed
             }
 
-            storageItem.current.string = string
+            item.string = string
 
             // store default value in localStorage:
             // - initial issue: https://github.com/astoilkov/use-local-storage-state/issues/26
@@ -117,15 +95,15 @@ function useLocalStorage<T>(
                 //   `localStorage.setItem()` will throw
                 // - trying to access localStorage object when cookies are disabled in Safari throws
                 //   "SecurityError: The operation is insecure."
-                // eslint-disable-next-line no-console
                 goodTry(() => {
                     const string = stringify(defaultValue)
                     localStorage.setItem(key, string)
-                    storageItem.current = { string, parsed: defaultValue }
+                    item.string = string
+                    item.parsed = defaultValue
                 })
             }
 
-            return storageItem.current.parsed
+            return item.parsed
         },
 
         // useSyncExternalStore.getServerSnapshot
@@ -196,7 +174,7 @@ function useLocalStorage<T>(
 
 // notifies all instances using the same `key` to update
 const callbacks = new Set<(key: string) => void>()
-function triggerCallbacks(key: string): void {
+const triggerCallbacks = (key: string): void => {
     for (const callback of [...callbacks]) {
         callback(key)
     }
@@ -204,11 +182,10 @@ function triggerCallbacks(key: string): void {
 
 // a wrapper for `JSON.parse()` that supports "undefined" value. otherwise,
 // `JSON.parse(JSON.stringify(undefined))` returns the string "undefined" not the value `undefined`
-function parseJSON(value: string): unknown {
-    return value === 'undefined' ? undefined : JSON.parse(value)
-}
+const parseJSON = (value: string): unknown =>
+    value === 'undefined' ? undefined : JSON.parse(value)
 
-function goodTry<T>(tryFn: () => T): T | undefined {
+const goodTry = <T,>(tryFn: () => T): T | undefined => {
     try {
         return tryFn()
     } catch {}
