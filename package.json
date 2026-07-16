@@ -54,14 +54,14 @@
         "react-dom": ">=18"
     },
     "devDependencies": {
-        "@size-limit/preset-small-lib": "^11.1.1",
+        "@size-limit/preset-small-lib": "^12.1.0",
         "@testing-library/react": "^14.0.0",
         "@types/node": "^24",
         "@types/react": "^18.2.67",
         "@types/react-dom": "^18.2.22",
         "@typescript-eslint/eslint-plugin": "^7.2.0",
         "@typescript-eslint/parser": "^7.2.0",
-        "@vitest/coverage-v8": "^1.4.0",
+        "@vitest/coverage-v8": "^4.1.10",
         "confusing-browser-globals": "^1.0.11",
         "eslint": "^8.21.0",
         "eslint-config-strictest": "^0.8.1",
@@ -76,10 +76,10 @@
         "react": "^18.2.0",
         "react-dom": "^18.2.0",
         "react-test-renderer": "^18.1.0",
-        "size-limit": "^11.1.1",
+        "size-limit": "^12.1.0",
         "superjson": "^2.2.1",
         "typescript": "^5.4.2",
-        "vitest": "^1.4.0"
+        "vitest": "^4.1.10"
     },
     "size-limit": [
         {
