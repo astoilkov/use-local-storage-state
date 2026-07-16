@@ -13,16 +13,16 @@ React 18 and above:
 npm install use-local-storage-state
 ```
 
-⚠️ React 17 and below. For docs, go to the [react-17 branch](https://github.com/astoilkov/use-local-storage-state/tree/react-17).
+React 17 and below. For docs, go to the [react-17 branch](https://github.com/astoilkov/use-local-storage-state/tree/react-17).
 ```bash
 npm install use-local-storage-state@17
 ```
 
 ## Why
 
-- Actively maintained for the past 4 years — see [contributors](https://github.com/astoilkov/use-local-storage-state/graphs/contributors) page.
+- Actively maintained for the past 6 years — see [contributors](https://github.com/astoilkov/use-local-storage-state/graphs/contributors) page.
 - Production ready.
-- 689 B (brotlied).
+- 677 B (brotlied).
 - SSR support.
 - Works with React 18 concurrent rendering and React 19.
 - Handles the `Window` [`storage`](https://developer.mozilla.org/en-US/docs/Web/API/Window/storage_event) event and updates changes across browser tabs, windows, and iframe's. Disable with `storageSync: false`.
