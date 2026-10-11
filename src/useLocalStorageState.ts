@@ -163,7 +163,10 @@ export default function useLocalStorageState<T = undefined>(
         }
 
         const onStorage = (e: StorageEvent): void => {
-            if (e.key === key && e.storageArea === goodTry(() => localStorage)) {
+            if (
+                (e.key === null || e.key === key) &&
+                e.storageArea === goodTry(() => localStorage)
+            ) {
                 triggerCallbacks(key)
             }
         }

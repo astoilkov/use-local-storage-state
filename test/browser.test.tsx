@@ -512,6 +512,32 @@ describe('useLocalStorageState()', () => {
     })
 
     describe('"storage" event', () => {
+        test('localStorage.clear() updates every subscribed key', () => {
+            localStorage.setItem('todos', JSON.stringify(['saved']))
+            localStorage.setItem('theme', JSON.stringify('dark'))
+            const { result: todos } = renderHook(() => useLocalStorageState('todos'))
+            const { result: theme } = renderHook(() => useLocalStorageState('theme'))
+
+            act(() => {
+                localStorage.clear()
+                window.dispatchEvent(new StorageEvent('storage', { storageArea: localStorage }))
+            })
+
+            expect(todos.current[0]).toBeUndefined()
+            expect(theme.current[0]).toBeUndefined()
+        })
+
+        test('sessionStorage.clear() does not update localStorage state', () => {
+            localStorage.setItem('todos', JSON.stringify(['saved']))
+            const { result } = renderHook(() => useLocalStorageState('todos'))
+
+            act(() => {
+                window.dispatchEvent(new StorageEvent('storage', { storageArea: sessionStorage }))
+            })
+
+            expect(result.current[0]).toStrictEqual(['saved'])
+        })
+
         const fireStorageEvent = (storageArea: Storage, key: string, newValue: unknown): void => {
             const oldValue = localStorage.getItem(key)
 
